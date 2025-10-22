@@ -17,16 +17,15 @@ def detect_missing(df: pd.DataFrame) -> Dict[str, Any]:
     missing_counts = df.isnull().sum()
     missing_percent = (missing_counts / len(df) * 100).round(2)
     
-    result = {}
-    for col in df.columns:
-        if missing_counts[col] > 0:
-            result[col] = {
-                'count': int(missing_counts[col]),
-                'percent': float(missing_percent[col]),
-                'dtype': str(df[col].dtype)
-            }
-    
-    return result
+    return {
+        col: {
+            'count': int(missing_counts[col]),
+            'percent': float(missing_percent[col]),
+            'dtype': str(df[col].dtype)
+        }
+        for col in df.columns
+        if missing_counts[col] > 0
+    }
 
 
 def detect_outliers(df: pd.DataFrame, method: str = 'iforest', 
@@ -94,18 +93,16 @@ def detect_imbalance(df: pd.DataFrame, target_col: str, threshold: float = 0.3) 
     
     min_proportion = proportions.min()
     is_imbalanced = min_proportion < threshold
-    
-    result = {
+
+    return {
         'target_column': target_col,
         'class_distribution': value_counts.to_dict(),
         'class_proportions': proportions.to_dict(),
-        'is_imbalanced': bool(is_imbalanced),
-        'minority_class': str(proportions.idxmin()),
-        'minority_proportion': float(min_proportion),
-        'imbalance_ratio': float(proportions.max() / min_proportion)
+        'is_imbalanced': is_imbalanced,
+        'minority_class': proportions.idxmin(),
+        'minority_proportion': min_proportion,
+        'imbalance_ratio': proportions.max() / min_proportion
     }
-    
-    return result
 
 
 def detect_all(df: pd.DataFrame, target_col: str = None) -> Dict[str, Any]:
