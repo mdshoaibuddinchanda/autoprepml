@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoprepml"
-version = "0.1.0"
-description = "Automated data preprocessing pipeline for machine learning"
+version = "1.0.0"
+description = "AI-Assisted Multi-Modal Data Preprocessing Pipeline for ML"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "AutoPrepML Contributors"}
+    {name = "MD Shoaibuddin Chanda", email = "mdshoaibuddinchanda@gmail.com"}
 ]
 keywords = ["machine-learning", "data-preprocessing", "data-cleaning", "automl"]
 classifiers = [
