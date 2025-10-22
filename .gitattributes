@@ -1,0 +1,33 @@
+# Handle line endings automatically
+* text=auto
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.gif binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+
+# Python files
+*.py text eol=lf
+*.pyx text eol=lf
+*.pyd binary
+*.pyc binary
+*.pyo binary
+
+# Documentation
+*.md text
+*.rst text
+*.txt text
+
+# Config files
+*.yaml text
+*.yml text
+*.json text
+*.toml text
+*.ini text
+*.cfg text

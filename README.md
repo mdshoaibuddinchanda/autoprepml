@@ -1,10 +1,26 @@
-# AutoPrepML – Multi-Modal Data Preprocessing Pipeline
+<div align="center">
+  <img src="assets/logo.png" alt="AutoPrepML Logo" width="180"/>
+  
+  # AutoPrepML
+  
+  **Multi-Modal Data Preprocessing Pipeline**
+  
+  [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
+  [![codecov](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml/branch/main/graph/badge.svg)](https://codecov.io/gh/mdshoaibuddinchanda)
+  [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Tests](https://img.shields.io/badge/tests-103%20passed-brightgreen.svg)](tests/)
+  
+  <p align="center">
+    <a href="#-quick-start-guide">Quick Start</a> •
+    <a href="#-installation">Installation</a> •
+    <a href="#-examples-directory">Examples</a> •
+    <a href="#-documentation">Docs</a> •
+    <a href="#-contributing">Contributing</a>
+  </p>
+</div>
 
-[![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
-[![codecov](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml/branch/main/graph/badge.svg)](https://codecov.io/gh/mdshoaibuddinchanda)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-103%20passed-brightgreen.svg)](tests/)
+<br>
 
 > **Automate data preprocessing for ANY data type — Tabular, Text, Time Series, and Graphs.**
 
