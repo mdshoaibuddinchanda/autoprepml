@@ -1,7 +1,7 @@
 # AutoPrepML – Multi-Modal Data Preprocessing Pipeline
 
 [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
-[![codecov](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml/branch/main/graph/badge.svg)](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml)
+[![codecov](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml/branch/main/graph/badge.svg)](https://codecov.io/gh/mdshoaibuddinchanda)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-103%20passed-brightgreen.svg)](tests/)
@@ -9,6 +9,14 @@
 > **Automate data preprocessing for ANY data type — Tabular, Text, Time Series, and Graphs.**
 
 A comprehensive Python library that automatically detects, cleans, and transforms data across multiple modalities. Built for real-world ML pipelines with one-line automation and detailed reporting.
+
+```
+┌─────────────┐      ┌──────────────┐      ┌─────────────────┐      ┌────────────┐
+│  Raw Data   │ ───> │  AutoPrepML  │ ───> │  Cleaned Data   │ ───> │   Report   │
+│ (Any Type)  │      │   Detects    │      │   Transformed   │      │ (HTML/JSON)│
+└─────────────┘      │   Cleans     │      │    Features     │      └────────────┘
+                     └──────────────┘      └─────────────────┘
+```
 
 ## 🎯 Features
 
@@ -18,6 +26,20 @@ A comprehensive Python library that automatically detects, cleans, and transform
 - ⚙️ **Highly Configurable** - YAML/JSON configuration for reproducibility
 - 🚀 **CLI + Python API** - Use from command line or Python scripts
 - 🧪 **Production Ready** - 103 tests passing, 95%+ code coverage
+
+## 📋 Quick Navigation
+
+| Section | Description |
+|---------|-------------|
+| [📊 Supported Data Types](#-supported-data-types) | Overview of Tabular, Text, Time Series, Graph |
+| [📦 Installation](#-installation) | Install from source or PyPI (v1.1.0+) |
+| [🚀 Quick Start](#-quick-start-guide) | 5-minute tutorial for each data type |
+| [💻 CLI Reference](#-command-line-usage) | Command-line options and examples |
+| [🔧 Examples](#-examples-directory) | Working demo scripts with outputs |
+| [📚 Full API](#-complete-feature-reference) | Comprehensive function documentation |
+| [⚙️ Configuration](#️-configuration) | YAML/JSON config for reproducibility |
+| [🧪 Testing](#-testing) | Run tests and check coverage |
+| [🛠️ Development](#️-development-setup) | Contributing guide |
 
 ## 📊 Supported Data Types
 
@@ -30,41 +52,34 @@ A comprehensive Python library that automatically detects, cleans, and transform
 
 ## 📦 Installation
 
-### Option 1: Install from Source (Recommended)
+### Prerequisites
+- Python 3.10 or higher
+- pip (Python package manager)
 
-```bash
-# Clone the repository
-git clone https://github.com/mdshoaibuddinchanda/autoprepml.git
-
-# Navigate to the project directory
-cd autoprepml
-
-# Install in development mode
-pip install -e .
-```
-
-### Option 2: Install with Dependencies
-
-```bash
-# Clone and install
-git clone https://github.com/mdshoaibuddinchanda/autoprepml.git
-cd autoprepml
-pip install -e ".[dev]"  # Includes testing and development tools
-```
-
-### Option 3: Install from PyPI (Coming Soon)
+### Option 1: Install from PyPI (v1.1.0+)
 
 ```bash
 pip install autoprepml
 ```
 
+### Option 2: Install from Source (Latest Development Version)
+
+```bash
+git clone https://github.com/mdshoaibuddinchanda/autoprepml.git
+cd autoprepml
+pip install -e .
+```
+
+### Option 3: With Development Tools
+
+```bash
+pip install -e ".[dev]"  # Includes pytest, coverage, linting tools
+```
+
 ### Verify Installation
 
 ```bash
-# Check if autoprepml is installed
-python -c "from autoprepml import AutoPrepML, TextPrepML, TimeSeriesPrepML, GraphPrepML; print('✓ Installation successful!')"
-
-# Check CLI is available
+python -c "from autoprepml import AutoPrepML; print('✓ Installation successful!')"
 autoprepml --help
 ```
 
@@ -154,70 +169,36 @@ clean_edges = prep.edges_df
 
 ## 💻 Command Line Usage
 
-AutoPrepML provides a powerful CLI for quick data preprocessing without writing code.
+### Quick Reference
 
-### Basic Commands
+| Option | Short | Description | Example |
+|--------|-------|-------------|---------|
+| `--input` | `-i` | Input CSV file | `-i data.csv` |
+| `--output` | `-o` | Output CSV file | `-o cleaned.csv` |
+| `--task` | `-t` | ML task (classification/regression) | `-t classification` |
+| `--target` | | Target column name | `--target label` |
+| `--report` | `-r` | HTML report path | `-r report.html` |
+| `--config` | `-c` | Config file (YAML/JSON) | `-c config.yaml` |
+| `--detect-only` | | Only detect issues, no cleaning | `--detect-only` |
+| `--verbose` | `-v` | Verbose output | `-v` |
+
+### Common Workflows
 
 ```bash
-# Tabular data preprocessing
-autoprepml --input data.csv --output cleaned.csv
+# 1. Quick data inspection
+autoprepml -i data.csv --detect-only -v
 
-# With task specification
-autoprepml --input train.csv --output clean_train.csv \
-           --task classification --target label
+# 2. Clean and generate report
+autoprepml -i raw.csv -o clean.csv -r report.html -t classification --target label
 
-# Generate HTML report
-autoprepml --input data.csv --output cleaned.csv \
-           --report report.html
+# 3. Use custom configuration
+autoprepml -i data.csv -o cleaned.csv -c config.yaml
 
-# Detection only (no cleaning)
-autoprepml --input data.csv --detect-only
+# 4. Classification task with balancing
+autoprepml -i train.csv -o train_clean.csv -t classification --target Survived
 
-# Verbose output
-autoprepml --input data.csv --output cleaned.csv --verbose
-
-# With custom configuration
-autoprepml --input data.csv --output cleaned.csv \
-           --config config.yaml
-```
-
-### CLI Options Reference
-
-| Option | Description | Example |
-|--------|-------------|---------|
-| `--input`, `-i` | Input CSV file path | `--input data.csv` |
-| `--output`, `-o` | Output CSV file path | `--output cleaned.csv` |
-| `--task`, `-t` | ML task type | `--task classification` |
-| `--target` | Target column name | `--target label` |
-| `--report`, `-r` | HTML report path | `--report report.html` |
-| `--config`, `-c` | Config file (YAML/JSON) | `--config config.yaml` |
-| `--detect-only` | Only detect issues | `--detect-only` |
-| `--verbose`, `-v` | Verbose output | `--verbose` |
-
-### Example Workflows
-
-#### 1. Quick Data Inspection
-```bash
-# See what issues exist in your data
-autoprepml --input messy_data.csv --detect-only --verbose
-```
-
-#### 2. Clean and Report
-```bash
-# Clean data and generate visual report
-autoprepml --input raw_data.csv \
-           --output clean_data.csv \
-           --report data_report.html \
-           --task regression \
-           --target price
-```
-
-#### 3. Use Custom Configuration
-```bash
-# Create config.yaml first (see Configuration section)
-autoprepml --input data.csv \
-           --output cleaned.csv \
-           --config my_config.yaml
+# 5. Regression task with outlier removal
+autoprepml -i housing.csv -o housing_clean.csv -t regression --target price -v
 ```
 
 ## � Complete Feature Reference
@@ -461,52 +442,43 @@ config = {
 prep = AutoPrepML(df, config=config)
 ```
 
-## 📖 Running the Examples
+## � Examples Directory
 
 The `examples/` directory contains working demo scripts for all data types.
 
-### Run Individual Demos
+### Available Demos
+
+| Demo Script | Input Data | Generated Output | Features Shown |
+|-------------|------------|------------------|----------------|
+| **demo_script.py** | Iris dataset (150 rows) | `iris_cleaned.csv`<br>`iris_report.html` | Tabular preprocessing, scaling, encoding, HTML reports |
+| **demo_text.py** | Customer reviews (100 texts) | `reviews_cleaned.csv` | Text cleaning, stopword removal, tokenization, feature extraction |
+| **demo_timeseries.py** | Sales data with gaps (365 days) | `sales_cleaned.csv` | Gap filling, interpolation, lag features, rolling statistics |
+| **demo_graph.py** | Social network (50 nodes, 100 edges) | `social_network_nodes_cleaned.csv`<br>`social_network_edges_cleaned.csv` | Graph validation, component detection, degree centrality |
+| **demo_all.py** | All 4 data types | Console output | Multi-modal preprocessing in one script |
+
+### Run Demos
 
 ```bash
 # Navigate to project directory
 cd autoprepml
 
-# Run tabular data demo
-python examples/demo_script.py
+# Run individual demos
+python examples/demo_script.py        # Tabular data (Iris)
+python examples/demo_text.py          # Text/NLP (reviews)
+python examples/demo_timeseries.py    # Time series (sales)
+python examples/demo_graph.py         # Graph data (social network)
+python examples/demo_all.py           # All data types
 
-# Run text/NLP demo
-python examples/demo_text.py
-
-# Run time series demo
-python examples/demo_timeseries.py
-
-# Run graph data demo
-python examples/demo_graph.py
-
-# Run comprehensive multi-modal demo
-python examples/demo_all.py
-```
-
-### What Each Demo Does
-
-| Demo | Input | Output | Features Demonstrated |
-|------|-------|--------|----------------------|
-| `demo_script.py` | Iris dataset | `iris_cleaned.csv`<br>`iris_report.html` | Tabular preprocessing, HTML reports |
-| `demo_text.py` | Customer reviews | `reviews_cleaned.csv` | Text cleaning, stopword removal, tokenization |
-| `demo_timeseries.py` | Sales data with gaps | `sales_cleaned.csv` | Gap filling, interpolation, feature engineering |
-| `demo_graph.py` | Social network | `social_network_nodes_cleaned.csv`<br>`social_network_edges_cleaned.csv` | Graph validation, component detection |
-| `demo_all.py` | All 4 data types | Console output | Multi-modal preprocessing in one script |
-
-### Expected Demo Output
-
-After running demos, you'll find generated files in the project directory:
-- `*_cleaned.csv` - Cleaned data files
-- `*_report.html` - Visual HTML reports (for tabular data)
-
-```bash
 # Check generated files
-ls -la *.csv *.html
+ls *.csv *.html
 ```
+
+### Expected Output Files
+After running demos, you'll find these files in your directory:
+- `iris_cleaned.csv`, `iris_report.html`
+- `reviews_cleaned.csv`
+- `sales_cleaned.csv`
+- `social_network_nodes_cleaned.csv`, `social_network_edges_cleaned.csv`
 
 ## 🧪 Testing
 
@@ -660,134 +632,39 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[Usage Guide](docs/usage.md)** - Step-by-step tutorials for each data type
 - **[API Reference](docs/api_reference.md)** - Complete function and class documentation
 - **[Tutorials](docs/tutorials.md)** - Real-world examples and best practices
-- **[MULTI_MODAL_SUMMARY.md](MULTI_MODAL_SUMMARY.md)** - Multi-modal feature overview
+- **[Multi-Modal Summary](MULTI_MODAL_SUMMARY.md)** - Overview of all data type features
 
 ### Build Documentation Locally
 
 ```bash
-# Install MkDocs (if not already installed)
 pip install mkdocs mkdocs-material
-
-# Navigate to docs directory
 cd docs
-
-# Serve documentation locally
-mkdocs serve
-
-# Build static site
-mkdocs build
+mkdocs serve  # View at http://localhost:8000
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Here's how you can help:
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Ways to Contribute
-
-1. **Report Bugs** - Open an issue with detailed reproduction steps
-2. **Suggest Features** - Share your ideas for new features
-3. **Submit Pull Requests** - Fix bugs or add new features
-4. **Improve Documentation** - Help make docs clearer and more comprehensive
-5. **Write Tests** - Increase test coverage
-6. **Share Use Cases** - Tell us how you're using AutoPrepML
-
-### Contribution Workflow
-
-```bash
-# 1. Fork the repository on GitHub
-
-# 2. Clone your fork
-git clone https://github.com/YOUR_USERNAME/autoprepml.git
-cd autoprepml
-
-# 3. Create a feature branch
-git checkout -b feature/amazing-feature
-
-# 4. Make your changes
-# - Edit code
-# - Add tests
-# - Update documentation
-
-# 5. Run tests
-pytest tests/ -v
-
-# 6. Commit your changes
-git add .
-git commit -m "Add amazing feature"
-
-# 7. Push to your fork
-git push origin feature/amazing-feature
-
-# 8. Open a Pull Request on GitHub
-```
-
-### Code Style
-
-- Follow PEP 8 guidelines
-- Add docstrings to all functions and classes
-- Write tests for new features
-- Keep functions focused and modular
-
-### Testing Guidelines
-
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Test specific module
-pytest tests/test_text.py -v
-
-# Check coverage
-pytest tests/ --cov=autoprepml
-
-# Coverage should be >90%
-```
+**Quick Start:**
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make changes and add tests
+4. Run tests: `pytest tests/ -v`
+5. Commit: `git commit -m "Add amazing feature"`
+6. Push and open a Pull Request
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+| Issue | Solution |
+|-------|----------|
+| Import Error | `pip install -e .` |
+| CLI not recognized | Reinstall: `pip uninstall autoprepml && pip install -e .` |
+| Tests failing | Install dev dependencies: `pip install -e ".[dev]"` |
+| Matplotlib backend issues | Set backend: `import matplotlib; matplotlib.use('Agg')` |
+| Memory issues | Process in chunks: `pd.read_csv('file.csv', chunksize=10000)` |
 
-**1. Import Error: Module not found**
-```bash
-# Solution: Install in development mode
-pip install -e .
-```
-
-**2. CLI command not recognized**
-```bash
-# Solution: Reinstall package
-pip uninstall autoprepml
-pip install -e .
-```
-
-**3. Tests failing**
-```bash
-# Solution: Install dev dependencies
-pip install -e ".[dev]"
-pytest tests/ -v
-```
-
-**4. Matplotlib backend issues**
-```python
-# Solution: Set backend explicitly
-import matplotlib
-matplotlib.use('Agg')
-```
-
-**5. Memory issues with large datasets**
-```python
-# Solution: Process in chunks
-chunk_size = 10000
-for chunk in pd.read_csv('large_file.csv', chunksize=chunk_size):
-    prep = AutoPrepML(chunk)
-    # Process chunk
-```
-
-### Getting Help
-
-- **GitHub Issues**: [Report bugs or ask questions](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
-- **Discussions**: [Community forum](https://github.com/mdshoaibuddinchanda/autoprepml/discussions)
-- **Documentation**: Check [docs/](docs/) for detailed guides
+For more help, see [GitHub Issues](https://github.com/mdshoaibuddinchanda/autoprepml/issues) or [Discussions](https://github.com/mdshoaibuddinchanda/autoprepml/discussions).
 
 ## 📊 Performance
 
@@ -838,151 +715,74 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🗺️ Roadmap
 
-### ✅ Phase 1 - Core MVP (COMPLETED)
-- [x] Tabular data preprocessing
-- [x] Basic detection and cleaning
+### ✅ Version 1.0.0 (Released)
+- [x] Tabular data preprocessing (AutoPrepML)
+- [x] Text/NLP preprocessing (TextPrepML)
+- [x] Time series preprocessing (TimeSeriesPrepML)
+- [x] Graph data preprocessing (GraphPrepML)
 - [x] JSON/HTML reports with visualizations
-- [x] CLI support
-- [x] Comprehensive unit tests (41 tests)
-
-### ✅ Phase 2 - Multi-Modal Support (COMPLETED)
-- [x] Text/NLP preprocessing module
-- [x] Time series preprocessing module
-- [x] Graph data preprocessing module
-- [x] 62 additional tests (103 total)
-- [x] Demo scripts for all data types
-- [x] Multi-modal documentation
-
-### 🚧 Phase 3 - Enhanced Features (IN PROGRESS)
+- [x] CLI support with comprehensive options
+- [x] 103 unit tests with 95%+ coverage
 - [x] YAML/JSON configuration system
+
+### 🚧 Version 1.1.0 (Q1 2025)
+- [ ] PyPI package publication
 - [ ] Advanced imputation (KNN, iterative)
 - [ ] SMOTE for class balancing
+- [ ] Enhanced documentation website
+- [ ] Video tutorials and examples
+
+### 📋 Version 1.2.0 (Q2 2025)
 - [ ] LLM integration for smart suggestions
-- [ ] Image data preprocessing
+- [ ] Image data preprocessing module
 - [ ] Audio/video metadata extraction
-
-### 📋 Phase 4 - Production & Scale
-- [ ] PyPI package release
-- [ ] Distributed processing (Dask, Spark)
+- [ ] Distributed processing (Dask support)
 - [ ] Cloud storage integration (S3, GCS, Azure)
-- [ ] Real-time streaming support
-- [ ] MLOps integration (MLflow, Weights & Biases)
-- [ ] Docker containers
 
-### 🌟 Phase 5 - Community & Ecosystem
-- [ ] Documentation website
-- [ ] Video tutorials
-- [ ] Community plugins
-- [ ] Integration with popular ML frameworks
-- [ ] Kaggle kernels and examples
+### 🌟 Version 2.0.0 (Q3-Q4 2025)
+- [ ] Real-time streaming support
+- [ ] MLOps integration (MLflow, W&B)
+- [ ] Docker containers and Kubernetes
+- [ ] Web UI for interactive preprocessing
+- [ ] Community plugin system
 
 ## 💡 Use Cases
 
 ### By Industry
 
-**E-Commerce**
-- Customer review sentiment analysis (Text)
-- Sales forecasting (Time Series)
-- Product recommendation networks (Graph)
-
-**Finance**
-- Fraud detection (Tabular)
-- Stock price prediction (Time Series)
-- Transaction network analysis (Graph)
-
-**Healthcare**
-- Patient data preprocessing (Tabular)
-- Medical report analysis (Text)
-- Disease outbreak tracking (Time Series)
-- Healthcare provider networks (Graph)
-
-**Social Media**
-- User behavior analysis (Tabular)
-- Content moderation (Text)
-- Trend detection (Time Series)
-- Social network analysis (Graph)
+| Industry | Use Cases |
+|----------|-----------|
+| **E-Commerce** | Customer review sentiment (Text), Sales forecasting (Time Series), Product recommendations (Graph) |
+| **Finance** | Fraud detection (Tabular), Stock prediction (Time Series), Transaction networks (Graph) |
+| **Healthcare** | Patient data (Tabular), Medical reports (Text), Disease tracking (Time Series), Provider networks (Graph) |
+| **Social Media** | User behavior (Tabular), Content moderation (Text), Trend detection (Time Series), Social networks (Graph) |
 
 ### By Task
 
-**Machine Learning**
-- Feature engineering for models
-- Data quality assessment
-- Automated preprocessing pipelines
-
-**Data Science**
-- Exploratory data analysis
-- Data cleaning for visualization
-- Statistical analysis preparation
-
-**Research**
-- Dataset preparation for experiments
-- Reproducible preprocessing workflows
-- Benchmark dataset creation
+- **Machine Learning**: Feature engineering, data quality assessment, automated preprocessing
+- **Data Science**: EDA, data cleaning for visualization, statistical analysis
+- **Research**: Dataset preparation, reproducible workflows, benchmark creation
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- **Built with**: [pandas](https://pandas.pydata.org/), [scikit-learn](https://scikit-learn.org/), [matplotlib](https://matplotlib.org/), [seaborn](https://seaborn.pydata.org/)
-- **Inspired by**: The need for faster, more automated data preprocessing in ML workflows
-- **Thanks to**: All contributors and users of AutoPrepML
+Built with [pandas](https://pandas.pydata.org/), [scikit-learn](https://scikit-learn.org/), [matplotlib](https://matplotlib.org/), and [seaborn](https://seaborn.pydata.org/).
 
-### Dependencies
-
-**Core:**
-- pandas >= 1.3.0
-- numpy >= 1.21.0
-- scikit-learn >= 1.0.0
-- matplotlib >= 3.4.0
-- seaborn >= 0.11.0
-- jinja2 >= 3.0.0
-- pyyaml >= 5.4.0
-
-**Development:**
-- pytest >= 7.0.0
-- pytest-cov >= 3.0.0
-
-## 📧 Contact & Support
+## 📧 Contact
 
 - **Author**: MD Shoaibuddin Chanda
 - **GitHub**: [@mdshoaibuddinchanda](https://github.com/mdshoaibuddinchanda)
-- **Issues**: [GitHub Issues](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/mdshoaibuddinchanda/autoprepml/discussions)
-
-## 📈 Project Status
-
-**Current Version**: 0.1.0  
-**Status**: Active Development  
-**Test Coverage**: 95%+  
-**Tests Passing**: 103/103  
-**Python Support**: 3.8, 3.9, 3.10, 3.11+
-
-## 📚 Citation
-
-If you use AutoPrepML in your research or project, please cite:
-
-```bibtex
-@software{autoprepml2025,
-  author = {Chanda, MD Shoaibuddin},
-  title = {AutoPrepML: Multi-Modal Data Preprocessing Pipeline},
-  year = {2025},
-  url = {https://github.com/mdshoaibuddinchanda/autoprepml}
-}
-```
+- **Issues**: [Report bugs or request features](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by [MD Shoaibuddin Chanda](https://github.com/mdshoaibuddinchanda)**
+**⭐ Star this repo if AutoPrepML helped you!**
 
-**AutoPrepML** - Automate your data preprocessing workflow
-
-[⭐ Star on GitHub](https://github.com/mdshoaibuddinchanda/autoprepml) • 
-[📖 Read the Docs](docs/) • 
-[🐛 Report Bug](https://github.com/mdshoaibuddinchanda/autoprepml/issues) • 
-[💡 Request Feature](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
+[Documentation](docs/) • [Examples](examples/) • [Changelog](CHANGELOG.md) • [Contributing](CONTRIBUTING.md)
 
 </div>

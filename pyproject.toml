@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoprepml"
-version = "1.0.0"
+version = "1.0.1"
 description = "AI-Assisted Multi-Modal Data Preprocessing Pipeline for ML"
 readme = "README.md"
 requires-python = ">=3.10"
