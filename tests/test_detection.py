@@ -48,7 +48,7 @@ def test_detect_imbalance():
     df = pd.DataFrame({'target': [0]*90 + [1]*10})
     result = detection.detect_imbalance(df, 'target', threshold=0.3)
     assert result['is_imbalanced'] == True
-    assert result['minority_class'] == '1'  # String because of idxmin()
+    assert result['minority_class'] == 1  # Integer from pandas index
     assert result['minority_proportion'] == 0.1
 
 
