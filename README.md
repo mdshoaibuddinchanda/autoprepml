@@ -171,16 +171,17 @@ clean_edges = prep.edges_df
 
 ### Quick Reference
 
-| Option | Short | Description | Example |
-|--------|-------|-------------|---------|
-| `--input` | `-i` | Input CSV file | `-i data.csv` |
-| `--output` | `-o` | Output CSV file | `-o cleaned.csv` |
-| `--task` | `-t` | ML task (classification/regression) | `-t classification` |
-| `--target` | | Target column name | `--target label` |
-| `--report` | `-r` | HTML report path | `-r report.html` |
-| `--config` | `-c` | Config file (YAML/JSON) | `-c config.yaml` |
-| `--detect-only` | | Only detect issues, no cleaning | `--detect-only` |
-| `--verbose` | `-v` | Verbose output | `-v` |
+| Option          | Short | Description                         | Example             |
+| --------------- | ----- | ----------------------------------- | ------------------- |
+| `--input`       | `-i`  | Input CSV file                      | `-i data.csv`       |
+| `--output`      | `-o`  | Output CSV file                     | `-o cleaned.csv`    |
+| `--task`        | `-t`  | ML task (classification/regression) | `-t classification` |
+| `--target`      |       | Target column name                  | `--target label`    |
+| `--report`      | `-r`  | HTML report path                    | `-r report.html`    |
+| `--config`      | `-c`  | Config file (YAML/JSON)             | `-c config.yaml`    |
+| `--detect-only` |       | Only detect issues, no cleaning     | `--detect-only`     |
+| `--verbose`     | `-v`  | Verbose output                      | `-v`                |
+
 
 ### Common Workflows
 
