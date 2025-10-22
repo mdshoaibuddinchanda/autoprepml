@@ -48,10 +48,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/autoprepml"
+Homepage = "https://github.com/mdshoaibuddinchanda/autoprepml"
 Documentation = "https://autoprepml.readthedocs.io"
-Repository = "https://github.com/yourusername/autoprepml"
-"Bug Tracker" = "https://github.com/yourusername/autoprepml/issues"
+Repository = "https://github.com/mdshoaibuddinchanda/autoprepml"
+"Bug Tracker" = "https://github.com/mdshoaibuddinchanda/autoprepml/issues"
 
 [project.scripts]
 autoprepml = "autoprepml.cli:main"
