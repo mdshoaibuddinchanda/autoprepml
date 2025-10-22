@@ -5,7 +5,7 @@
 ### Prerequisites
 
 Before installing AutoPrepML, ensure you have:
-- Python 3.8 or higher
+- Python 3.10 or higher
 - pip (Python package installer)
 - Git (for cloning from repository)
 
@@ -13,7 +13,7 @@ Before installing AutoPrepML, ensure you have:
 
 ```bash
 python --version
-# Should show Python 3.8.x or higher
+# Should show Python 3.10.x or higher
 ```
 
 If you don't have Python installed:

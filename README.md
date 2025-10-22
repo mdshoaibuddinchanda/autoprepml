@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
 [![codecov](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml/branch/main/graph/badge.svg)](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-103%20passed-brightgreen.svg)](tests/)
 
