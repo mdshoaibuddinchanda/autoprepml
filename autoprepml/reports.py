@@ -191,14 +191,12 @@ def generate_html_report(report: Dict[str, Any]) -> str:
     Returns:
         HTML string
     """
-    # Check if this is a detailed report (AutoPrepML) or simple report (Text/TimeSeries/Graph)
-    if 'detection_results' in report:
-        # Use detailed template for AutoPrepML
-        tpl = Template(HTML_TEMPLATE)
-        return tpl.render(**report)
-    else:
-        # Use universal template for other data types
+    # Return universal template for non-AutoPrepML reports early
+    if 'detection_results' not in report:
         return generate_universal_html_report(report)
+    # Use detailed template for AutoPrepML
+    tpl = Template(HTML_TEMPLATE)
+    return tpl.render(**report)
 
 
 def generate_universal_html_report(report: Dict[str, Any]) -> str:

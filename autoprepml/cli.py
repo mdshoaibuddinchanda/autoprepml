@@ -114,7 +114,7 @@ Examples:
             prep.config['reporting']['include_plots'] = False
         
         # Detection phase
-        print(f"\n🔍 Running detection...")
+        print("\n🔍 Running detection...")
         detection_results = prep.detect(target_col=args.target)
         
         # Print detection summary
@@ -130,14 +130,14 @@ Examples:
             print(f"   • Class distribution: {status}")
         
         if args.detect_only:
-            print(f"\n✅ Detection complete (--detect-only mode)")
+            print("\n✅ Detection complete (--detect-only mode)")
             if args.report:
                 prep.save_report(args.report)
                 print(f"📄 Report saved to {args.report}")
             sys.exit(0)
         
         # Cleaning phase
-        print(f"\n🧹 Cleaning data...")
+        print("\n🧹 Cleaning data...")
         clean_df, report = prep.clean(task=args.task, target_col=args.target)
         
         # Save cleaned data
@@ -152,7 +152,7 @@ Examples:
             prep.save_report(args.report)
             print(f"📄 Report saved to {args.report}")
         
-        print(f"\n🎉 AutoPrepML completed successfully!")
+        print("\n🎉 AutoPrepML completed successfully!")
         
     except Exception as e:
         print(f"❌ Error during preprocessing: {e}", file=sys.stderr)

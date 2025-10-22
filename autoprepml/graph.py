@@ -1,7 +1,6 @@
 """Graph data preprocessing module for AutoPrepML"""
 from typing import Dict, Any, List, Tuple, Optional
 import pandas as pd
-import numpy as np
 
 
 class GraphPrepML:
@@ -72,7 +71,6 @@ class GraphPrepML:
         if self.edges_df is not None:
             source_ids = set(self.edges_df[self.source_col].dropna())
             target_ids = set(self.edges_df[self.target_col].dropna())
-            all_edge_nodes = source_ids.union(target_ids)
             
             issues['edges'] = {
                 'total_edges': len(self.edges_df),

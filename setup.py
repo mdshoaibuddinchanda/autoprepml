@@ -6,12 +6,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="autoprepml",
-    version="0.1.0",
-    author="AutoPrepML Contributors",
-    description="Automated data preprocessing pipeline for machine learning",
+    version="1.0.0",
+    author="MD Shoaibuddin Chanda",
+    author_email="mdshoaibuddinchanda@gmail.com",
+    description="AI-Assisted Multi-Modal Data Preprocessing Pipeline for ML",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/autoprepml",
+    url="https://github.com/mdshoaibuddinchanda/autoprepml",
     packages=find_packages(exclude=["tests*", "docs*", "examples*", "scripts*"]),
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -53,8 +54,8 @@ setup(
         ],
     },
     project_urls={
-        "Bug Tracker": "https://github.com/yourusername/autoprepml/issues",
-        "Documentation": "https://autoprepml.readthedocs.io",
-        "Source Code": "https://github.com/yourusername/autoprepml",
+        "Bug Tracker": "https://github.com/mdshoaibuddinchanda/autoprepml/issues",
+        "Documentation": "https://github.com/mdshoaibuddinchanda/autoprepml#readme",
+        "Source Code": "https://github.com/mdshoaibuddinchanda/autoprepml",
     },
 )

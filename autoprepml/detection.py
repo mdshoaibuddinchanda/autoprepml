@@ -1,5 +1,5 @@
 """Detection functions for AutoPrepML - identify data quality issues"""
-from typing import Dict, Any, List
+from typing import Dict, Any
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import IsolationForest

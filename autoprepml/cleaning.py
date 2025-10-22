@@ -1,5 +1,4 @@
 """Cleaning and transformation functions for AutoPrepML"""
-from typing import Dict, Any, Literal, Optional
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
@@ -139,30 +138,27 @@ def balance_classes(df: pd.DataFrame, target_col: str, method: str = 'oversample
     df_balanced = df.copy()
     value_counts = df_balanced[target_col].value_counts()
     
-    match method:
-        case 'oversample':
-            max_count = value_counts.max()
-            dfs = []
-            for class_value in value_counts.index:
-                class_df = df_balanced[df_balanced[target_col] == class_value]
-                count_diff = max_count - len(class_df)
-                if count_diff > 0:
-                    oversampled = class_df.sample(n=count_diff, replace=True, random_state=42)
-                    dfs.extend([class_df, oversampled])
-                else:
-                    dfs.append(class_df)
-            df_balanced = pd.concat(dfs, ignore_index=True)
-    
-        case 'undersample':
-            min_count = value_counts.min()
-            dfs = [
-                df_balanced[df_balanced[target_col] == class_value].sample(n=min_count, random_state=42)
-                for class_value in value_counts.index
-            ]
-            df_balanced = pd.concat(dfs, ignore_index=True)
-    
-        case _:
-            raise ValueError(f"Unknown balancing method: {method}")
+    if method == 'oversample':
+        max_count = value_counts.max()
+        dfs = []
+        for class_value in value_counts.index:
+            class_df = df_balanced[df_balanced[target_col] == class_value]
+            count_diff = max_count - len(class_df)
+            if count_diff > 0:
+                oversampled = class_df.sample(n=count_diff, replace=True, random_state=42)
+                dfs.extend([class_df, oversampled])
+            else:
+                dfs.append(class_df)
+        df_balanced = pd.concat(dfs, ignore_index=True)
+    elif method == 'undersample':
+        min_count = value_counts.min()
+        dfs = [
+            df_balanced[df_balanced[target_col] == class_value].sample(n=min_count, random_state=42)
+            for class_value in value_counts.index
+        ]
+        df_balanced = pd.concat(dfs, ignore_index=True)
+    else:
+        raise ValueError(f"Unknown balancing method: {method}")
     
     return df_balanced.sample(frac=1, random_state=42).reset_index(drop=True)
 

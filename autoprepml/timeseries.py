@@ -1,8 +1,7 @@
 """Time series preprocessing module for AutoPrepML"""
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 import pandas as pd
 import numpy as np
-from datetime import datetime
 
 
 class TimeSeriesPrepML:
