@@ -705,13 +705,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built with [pandas](https://pandas.pydata.org/), [scikit-learn](https://scikit-learn.org/), and [matplotlib](https://matplotlib.org/)
 - Inspired by the need for faster data preprocessing in ML workflows
-- Thanks to all [contributors](https://github.com/yourusername/autoprepml/graphs/contributors)
+- Thanks to all [contributors](https://github.com/mdshoaibuddinchanda/autoprepml/graphs/contributors)
 
 ## 📧 Contact
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/autoprepml/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/autoprepml/discussions)
-- **Email**: your.email@example.com
+- **Issues**: [GitHub Issues](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mdshoaibuddinchanda/autoprepml/discussions)
+- **Email**: mdshoaibuddinchanda@gmail.com
 
 ## 🗺️ Roadmap
 
