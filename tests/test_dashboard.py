@@ -250,14 +250,13 @@ class TestStreamlitAppGeneration:
     def test_generate_streamlit_app_runnable(self, dashboard, tmp_path):
         """Test generated Streamlit app is syntactically valid."""
         output_path = tmp_path / "app.py"
-        
+
         dashboard.generate_streamlit_app(output_path=str(output_path))
-        
+
         # Try to compile the generated code
         content = output_path.read_text()
         try:
             compile(content, str(output_path), 'exec')
-            assert True
         except SyntaxError:
             pytest.fail("Generated Streamlit app has syntax errors")
     
@@ -406,6 +405,7 @@ class TestOutputFormats:
             assert Path(output_path).exists()
         finally:
             # Cleanup
+# sourcery skip: no-conditionals-in-tests
             if Path(output_path).exists():
                 Path(output_path).unlink()
     

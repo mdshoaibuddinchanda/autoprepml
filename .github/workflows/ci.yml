@@ -96,9 +96,21 @@ jobs:
         pip install -e ".[dev,viz,llm]"
     
     - name: Run tests with pytest
+      id: run_tests
       run: |
-        pytest tests/ -v --cov=autoprepml --cov-report=xml --cov-report=term
+        pytest tests/ -v --cov=autoprepml --cov-report=xml --cov-report=term --maxfail=1 --tb=short 2>&1 | tee pytest.log
       continue-on-error: ${{ matrix.experimental == true }}
+    
+    - name: Upload test logs if failed
+      if: failure() && steps.run_tests.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: failed-test-logs-${{ matrix.os }}-py${{ matrix.python-version }}-${{ github.run_id }}
+        path: |
+          pytest.log
+          .pytest_cache/
+        retention-days: 7
+      continue-on-error: true
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4

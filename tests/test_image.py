@@ -191,6 +191,7 @@ def test_convenience_function():
     
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create test images
+# sourcery skip: no-loop-in-tests
         for i in range(2):
             img = Image.new('RGB', (100, 100), color='blue')
             img.save(Path(tmpdir) / f'test{i}.png')

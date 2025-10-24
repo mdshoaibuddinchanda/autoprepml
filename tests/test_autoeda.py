@@ -291,22 +291,24 @@ class TestReportGeneration:
     
     def test_generate_report_without_analysis(self, autoeda, tmp_path):
         """Test report generation without analysis."""
-        output_path = tmp_path / "report.html"
-        
-        # The API now generates a report even without analysis
-        # So we just check it creates a file
-        autoeda.generate_report(str(output_path))
-        assert output_path.exists()
+        output_path = self._extracted_from_test_generate_report_creates_file_3(
+            tmp_path, autoeda
+        )
     
     def test_generate_report_creates_file(self, autoeda, tmp_path):
         """Test report generation creates HTML file."""
         autoeda.analyze()
-        output_path = tmp_path / "report.html"
-        
-        autoeda.generate_report(str(output_path))
-        
-        assert output_path.exists()
+        output_path = self._extracted_from_test_generate_report_creates_file_3(
+            tmp_path, autoeda
+        )
         assert output_path.suffix == '.html'
+
+    # TODO Rename this here and in `test_generate_report_without_analysis` and `test_generate_report_creates_file`
+    def _extracted_from_test_generate_report_creates_file_3(self, tmp_path, autoeda):
+        result = tmp_path / "report.html"
+        autoeda.generate_report(str(result))
+        assert result.exists()
+        return result
     
     def test_generate_report_content(self, autoeda, tmp_path):
         """Test report contains expected content."""
@@ -334,22 +336,24 @@ class TestJSONExport:
     
     def test_to_json_without_analysis(self, autoeda, tmp_path):
         """Test JSON export without analysis."""
-        output_path = tmp_path / "results.json"
-        
-        # The API now exports even without analysis
-        # So we just check it creates a file
-        autoeda.to_json(str(output_path))
-        assert output_path.exists()
+        output_path = self._extracted_from_test_to_json_creates_file_3(
+            tmp_path, autoeda
+        )
     
     def test_to_json_creates_file(self, autoeda, tmp_path):
         """Test JSON export creates file."""
         autoeda.analyze()
-        output_path = tmp_path / "results.json"
-        
-        autoeda.to_json(str(output_path))
-        
-        assert output_path.exists()
+        output_path = self._extracted_from_test_to_json_creates_file_3(
+            tmp_path, autoeda
+        )
         assert output_path.suffix == '.json'
+
+    # TODO Rename this here and in `test_to_json_without_analysis` and `test_to_json_creates_file`
+    def _extracted_from_test_to_json_creates_file_3(self, tmp_path, autoeda):
+        result = tmp_path / "results.json"
+        autoeda.to_json(str(result))
+        assert result.exists()
+        return result
     
     def test_to_json_content(self, autoeda, tmp_path):
         """Test JSON content is valid."""
@@ -386,11 +390,10 @@ class TestEdgeCases:
             'a': [1, 2, 3, 4, 5],
             'b': [10, 20, 30, 40, 50]
         })
-        
-        eda = AutoEDA(df)
-        results = eda.analyze()
-        
-        assert results['missing_values']['total_missing'] == 0
+
+        self._extracted_from_test_dataframe_with_duplicates_8(
+            df, 'missing_values', 'total_missing', 0
+        )
     
     def test_dataframe_with_only_numeric(self):
         """Test analysis with only numeric columns."""
@@ -426,11 +429,16 @@ class TestEdgeCases:
             'a': [1, 2, 3, 1, 2, 3],
             'b': [10, 20, 30, 10, 20, 30]
         })
-        
+
+        self._extracted_from_test_dataframe_with_duplicates_8(
+            df, 'basic_stats', 'duplicate_rows', 3
+        )
+
+    # TODO Rename this here and in `test_dataframe_with_no_missing_values` and `test_dataframe_with_duplicates`
+    def _extracted_from_test_dataframe_with_duplicates_8(self, df, arg1, arg2, arg3):
         eda = AutoEDA(df)
         results = eda.analyze()
-        
-        assert results['basic_stats']['duplicate_rows'] == 3  # 3 duplicate rows
+        assert results[arg1][arg2] == arg3
     
     def test_dataframe_with_constant_column(self):
         """Test analysis with constant column."""
