@@ -33,6 +33,7 @@ setup(
         "seaborn==0.13.2",
         "jinja2==3.1.6",
         "pyyaml==6.0.3",
+        "imbalanced-learn==0.12.0",
     ],
     extras_require={
         "dev": [

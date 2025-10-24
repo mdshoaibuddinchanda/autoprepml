@@ -9,7 +9,7 @@
   [![codecov](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml/branch/main/graph/badge.svg)](https://codecov.io/gh/mdshoaibuddinchanda)
   [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Tests](https://img.shields.io/badge/tests-103%20passed-brightgreen.svg)](tests/)
+  [![Tests](https://img.shields.io/badge/tests-127%20passed-brightgreen.svg)](tests/)
   
   <p align="center">
     <a href="#-quick-start-guide">Quick Start</a> •
@@ -41,7 +41,9 @@ A comprehensive Python library that automatically detects, cleans, and transform
 - 📊 **Visual Reports** - HTML reports with embedded plots and statistics
 - ⚙️ **Highly Configurable** - YAML/JSON configuration for reproducibility
 - 🚀 **CLI + Python API** - Use from command line or Python scripts
-- 🧪 **Production Ready** - 103 tests passing, 95%+ code coverage
+- 🧪 **Production Ready** - 127 tests passing, 95%+ code coverage
+- 🆕 **Advanced Imputation** - KNN and Iterative (MICE) imputation methods (v1.1.0)
+- 🎯 **SMOTE Balancing** - Synthetic minority oversampling for imbalanced data (v1.1.0)
 
 ## 📋 Quick Navigation
 
@@ -50,6 +52,7 @@ A comprehensive Python library that automatically detects, cleans, and transform
 | [📊 Supported Data Types](#-supported-data-types) | Overview of Tabular, Text, Time Series, Graph |
 | [📦 Installation](#-installation) | Install from source or PyPI (v1.1.0+) |
 | [🚀 Quick Start](#-quick-start-guide) | 5-minute tutorial for each data type |
+| [🆕 Advanced Features](docs/ADVANCED_FEATURES.md) | KNN/Iterative Imputation, SMOTE (v1.1.0) |
 | [💻 CLI Reference](#-command-line-usage) | Command-line options and examples |
 | [🔧 Examples](#-examples-directory) | Working demo scripts with outputs |
 | [📚 Full API](#-complete-feature-reference) | Comprehensive function documentation |
@@ -743,7 +746,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] YAML/JSON configuration system
 
 ### 🚧 Version 1.1.0 (Q1 2025)
-- [ ] PyPI package publication
+- [x] PyPI package publication
 - [ ] Advanced imputation (KNN, iterative)
 - [ ] SMOTE for class balancing
 - [ ] Enhanced documentation website
