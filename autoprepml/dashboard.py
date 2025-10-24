@@ -23,18 +23,18 @@ def create_plotly_dashboard(df: pd.DataFrame,
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
         import plotly.express as px
-    except ImportError:
+    except ImportError as e:
         raise ImportError(
             "Plotly is required for interactive dashboards.\n"
             "Install with: pip install plotly"
-        )
-    
+        ) from e
+
     # Create figure with subplots
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
     cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
-    
+
     n_plots = min(4, len(numeric_cols))  # Show up to 4 distribution plots
-    
+
     if n_plots == 0:
         # No numeric columns, create basic info dashboard
         fig = go.Figure()
@@ -53,21 +53,21 @@ def create_plotly_dashboard(df: pd.DataFrame,
             specs=[[{"type": "histogram"}, {"type": "box"}],
                    [{"type": "scatter"}, {"type": "bar"}]]
         )
-        
+
         # Add histogram
         if len(numeric_cols) > 0:
             fig.add_trace(
                 go.Histogram(x=df[numeric_cols[0]], name=numeric_cols[0]),
                 row=1, col=1
             )
-        
+
         # Add box plot
         if len(numeric_cols) > 1:
             fig.add_trace(
                 go.Box(y=df[numeric_cols[1]], name=numeric_cols[1]),
                 row=1, col=2
             )
-        
+
         # Add scatter plot
         if len(numeric_cols) >= 2:
             fig.add_trace(
@@ -79,7 +79,7 @@ def create_plotly_dashboard(df: pd.DataFrame,
                 ),
                 row=2, col=1
             )
-        
+
         # Add value counts for first categorical
         if cat_cols:
             value_counts = df[cat_cols[0]].value_counts().head(10)
@@ -87,20 +87,20 @@ def create_plotly_dashboard(df: pd.DataFrame,
                 go.Bar(x=value_counts.index, y=value_counts.values, name=cat_cols[0]),
                 row=2, col=2
             )
-    
+
     fig.update_layout(
         title=title,
         height=800,
         showlegend=True,
         template="plotly_white"
     )
-    
+
     html = fig.to_html(full_html=True, include_plotlyjs='cdn')
-    
+
     if output_path:
         Path(output_path).write_text(html, encoding='utf-8')
         print(f"✅ Plotly dashboard saved to: {output_path}")
-    
+
     return html
 
 
@@ -117,16 +117,18 @@ def create_correlation_heatmap(df: pd.DataFrame,
     """
     try:
         import plotly.graph_objects as go
-    except ImportError:
-        raise ImportError("Plotly is required. Install with: pip install plotly")
-    
+    except ImportError as e:
+        raise ImportError(
+            "Plotly is required. Install with: pip install plotly"
+        ) from e
+
     numeric_df = df.select_dtypes(include=[np.number])
-    
+
     if numeric_df.shape[1] < 2:
         raise ValueError("Need at least 2 numeric columns for correlation heatmap")
-    
+
     corr_matrix = numeric_df.corr()
-    
+
     fig = go.Figure(data=go.Heatmap(
         z=corr_matrix.values,
         x=corr_matrix.columns,
@@ -138,19 +140,19 @@ def create_correlation_heatmap(df: pd.DataFrame,
         textfont={"size": 10},
         colorbar=dict(title="Correlation")
     ))
-    
+
     fig.update_layout(
         title="Correlation Heatmap",
         height=600,
         template="plotly_white"
     )
-    
+
     html = fig.to_html(full_html=True, include_plotlyjs='cdn')
-    
+
     if output_path:
         Path(output_path).write_text(html, encoding='utf-8')
         print(f"✅ Correlation heatmap saved to: {output_path}")
-    
+
     return html
 
 
@@ -167,15 +169,17 @@ def create_missing_data_plot(df: pd.DataFrame,
     """
     try:
         import plotly.graph_objects as go
-    except ImportError:
-        raise ImportError("Plotly is required. Install with: pip install plotly")
-    
+    except ImportError as e:
+        raise ImportError(
+            "Plotly is required. Install with: pip install plotly"
+        ) from e
+
     missing_counts = df.isnull().sum()
     missing_pct = (missing_counts / len(df)) * 100
-    
+
     # Filter columns with missing values
     missing_cols = missing_counts[missing_counts > 0].sort_values(ascending=True)
-    
+
     if missing_cols.empty:
         fig = go.Figure()
         fig.add_annotation(
@@ -195,7 +199,7 @@ def create_missing_data_plot(df: pd.DataFrame,
                 textposition='auto',
             )
         ])
-        
+
         fig.update_layout(
             title="Missing Data by Column",
             xaxis_title="Number of Missing Values",
@@ -203,13 +207,13 @@ def create_missing_data_plot(df: pd.DataFrame,
             height=max(400, len(missing_cols) * 30),
             template="plotly_white"
         )
-    
+
     html = fig.to_html(full_html=True, include_plotlyjs='cdn')
-    
+
     if output_path:
         Path(output_path).write_text(html, encoding='utf-8')
         print(f"✅ Missing data plot saved to: {output_path}")
-    
+
     return html
 
 
@@ -463,9 +467,15 @@ class InteractiveDashboard:
         
         Args:
             df: DataFrame to visualize
+            
+        Raises:
+            ValueError: If input is not a DataFrame or is empty
         """
         if not isinstance(df, pd.DataFrame):
             raise ValueError("Input must be a pandas DataFrame")
+        
+        if df.empty:
+            raise ValueError("DataFrame cannot be empty")
         
         self.df = df
     
