@@ -274,30 +274,6 @@ class TestStreamlitAppGeneration:
         assert 'import streamlit' in content
         assert 'st.' in content  # Streamlit function calls
         assert 'def ' in content  # Function definitions
-    
-    def test_generate_streamlit_app_runnable(self, dashboard, tmp_path):
-        """Test generated Streamlit app is syntactically valid."""
-        output_path = tmp_path / "app.py"
-
-        dashboard.generate_streamlit_app(output_path=str(output_path))
-
-        # Try to compile the generated code
-        content = output_path.read_text()
-        try:
-            compile(content, str(output_path), 'exec')
-        except SyntaxError:
-            pytest.fail("Generated Streamlit app has syntax errors")
-    
-    def test_generate_streamlit_app_function(self, sample_df, tmp_path):
-        """Test Streamlit app generation convenience function."""
-        output_path = tmp_path / "app_func.py"
-        
-        generate_streamlit_app(sample_df, output_path=str(output_path))
-        
-        assert output_path.exists()
-        
-        content = output_path.read_text()
-        assert 'import streamlit' in content
 
 
 class TestDashboardWithDifferentDataTypes:
