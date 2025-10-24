@@ -9,7 +9,8 @@
   [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
   [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Tests](https://img.shields.io/badge/tests-158%20passed-brightgreen.svg)](tests/)
+  [![Tests](https://img.shields.io/badge/tests-227%20passing-brightgreen.svg)](tests/)
+  [![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml)
   
   <p align="center">
     <a href="#-quick-start-guide">Quick Start</a> •
@@ -42,7 +43,7 @@ A comprehensive Python library that automatically detects, cleans, and transform
 - 📊 **Visual Reports** - HTML reports with embedded plots and statistics
 - ⚙️ **Highly Configurable** - YAML/JSON configuration for reproducibility
 - 🚀 **CLI + Python API** - Use from command line or Python scripts
-- 🧪 **Production Ready** - 158 tests passing, 95%+ code coverage
+- 🧪 **Production Ready** - 227 tests passing, 95%+ code coverage, optimized CI/CD
 
 ### Advanced Features (v1.3.0) 🆕
 - 📊 **AutoEDA** - Automated exploratory data analysis with insights generation
