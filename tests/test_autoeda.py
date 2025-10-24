@@ -181,30 +181,28 @@ class TestOutliers:
     
     def test_detect_outliers_iqr(self, autoeda):
         """Test IQR outlier detection."""
-        outliers = autoeda._detect_outliers()
-        
-        # outliers is now a dict with columns as keys (only columns WITH outliers)
-        # So we just check it returns a dict
-        assert isinstance(outliers, dict)
-        
-        # If any column has outliers, check the structure
-        if outliers:
-            first_col = list(outliers.keys())[0]
-            assert 'iqr_outliers' in outliers[first_col]
-            assert 'iqr_percentage' in outliers[first_col]
+        self._extracted_from_test_detect_outliers_zscore_3(
+            autoeda, 'iqr_outliers', 'iqr_percentage'
+        )
     
     def test_detect_outliers_zscore(self, autoeda):
         """Test Z-score outlier detection."""
+        self._extracted_from_test_detect_outliers_zscore_3(
+            autoeda, 'zscore_outliers', 'zscore_percentage'
+        )
+
+    # TODO Rename this here and in `test_detect_outliers_iqr` and `test_detect_outliers_zscore`
+    def _extracted_from_test_detect_outliers_zscore_3(self, autoeda, arg1, arg2):
         outliers = autoeda._detect_outliers()
-        
-        # Check it returns a dict
         assert isinstance(outliers, dict)
-        
-        # If any column has outliers, check the structure
         if outliers:
-            first_col = list(outliers.keys())[0]
-            assert 'zscore_outliers' in outliers[first_col]
-            assert 'zscore_percentage' in outliers[first_col]
+            self._extracted_from_test_detect_outliers_zscore_11(outliers, arg1, arg2)
+
+    # TODO Rename this here and in `test_detect_outliers_iqr` and `test_detect_outliers_zscore`
+    def _extracted_from_test_detect_outliers_zscore_11(self, outliers, arg1, arg2):
+        first_col = list(outliers.keys())[0]
+        assert arg1 in outliers[first_col]
+        assert arg2 in outliers[first_col]
 
 
 class TestCategorical:
