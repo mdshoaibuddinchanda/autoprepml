@@ -1,6 +1,11 @@
 """Test dynamic LLM configuration - no hardcoded values!"""
 import os
 import pandas as pd
+import pytest
+
+# Skip if LLM dependencies are not available
+pytest.importorskip("google.generativeai", reason="google-generativeai not installed")
+
 from autoprepml.llm_suggest import LLMSuggestor
 
 print("=" * 80)

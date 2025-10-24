@@ -2,6 +2,10 @@
 import pytest
 import pandas as pd
 import numpy as np
+
+# Skip all tests in this module if LLM dependencies are not available
+pytest.importorskip("openai", reason="openai not installed")
+
 from autoprepml.llm_suggest import LLMSuggestor, LLMProvider, suggest_fix, explain_cleaning_step
 
 

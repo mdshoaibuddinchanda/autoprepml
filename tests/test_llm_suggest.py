@@ -1,6 +1,10 @@
 """Tests for LLM suggestions module - basic functionality tests"""
 import pandas as pd
 import pytest
+
+# Skip all tests if LLM dependencies are not available
+pytest.importorskip("openai", reason="openai not installed")
+
 from autoprepml import llm_suggest
 
 

@@ -2,7 +2,12 @@
 Quick test script for Google Gemini API integration
 """
 
+import pytest
 import pandas as pd
+
+# Skip if Google Generative AI is not installed
+pytest.importorskip("google.generativeai", reason="google-generativeai not installed")
+
 from autoprepml import AutoPrepML
 from autoprepml.llm_suggest import LLMSuggestor
 
