@@ -46,6 +46,22 @@ setup(
             "mkdocs>=1.4.0",
             "mkdocs-material>=8.0.0",
         ],
+        "llm": [
+            "openai>=1.0.0",
+            "anthropic>=0.18.0",
+            "google-generativeai>=0.3.0",
+            "ollama>=0.1.0",
+        ],
+        "all": [
+            "pytest==8.4.2",
+            "pytest-cov==7.0.0",
+            "black==24.10.0",
+            "ruff==0.8.4",
+            "openai>=1.0.0",
+            "anthropic>=0.18.0",
+            "google-generativeai>=0.3.0",
+            "ollama>=0.1.0",
+        ],
     },
     entry_points={
         "console_scripts": [
