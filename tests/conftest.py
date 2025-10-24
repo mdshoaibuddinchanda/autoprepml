@@ -18,7 +18,6 @@ def pytest_collection_modifyitems(config, items):
     # Check for visualization libraries
     try:
         import plotly
-        import streamlit
         has_viz = True
     except ImportError:
         has_viz = False
