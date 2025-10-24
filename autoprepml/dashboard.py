@@ -479,16 +479,25 @@ class InteractiveDashboard:
         
         self.df = df
     
-    def create_dashboard(self, output_path: str = "dashboard.html") -> str:
+    def create_dashboard(
+        self,
+        title: str = "AutoPrepML Interactive Dashboard",
+        output_path: str = "dashboard.html",
+    ) -> str:
         """Create comprehensive interactive dashboard.
         
         Args:
+            title: Title to display in the dashboard
             output_path: Path to save HTML file
             
         Returns:
             HTML string
         """
-        return create_plotly_dashboard(self.df, output_path=output_path)
+        return create_plotly_dashboard(
+            self.df,
+            title=title,
+            output_path=output_path,
+        )
     
     def create_correlation_heatmap(self, output_path: str = "correlation.html") -> str:
         """Create correlation heatmap.
