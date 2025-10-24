@@ -5,11 +5,11 @@
   
   **Multi-Modal Data Preprocessing Pipeline**
   
+  [![PyPI version](https://img.shields.io/badge/pypi-v1.3.0-blue.svg)](https://pypi.org/project/autoprepml/)
   [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
-  [![codecov](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml/branch/main/graph/badge.svg)](https://codecov.io/gh/mdshoaibuddinchanda)
   [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Tests](https://img.shields.io/badge/tests-127%20passed-brightgreen.svg)](tests/)
+  [![Tests](https://img.shields.io/badge/tests-158%20passed-brightgreen.svg)](tests/)
   
   <p align="center">
     <a href="#-quick-start-guide">Quick Start</a> •
@@ -22,26 +22,37 @@
 
 <br>
 
-> **Automate data preprocessing for ANY data type — Tabular, Text, Time Series, and Graphs.**
+> **Automate data preprocessing for ANY data type — Tabular, Text, Time Series, Graphs, and Images.**
 
 A comprehensive Python library that automatically detects, cleans, and transforms data across multiple modalities. Built for real-world ML pipelines with one-line automation and detailed reporting.
 
 ```
 ┌─────────────┐      ┌──────────────┐      ┌─────────────────┐      ┌────────────┐
-│  Raw Data   │ ───> │  AutoPrepML  │ ───> │  Cleaned Data   │ ───> │   Report   │
-│ (Any Type)  │      │   Detects    │      │   Transformed   │      │ (HTML/JSON)│
+│  Raw Data   │      │  AutoPrepML  │      │  Cleaned Data   │      │   Report   │
+│ (Any Type)  │ ───> │   Detects    │ ───> │   Transformed   │ ───> │ (HTML/JSON)│
 └─────────────┘      │   Cleans     │      │    Features     │      └────────────┘
                      └──────────────┘      └─────────────────┘
 ```
 
 ## 🎯 Features
 
-- ✨ **Multi-Modal Support** - Works with 4 different data types out of the box
+### Core Features
+- ✨ **Multi-Modal Support** - Works with 5 different data types out of the box
 - 🔍 **Automatic Issue Detection** - Missing values, outliers, duplicates, anomalies
 - 📊 **Visual Reports** - HTML reports with embedded plots and statistics
 - ⚙️ **Highly Configurable** - YAML/JSON configuration for reproducibility
 - 🚀 **CLI + Python API** - Use from command line or Python scripts
-- 🧪 **Production Ready** - 127 tests passing, 95%+ code coverage
+- 🧪 **Production Ready** - 158 tests passing, 95%+ code coverage
+
+### Advanced Features (v1.3.0) 🆕
+- 📊 **AutoEDA** - Automated exploratory data analysis with insights generation
+- ⚙️ **AutoFeatureEngine** - Intelligent feature engineering with 8 creation methods
+- 📈 **Interactive Dashboards** - Plotly visualizations and Streamlit app generation
+- 🤖 **Enhanced LLM Assistant** - Column renaming, documentation, quality analysis
+
+### Previous Releases
+- 🤖 **LLM Integration** - AI-powered suggestions with GPT-4, Claude, Gemini, Ollama (v1.2.0)
+- 🖼️ **Image Preprocessing** - Automatic image cleaning, resizing, normalization (v1.2.0)
 - 🆕 **Advanced Imputation** - KNN and Iterative (MICE) imputation methods (v1.1.0)
 - 🎯 **SMOTE Balancing** - Synthetic minority oversampling for imbalanced data (v1.1.0)
 
@@ -50,9 +61,13 @@ A comprehensive Python library that automatically detects, cleans, and transform
 | Section | Description |
 |---------|-------------|
 | [📊 Supported Data Types](#-supported-data-types) | Overview of Tabular, Text, Time Series, Graph |
-| [📦 Installation](#-installation) | Install from source or PyPI (v1.1.0+) |
+| [📦 Installation](#-installation) | Install from source or PyPI (v1.0.1+) |
 | [🚀 Quick Start](#-quick-start-guide) | 5-minute tutorial for each data type |
+| [🆕 v1.3.0 Features](#-v130-new-features) | AutoEDA, Feature Engineering, Dashboards (NEW!) |
 | [🆕 Advanced Features](docs/ADVANCED_FEATURES.md) | KNN/Iterative Imputation, SMOTE (v1.1.0) |
+| [🤖 LLM Integration](docs/LLM_CONFIGURATION.md) | AI-powered suggestions with multiple providers (v1.2.0) |
+| [🎯 Dynamic LLM Config](docs/DYNAMIC_LLM_CONFIGURATION.md) | Use ANY model - no hardcoded values! |
+| [⚙️ CLI Configuration](docs/QUICK_START_CLI.md) | Manage API keys with autoprepml-config |
 | [💻 CLI Reference](#-command-line-usage) | Command-line options and examples |
 | [🔧 Examples](#-examples-directory) | Working demo scripts with outputs |
 | [📚 Full API](#-complete-feature-reference) | Comprehensive function documentation |
@@ -68,6 +83,7 @@ A comprehensive Python library that automatically detects, cleans, and transform
 | **Text/NLP** | `TextPrepML` | Sentiment Analysis, Topic Modeling, Classification | ✅ Ready |
 | **Time Series** | `TimeSeriesPrepML` | Forecasting, Trend Analysis, Anomaly Detection | ✅ Ready |
 | **Graph** | `GraphPrepML` | Social Networks, Recommendation Systems, Link Prediction | ✅ Ready |
+| **Image** | `ImagePrepML` | Computer Vision, Image Classification, Object Detection | ✅ Ready |
 
 ## 📦 Installation
 
@@ -75,10 +91,17 @@ A comprehensive Python library that automatically detects, cleans, and transform
 - Python 3.10 or higher
 - pip (Python package manager)
 
-### Option 1: Install from PyPI (v1.1.0+)
+### Option 1: Install from PyPI
 
 ```bash
+# Basic installation
 pip install autoprepml
+
+# With LLM support (AI-powered suggestions)
+pip install autoprepml[llm]
+
+# With all optional dependencies
+pip install autoprepml[all]
 ```
 
 ### Option 2: Install from Source (Latest Development Version)
@@ -87,19 +110,239 @@ pip install autoprepml
 git clone https://github.com/mdshoaibuddinchanda/autoprepml.git
 cd autoprepml
 pip install -e .
+
+# Or with LLM support
+pip install -e ".[llm]"
 ```
 
 ### Option 3: With Development Tools
 
 ```bash
 pip install -e ".[dev]"  # Includes pytest, coverage, linting tools
+pip install -e ".[all]"  # Everything (dev + llm + docs)
 ```
+
+### Configure LLM Support (Optional)
+
+After installing with LLM support, configure your API keys:
+
+```bash
+# Interactive configuration wizard
+autoprepml-config
+
+# Or set a specific provider
+autoprepml-config --set openai
+autoprepml-config --set anthropic
+autoprepml-config --set google
+
+# Use Ollama for local LLM (no API key needed!)
+# Just install Ollama from https://ollama.ai
+```
+
+See [LLM Configuration Guide](docs/LLM_CONFIGURATION.md) for detailed instructions.
 
 ### Verify Installation
 
 ```bash
 python -c "from autoprepml import AutoPrepML; print('✓ Installation successful!')"
 autoprepml --help
+```
+
+## 🆕 v1.3.0 New Features
+
+### 📊 AutoEDA - Automated Exploratory Data Analysis
+
+Comprehensive automated EDA with insights generation:
+
+```python
+from autoprepml import AutoEDA
+
+# Initialize with your DataFrame
+eda = AutoEDA(df)
+
+# Run full analysis
+results = eda.analyze(
+    include_correlations=True,
+    include_distributions=True,
+    include_outliers=True,
+    generate_insights=True
+)
+
+# Generate interactive HTML report
+eda.generate_report('eda_report.html')
+
+# Export results to JSON
+eda.to_json('eda_results.json')
+
+# Access specific analysis results
+print(results['insights'])
+print(results['correlations']['high_correlations'])
+print(results['outliers']['iqr_outliers'])
+```
+
+**Features:**
+- Statistical summaries (mean, std, quartiles, skewness, kurtosis)
+- Missing value analysis with percentages
+- Correlation matrix with high correlation detection (>0.7)
+- Distribution analysis (skewness, kurtosis, quartiles)
+- Outlier detection (IQR and Z-score methods)
+- Categorical analysis (cardinality, mode, value counts)
+- Automated insights generation in natural language
+- Interactive HTML reports with visualizations
+- JSON export for programmatic access
+
+### ⚙️ AutoFeatureEngine - Intelligent Feature Engineering
+
+Create powerful features automatically with 8 different methods:
+
+```python
+from autoprepml import AutoFeatureEngine, auto_feature_engineering
+
+# Initialize with your DataFrame
+fe = AutoFeatureEngine(df, target_column='target')
+
+# 1. Polynomial features (degree 2 or 3)
+df_poly = fe.create_polynomial_features(columns=['age', 'income'], degree=2)
+
+# 2. Interaction features (multiplication)
+df_interact = fe.create_interactions(columns=['age', 'income', 'score'])
+
+# 3. Ratio features (division-based)
+df_ratio = fe.create_ratio_features(columns=['income', 'loan_amount'])
+
+# 4. Binned features (discretization)
+df_binned = fe.create_binned_features(columns=['age'], n_bins=5, strategy='quantile')
+
+# 5. Aggregation features (sum, mean, std, min, max)
+df_agg = fe.create_aggregation_features(columns=['col1', 'col2', 'col3'])
+
+# 6. Datetime features (year, month, day, hour, quarter)
+df_date = fe.create_datetime_features(columns=['date'], features=['year', 'month', 'day'])
+
+# 7. Feature selection (keep best k features)
+df_selected = fe.select_features(method='mutual_info', k=10, task='classification')
+
+# 8. Feature importance ranking
+importance = fe.get_feature_importance(task='classification')
+print(importance)
+
+# Quick auto feature engineering
+df_enhanced = auto_feature_engineering(
+    df,
+    numeric_columns=['age', 'income', 'score'],
+    target_column='target',
+    select_top_k=15
+)
+```
+
+**Methods:**
+- `create_polynomial_features()` - Polynomial & interaction terms
+- `create_interactions()` - Pairwise multiplications
+- `create_ratio_features()` - Division-based features
+- `create_binned_features()` - Discretization (uniform, quantile, kmeans)
+- `create_aggregation_features()` - Row-wise aggregations
+- `create_datetime_features()` - Extract temporal components
+- `select_features()` - Mutual info or F-test selection
+- `get_feature_importance()` - Rank features by importance
+
+### 📈 Interactive Dashboards - Visualization & Streamlit
+
+Create interactive dashboards with Plotly and generate full Streamlit apps:
+
+```python
+from autoprepml import InteractiveDashboard, create_plotly_dashboard, generate_streamlit_app
+
+# Initialize dashboard
+dashboard = InteractiveDashboard(df)
+
+# Create comprehensive Plotly dashboard
+dashboard.create_dashboard(
+    title="My Data Dashboard",
+    output_path="dashboard.html"
+)
+
+# Create correlation heatmap
+dashboard.create_correlation_heatmap(output_path="correlation.html")
+
+# Create missing data visualization
+dashboard.create_missing_data_plot(output_path="missing_data.html")
+
+# Generate full Streamlit app
+dashboard.generate_streamlit_app(output_path="app.py")
+
+# Run the generated Streamlit app
+# streamlit run app.py
+
+# Or use convenience functions
+create_plotly_dashboard(df, title="Quick Dashboard", output_path="quick_dash.html")
+generate_streamlit_app(df, output_path="my_app.py")
+```
+
+**Features:**
+- Multi-subplot Plotly dashboards (histograms, box plots, scatter, bar charts)
+- Interactive correlation heatmaps
+- Missing data visualizations
+- Full Streamlit app generation with:
+  - File upload functionality
+  - Overview tab (shape, dtypes, memory)
+  - EDA tab (distributions, correlations, missing values)
+  - Preprocessing tab (missing value handling, encoding)
+  - Feature engineering tab (interactions, polynomial, binning)
+
+### 🤖 Enhanced LLM Assistant - Intelligent Data Cleaning
+
+Advanced AI-powered assistance for data preprocessing:
+
+```python
+from autoprepml import LLMSuggestor, suggest_column_rename, generate_data_documentation
+
+# Initialize LLM suggestor
+suggestor = LLMSuggestor(provider='openai')  # or 'anthropic', 'google', 'ollama'
+
+# 1. Suggest better column names
+new_names = suggestor.suggest_all_column_renames(df)
+df_renamed = df.rename(columns=new_names)
+
+# 2. Get specific column rename suggestion
+new_name = suggest_column_rename(df, column='col1')
+print(f"Suggested name: {new_name}")
+
+# 3. Explain data quality issues in natural language
+explanation = suggestor.explain_data_quality_issues(df)
+print(explanation)
+
+# 4. Generate comprehensive data documentation
+documentation = generate_data_documentation(df)
+with open('data_docs.md', 'w') as f:
+    f.write(documentation)
+
+# 5. Get preprocessing pipeline recommendations
+pipeline = suggestor.suggest_preprocessing_pipeline(df, task='classification')
+print(pipeline)
+
+# 6. Get specific fix suggestions
+fix = suggestor.suggest_fix(df, column='age', issue_type='missing')
+print(fix)
+```
+
+**New LLM Capabilities:**
+- `suggest_column_rename()` - AI-powered intelligent column naming
+- `suggest_all_column_renames()` - Batch rename all columns
+- `explain_data_quality_issues()` - Natural language quality explanations
+- `generate_data_documentation()` - Auto-generate Markdown documentation
+- `suggest_preprocessing_pipeline()` - Complete pipeline recommendations
+- Works with OpenAI (GPT-4), Anthropic (Claude), Google (Gemini), and Ollama (local)
+
+### 📦 New Dependencies
+
+v1.3.0 adds optional dependencies for visualization:
+
+```bash
+# Install with visualization support
+pip install autoprepml[viz]
+
+# Or install manually
+pip install plotly streamlit
 ```
 
 ## 🚀 Quick Start Guide
@@ -125,6 +368,35 @@ clean_df, target = prep.clean(task='classification', target_col='label')
 
 # Generate report
 prep.save_report('report.html')
+```
+
+#### 🤖 **With AI-Powered Suggestions** (v1.2.0+)
+
+```python
+# Enable LLM support for AI suggestions
+prep = AutoPrepML(df, enable_llm=True, llm_provider='openai')
+
+# Get AI analysis of your dataset
+analysis = prep.analyze_with_llm(task='classification', target_col='label')
+print(analysis)
+
+# Get suggestions for missing values
+suggestions = prep.get_llm_suggestions(column='age', issue_type='missing')
+print(suggestions)
+
+# Get feature engineering ideas
+features = prep.get_feature_suggestions(task='classification', target_col='label')
+for feature in features:
+    print(f"  • {feature}")
+
+# Clean with advanced methods
+clean_df, report = prep.clean(
+    task='classification',
+    target_col='label',
+    use_advanced=True,
+    imputation_method='knn',  # or 'iterative'
+    balance_method='smote'     # Advanced class balancing
+)
 ```
 
 #### 📝 **Text/NLP Data** (Reviews, Documents, Tweets)
@@ -183,6 +455,43 @@ prep.add_node_features()
 # Get cleaned graph
 clean_nodes = prep.nodes_df
 clean_edges = prep.edges_df
+```
+
+#### 🖼️ **Image Data** (Computer Vision, ML Models)
+
+```python
+from autoprepml import ImagePrepML
+
+# Initialize with image directory
+prep = ImagePrepML(
+    image_dir='./images',
+    target_size=(224, 224),
+    color_mode='rgb',
+    normalize=True
+)
+
+# Detect issues
+issues = prep.detect()
+
+# Clean and preprocess
+processed_images = prep.clean(
+    remove_corrupted=True,
+    resize=True,
+    convert_mode=True
+)
+
+# Split dataset
+train, val, test = prep.split_dataset(
+    train_ratio=0.7,
+    val_ratio=0.15,
+    test_ratio=0.15
+)
+
+# Save processed images
+prep.save_processed('./output', format='png')
+
+# Generate report
+prep.save_report('image_report.html')
 ```
 ```
 
@@ -745,16 +1054,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] 103 unit tests with 95%+ coverage
 - [x] YAML/JSON configuration system
 
-### 🚧 Version 1.1.0 (Q1 2025)
-- [ ] PyPI package publication
-- [x] Advanced imputation (KNN, iterative) ✅
-- [x] SMOTE for class balancing ✅
-- [x] Enhanced documentation website ✅
-- [ ] Video tutorials and examples
+### ✅ Version 1.1.0 (Released - Q1 2025)
+- [x] Advanced imputation (KNN, iterative) 
+- [x] SMOTE for class balancing 
+- [x] Enhanced documentation website 
+- [x] PyPI package publication (In Progress)
 
-### 📋 Version 1.2.0 (Q2 2025)
-- [ ] LLM integration for smart suggestions
+### ✅ Version 1.2.0 (Released - Q1 2025)
+- [x] LLM integration for smart suggestions (OpenAI, Anthropic, Google, Ollama)
+- [x] Configuration manager for API keys
+- [x] CLI configuration tool (autoprepml-config)
+- [x] Complete LLM documentation and examples
 - [ ] Image data preprocessing module
+
+### 📋 Version 1.3.0 (Q2 2025)
 - [ ] Audio/video metadata extraction
 - [ ] Distributed processing (Dask support)
 - [ ] Cloud storage integration (S3, GCS, Azure)

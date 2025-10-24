@@ -12,26 +12,26 @@ class TestLLMSuggestor:
         """Test initialization with OpenAI provider"""
         suggestor = LLMSuggestor(provider='openai', api_key='test-key')
         assert suggestor.provider == LLMProvider.OPENAI
-        assert suggestor.model == 'gpt-4'
+        assert suggestor.model == 'gpt-4o'  # Updated default model
         assert suggestor.api_key == 'test-key'
         
     def test_initialization_anthropic(self):
         """Test initialization with Anthropic provider"""
         suggestor = LLMSuggestor(provider='anthropic', api_key='test-key')
         assert suggestor.provider == LLMProvider.ANTHROPIC
-        assert suggestor.model == 'claude-3-sonnet-20240229'
+        assert suggestor.model == 'claude-3-5-sonnet-20241022'  # Updated default model
         
     def test_initialization_google(self):
         """Test initialization with Google provider"""
         suggestor = LLMSuggestor(provider='google', api_key='test-key')
         assert suggestor.provider == LLMProvider.GOOGLE
-        assert suggestor.model == 'gemini-pro'
+        assert suggestor.model == 'gemini-2.5-flash'  # Updated default model
         
     def test_initialization_ollama(self):
         """Test initialization with Ollama provider"""
         suggestor = LLMSuggestor(provider='ollama')
         assert suggestor.provider == LLMProvider.OLLAMA
-        assert suggestor.model == 'llama2'
+        assert suggestor.model == 'llama3.2'  # Updated default model
         assert suggestor.api_key is None  # No API key needed for local
         
     def test_custom_model(self):
@@ -220,6 +220,7 @@ class TestLLMIntegration:
         """Test actual OpenAI API call"""
         import os
         api_key = os.getenv('OPENAI_API_KEY')
+# sourcery skip: no-conditionals-in-tests
         if not api_key:
             pytest.skip("OPENAI_API_KEY not set")
             

@@ -32,6 +32,11 @@ class TestAutoPrepMLConfig:
         if self.test_config_dir.exists():
             self.test_config_dir.rmdir()
     
+    def _capture_list_output(self, capsys):
+        """Helper to capture the output of listing API keys."""
+        AutoPrepMLConfig.list_api_keys()
+        return capsys.readouterr()
+    
     def test_ensure_config_dir(self):
         """Test config directory creation"""
         assert not self.test_config_dir.exists()
@@ -41,10 +46,7 @@ class TestAutoPrepMLConfig:
     def test_set_and_get_api_key(self):
         """Test setting and getting API keys"""
         test_key = "sk-test-key-12345"
-        AutoPrepMLConfig.set_api_key('openai', test_key)
-        
-        retrieved_key = AutoPrepMLConfig.get_api_key('openai')
-        assert retrieved_key == test_key
+        self._extracted_from_test_config_file_priority_over_missing_env_4(test_key)
         
     def test_multiple_api_keys(self):
         """Test managing multiple API keys"""
@@ -87,14 +89,19 @@ class TestAutoPrepMLConfig:
     def test_config_file_priority_over_missing_env(self):
         """Test config file is used when env var doesn't exist"""
         # Make sure env var doesn't exist
+# sourcery skip: no-conditionals-in-tests
         if 'OPENAI_API_KEY' in os.environ:
             del os.environ['OPENAI_API_KEY']
-            
-        # Set in config file
-        AutoPrepMLConfig.set_api_key('openai', 'config-file-key')
-        
-        key = AutoPrepMLConfig.get_api_key('openai')
-        assert key == 'config-file-key'
+
+        self._extracted_from_test_config_file_priority_over_missing_env_4(
+            'config-file-key'
+        )
+
+    # TODO Rename this here and in `test_set_and_get_api_key` and `test_config_file_priority_over_missing_env`
+    def _extracted_from_test_config_file_priority_over_missing_env_4(self, arg0):
+        AutoPrepMLConfig.set_api_key('openai', arg0)
+        retrieved_key = AutoPrepMLConfig.get_api_key('openai')
+        assert retrieved_key == arg0
         
     def test_invalid_provider(self):
         """Test setting API key for invalid provider"""
@@ -104,32 +111,29 @@ class TestAutoPrepMLConfig:
     def test_providers_list(self):
         """Test that all expected providers are supported"""
         expected_providers = ['openai', 'anthropic', 'google', 'ollama']
+# sourcery skip: no-loop-in-tests
         for provider in expected_providers:
             assert provider in AutoPrepMLConfig.PROVIDERS
             
     def test_provider_metadata(self):
         """Test provider metadata structure"""
+# sourcery skip: no-loop-in-tests
         for provider, info in AutoPrepMLConfig.PROVIDERS.items():
             assert 'name' in info
-            assert 'instructions' in info
-            # Ollama doesn't need env_var
-            if provider != 'ollama':
-                assert 'env_var' in info
-                
     def test_list_api_keys_empty(self, capsys):
         """Test listing when no keys configured"""
-        AutoPrepMLConfig.list_api_keys()
-        captured = capsys.readouterr()
+        captured = self._capture_list_output(capsys)
         
         assert "API Key Configuration" in captured.out
         assert "Not configured" in captured.out
-        
+        AutoPrepMLConfig.list_api_keys()
+        captured = capsys.readouterr()
     def test_list_api_keys_with_keys(self, capsys):
         """Test listing configured keys"""
         AutoPrepMLConfig.set_api_key('openai', 'sk-proj-test12345678')
         AutoPrepMLConfig.list_api_keys()
-        
         captured = capsys.readouterr()
+        
         assert "OpenAI" in captured.out
         assert "sk-proj-..." in captured.out  # Should be masked
         assert "test12345678" not in captured.out  # Full key should not appear

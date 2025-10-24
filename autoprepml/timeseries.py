@@ -26,16 +26,18 @@ class TimeSeriesPrepML:
         self.value_column = value_column
         self.original_df = df.copy()
         self.log = []
-        
+
         if timestamp_column not in df.columns:
             raise ValueError(f"Column '{timestamp_column}' not found in DataFrame")
-        
+
         # Convert timestamp column to datetime
         if not pd.api.types.is_datetime64_any_dtype(self.df[timestamp_column]):
             try:
                 self.df[timestamp_column] = pd.to_datetime(self.df[timestamp_column])
             except Exception as e:
-                raise ValueError(f"Could not convert '{timestamp_column}' to datetime: {e}")
+                raise ValueError(
+                    f"Could not convert '{timestamp_column}' to datetime: {e}"
+                ) from e
     
     def detect_issues(self) -> Dict[str, Any]:
         """Detect time series data quality issues.
@@ -156,21 +158,21 @@ class TimeSeriesPrepML:
         """
         if not self.value_column:
             raise ValueError("value_column must be specified for interpolation")
-        
+
         missing_before = self.df[self.value_column].isnull().sum()
-        
-        if method in ['linear', 'time']:
+
+        if method in {'linear', 'time'}:
             self.df[self.value_column] = self.df[self.value_column].interpolate(method=method)
         elif method == 'ffill':
-            self.df[self.value_column] = self.df[self.value_column].fillna(method='ffill')
+            self.df[self.value_column] = self.df[self.value_column].ffill()
         elif method == 'bfill':
-            self.df[self.value_column] = self.df[self.value_column].fillna(method='bfill')
+            self.df[self.value_column] = self.df[self.value_column].bfill()
         else:
             raise ValueError(f"Unknown interpolation method: {method}")
-        
+
         missing_after = self.df[self.value_column].isnull().sum()
         filled = missing_before - missing_after
-        
+
         self.log.append({'action': 'interpolate_missing', 'filled': filled, 'method': method})
         return self.df
     
@@ -186,25 +188,25 @@ class TimeSeriesPrepML:
         """
         if not self.value_column:
             raise ValueError("value_column must be specified for outlier detection")
-        
+
         values = self.df[self.value_column].dropna()
-        
-        if method == 'zscore':
-            z_scores = np.abs((values - values.mean()) / values.std())
-            outliers = z_scores > threshold
-        elif method == 'iqr':
+
+        if method == 'iqr':
             q1 = values.quantile(0.25)
             q3 = values.quantile(0.75)
             iqr = q3 - q1
             lower = q1 - threshold * iqr
             upper = q3 + threshold * iqr
             outliers = (values < lower) | (values > upper)
+        elif method == 'zscore':
+            z_scores = np.abs((values - values.mean()) / values.std())
+            outliers = z_scores > threshold
         else:
             raise ValueError(f"Unknown method: {method}")
-        
+
         self.df[f'{self.value_column}_is_outlier'] = False
         self.df.loc[values.index, f'{self.value_column}_is_outlier'] = outliers.values
-        
+
         outlier_count = outliers.sum()
         self.log.append({'action': 'detect_outliers', 'count': outlier_count, 'method': method})
         return self.df
@@ -228,7 +230,7 @@ class TimeSeriesPrepML:
         self.log.append({'action': 'add_time_features', 'features': 7})
         return self.df
     
-    def add_lag_features(self, lags: list = [1, 7, 30]) -> pd.DataFrame:
+    def add_lag_features(self, lags: list = None) -> pd.DataFrame:
         """Add lag features for time series forecasting.
         
         Args:
@@ -237,16 +239,18 @@ class TimeSeriesPrepML:
         Returns:
             DataFrame with lag features
         """
+        if lags is None:
+            lags = [1, 7, 30]
         if not self.value_column:
             raise ValueError("value_column must be specified for lag features")
-        
+
         for lag in lags:
             self.df[f'{self.value_column}_lag_{lag}'] = self.df[self.value_column].shift(lag)
-        
+
         self.log.append({'action': 'add_lag_features', 'lags': lags})
         return self.df
     
-    def add_rolling_features(self, windows: list = [7, 30], functions: list = ['mean']) -> pd.DataFrame:
+    def add_rolling_features(self, windows: list = None, functions: list = None) -> pd.DataFrame:
         """Add rolling window statistics.
         
         Args:
@@ -256,9 +260,13 @@ class TimeSeriesPrepML:
         Returns:
             DataFrame with rolling features
         """
+        if windows is None:
+            windows = [7, 30]
+        if functions is None:
+            functions = ['mean']
         if not self.value_column:
             raise ValueError("value_column must be specified for rolling features")
-        
+
         for window in windows:
             for func in functions:
                 col_name = f'{self.value_column}_rolling_{func}_{window}'
@@ -270,7 +278,7 @@ class TimeSeriesPrepML:
                     self.df[col_name] = self.df[self.value_column].rolling(window=window).min()
                 elif func == 'max':
                     self.df[col_name] = self.df[self.value_column].rolling(window=window).max()
-        
+
         self.log.append({'action': 'add_rolling_features', 'windows': windows, 'functions': functions})
         return self.df
     

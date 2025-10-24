@@ -1,0 +1,29 @@
+# Include documentation and metadata files
+include README.md
+include LICENSE
+include CHANGELOG.md
+include requirements.txt
+include pyproject.toml
+
+# Include documentation directory
+recursive-include docs *.md *.rst *.txt
+
+# Include examples
+recursive-include examples *.py *.csv *.json *.yaml *.yml
+
+# Include tests
+recursive-include tests *.py
+
+# Include templates and static files
+recursive-include autoprepml/templates *.html *.jinja2
+recursive-include autoprepml/static *.css *.js
+
+# Exclude compiled Python files
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+
+# Exclude build artifacts
+prune build
+prune dist
+prune *.egg-info

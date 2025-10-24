@@ -73,12 +73,9 @@ class AutoPrepMLConfig:
     def get_api_key(cls, provider: str) -> Optional[str]:
         """Get API key for a provider (from config or environment)"""
         # First check environment variable
-        env_var = cls.PROVIDERS.get(provider, {}).get('env_var')
-        if env_var:
-            env_key = os.getenv(env_var)
-            if env_key:
-                return env_key
-                
+        if (env_var := cls.PROVIDERS.get(provider, {}).get('env_var')) and (env_key := os.getenv(env_var)):
+            return env_key
+
         # Then check config file
         config = cls.load_config()
         return config.get('api_keys', {}).get(provider)
@@ -113,10 +110,10 @@ class AutoPrepMLConfig:
             config_key = saved_keys.get(provider)
             
             if env_key:
-                masked = env_key[:8] + "..." + env_key[-4:] if len(env_key) > 12 else "***"
+                masked = f"{env_key[:8]}...{env_key[-4:]}" if len(env_key) > 12 else "***"
                 print(f"✅ {provider_name:20} (from env): {masked}")
             elif config_key:
-                masked = config_key[:8] + "..." + config_key[-4:] if len(config_key) > 12 else "***"
+                masked = f"{config_key[:8]}...{config_key[-4:]}" if len(config_key) > 12 else "***"
                 print(f"✅ {provider_name:20} (saved):    {masked}")
             elif provider == 'ollama':
                 print(f"ℹ️  {provider_name:20} (local):    No API key needed")

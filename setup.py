@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="autoprepml",
-    version="1.0.0",
+    version="1.3.0",
     author="MD Shoaibuddin Chanda",
     author_email="mdshoaibuddinchanda@gmail.com",
     description="AI-Assisted Multi-Modal Data Preprocessing Pipeline for ML",
@@ -15,14 +15,17 @@ setup(
     url="https://github.com/mdshoaibuddinchanda/autoprepml",
     packages=find_packages(exclude=["tests*", "docs*", "examples*", "scripts*"]),
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.10",
     install_requires=[
@@ -34,6 +37,7 @@ setup(
         "jinja2==3.1.6",
         "pyyaml==6.0.3",
         "imbalanced-learn==0.12.0",
+        "Pillow>=10.0.0",
     ],
     extras_require={
         "dev": [
@@ -52,6 +56,10 @@ setup(
             "google-generativeai>=0.3.0",
             "ollama>=0.1.0",
         ],
+        "viz": [
+            "plotly>=5.0.0",
+            "streamlit>=1.0.0",
+        ],
         "all": [
             "pytest==8.4.2",
             "pytest-cov==7.0.0",
@@ -61,6 +69,8 @@ setup(
             "anthropic>=0.18.0",
             "google-generativeai>=0.3.0",
             "ollama>=0.1.0",
+            "plotly>=5.0.0",
+            "streamlit>=1.0.0",
         ],
     },
     entry_points={

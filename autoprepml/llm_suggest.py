@@ -45,21 +45,33 @@ class LLMSuggestor:
         api_key: Optional[str] = None,
         model: Optional[str] = None,
         base_url: Optional[str] = None,
-        temperature: float = 0.7,
-        max_tokens: int = 500
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None
     ):
-        """Initialize LLM Suggestor.
+        """Initialize LLM Suggestor with fully dynamic configuration.
         
         Args:
             provider: LLM provider ('openai', 'anthropic', 'google', 'ollama')
             api_key: API key for the provider (not needed for Ollama).
-                    If not provided, will check:
-                    1. AutoPrepML config file (~/.autoprepml/config.json)
-                    2. Environment variables (OPENAI_API_KEY, etc.)
-            model: Model name (e.g., 'gpt-4', 'claude-3', 'gemini-pro', 'llama2')
-            base_url: Custom base URL (for Ollama or custom endpoints)
-            temperature: Sampling temperature (0-1, higher = more creative)
-            max_tokens: Maximum tokens in response
+                    Priority: 1. Parameter 2. Config file 3. Environment variable
+            model: Model name (any valid model for the provider).
+                   If not provided, checks <PROVIDER>_MODEL env var, then uses default.
+                   Examples: 'gpt-4o', 'claude-3-5-sonnet-20241022', 'gemini-2.5-flash', 'llama3.2'
+            base_url: Custom base URL (for Ollama or custom endpoints).
+                      Default: Environment variable <PROVIDER>_BASE_URL or provider default
+            temperature: Sampling temperature (0-1, higher = more creative).
+                        Default: Environment variable <PROVIDER>_TEMPERATURE or 0.7
+            max_tokens: Maximum tokens in response.
+                       Default: Environment variable <PROVIDER>_MAX_TOKENS or 500
+        
+        Environment Variables for Dynamic Configuration:
+            - <PROVIDER>_API_KEY: API key (e.g., GOOGLE_API_KEY)
+            - <PROVIDER>_MODEL: Model name (e.g., GOOGLE_MODEL=gemini-2.5-pro)
+            - <PROVIDER>_BASE_URL: Custom endpoint URL
+            - <PROVIDER>_TEMPERATURE: Temperature setting (0.0-1.0)
+            - <PROVIDER>_MAX_TOKENS: Max output tokens
+            - <PROVIDER>_DEFAULT_MODEL: Default model if none specified
+            - GOOGLE_SAFETY_LEVEL: Safety filter level (BLOCK_NONE, BLOCK_LOW, etc.)
         """
         self.provider = LLMProvider(provider.lower())
         
@@ -79,45 +91,84 @@ class LLMSuggestor:
             print(f"   Set it with: autoprepml-config --set {self.provider.value}")
             print(f"   Or set environment variable: {provider.upper()}_API_KEY")
         
-        self.temperature = temperature
-        self.max_tokens = max_tokens
-        self.base_url = base_url
+        # Allow dynamic configuration via environment variables
+        provider_upper = self.provider.value.upper()
+        self.temperature = (
+            temperature if temperature is not None 
+            else float(os.getenv(f"{provider_upper}_TEMPERATURE", "0.7"))
+        )
+        self.max_tokens = (
+            max_tokens if max_tokens is not None 
+            else int(os.getenv(f"{provider_upper}_MAX_TOKENS", "500"))
+        )
+        self.base_url = (
+            base_url or 
+            os.getenv(f"{provider_upper}_BASE_URL") or
+            self._get_default_base_url()
+        )
         
-        # Set default models
+        # Set model with priority: parameter > env var > default
         self.model = model or self._get_default_model()
         
         # Initialize client
         self.client = self._initialize_client()
+    
+    def _get_default_base_url(self) -> Optional[str]:
+        """Get default base URL for each provider"""
+        defaults = {
+            LLMProvider.OPENAI: "https://api.openai.com/v1",
+            LLMProvider.ANTHROPIC: "https://api.anthropic.com",
+            LLMProvider.GOOGLE: None,  # Uses Google's SDK default
+            LLMProvider.OLLAMA: "http://localhost:11434"
+        }
+        return defaults.get(self.provider)
         
     def _get_default_model(self) -> str:
-        """Get default model for each provider"""
+        """Get default model for each provider.
+        
+        Note: These are fallback defaults. Users can override by passing model parameter
+        or setting environment variables: <PROVIDER>_MODEL (e.g., GOOGLE_MODEL=gemini-2.5-pro)
+        """
+        # Check environment variable first for dynamic model selection
+        if (env_model := os.getenv(f"{self.provider.value.upper()}_MODEL")):
+            return env_model
+
+        # Fallback to reasonable defaults if no model specified
         defaults = {
-            LLMProvider.OPENAI: "gpt-4",
-            LLMProvider.ANTHROPIC: "claude-3-sonnet-20240229",
-            LLMProvider.GOOGLE: "gemini-pro",
-            LLMProvider.OLLAMA: "llama2"
+            LLMProvider.OPENAI: os.getenv("OPENAI_DEFAULT_MODEL", "gpt-4o"),
+            LLMProvider.ANTHROPIC: os.getenv("ANTHROPIC_DEFAULT_MODEL", "claude-3-5-sonnet-20241022"),
+            LLMProvider.GOOGLE: os.getenv("GOOGLE_DEFAULT_MODEL", "gemini-2.5-flash"),
+            LLMProvider.OLLAMA: os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2")
         }
         return defaults[self.provider]
     
     def _initialize_client(self):
-        """Initialize the appropriate LLM client"""
+        """Initialize the appropriate LLM client with dynamic configuration"""
         try:
             if self.provider == LLMProvider.OPENAI:
                 from openai import OpenAI
-                return OpenAI(api_key=self.api_key)
+                client_kwargs = {"api_key": self.api_key}
+                if self.base_url and self.base_url != "https://api.openai.com/v1":
+                    client_kwargs["base_url"] = self.base_url
+                return OpenAI(**client_kwargs)
 
             elif self.provider == LLMProvider.ANTHROPIC:
                 from anthropic import Anthropic
-                return Anthropic(api_key=self.api_key)
+                client_kwargs = {"api_key": self.api_key}
+                if self.base_url and self.base_url != "https://api.anthropic.com":
+                    client_kwargs["base_url"] = self.base_url
+                return Anthropic(**client_kwargs)
 
             elif self.provider == LLMProvider.GOOGLE:
                 import google.generativeai as genai
                 genai.configure(api_key=self.api_key)
+                # Model is set dynamically, can be any valid Gemini model
                 return genai.GenerativeModel(self.model)
 
             elif self.provider == LLMProvider.OLLAMA:
                 try:
                     import ollama
+                    # Ollama client can use custom base URL
                     return ollama
                 except ImportError as e:
                     raise ImportError(
@@ -160,13 +211,26 @@ class LLMSuggestor:
                 
             elif self.provider == LLMProvider.GOOGLE:
                 full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+                
+                # Allow custom safety settings via environment variable
+                safety_level = os.getenv("GOOGLE_SAFETY_LEVEL", "BLOCK_NONE")
+                
                 response = self.client.generate_content(
                     full_prompt,
                     generation_config={
                         "temperature": self.temperature,
                         "max_output_tokens": self.max_tokens
+                    },
+                    safety_settings={
+                        "HARM_CATEGORY_HATE_SPEECH": safety_level,
+                        "HARM_CATEGORY_HARASSMENT": safety_level,
+                        "HARM_CATEGORY_SEXUALLY_EXPLICIT": safety_level,
+                        "HARM_CATEGORY_DANGEROUS_CONTENT": safety_level
                     }
                 )
+                # Check if response was blocked
+                if response.candidates and response.candidates[0].finish_reason != 1:  # 1 = STOP (success)
+                    return f"Response blocked by safety filters (reason: {response.candidates[0].finish_reason}). Try rephrasing your query or adjust GOOGLE_SAFETY_LEVEL environment variable."
                 return response.text
                 
             elif self.provider == LLMProvider.OLLAMA:
@@ -175,14 +239,21 @@ class LLMSuggestor:
                     messages.append({"role": "system", "content": system_prompt})
                 messages.append({"role": "user", "content": prompt})
                 
-                response = self.client.chat(
-                    model=self.model,
-                    messages=messages,
-                    options={
+                # Support custom Ollama host via base_url or environment
+                chat_kwargs = {
+                    "model": self.model,
+                    "messages": messages,
+                    "options": {
                         "temperature": self.temperature,
                         "num_predict": self.max_tokens
                     }
-                )
+                }
+                
+                # Add host if custom base_url is set
+                if self.base_url and self.base_url != "http://localhost:11434":
+                    chat_kwargs["host"] = self.base_url
+                
+                response = self.client.chat(**chat_kwargs)
                 return response['message']['content']
                 
         except Exception as e:
@@ -459,6 +530,144 @@ Return as a JSON array of objects with keys: name, method, impact
             summary["target_column"] = target_info
         
         return summary
+    
+    def suggest_column_rename(self, df: pd.DataFrame, column: str) -> str:
+        """Suggest a better column name based on data content.
+        
+        Args:
+            df: DataFrame
+            column: Column to analyze and rename
+            
+        Returns:
+            Suggested column name
+        """
+        if column not in df.columns:
+            return f"Error: Column '{column}' not found"
+        
+        col_info = self._get_column_info(df, column)
+        
+        prompt = f"""Suggest a clear, descriptive column name for this data column.
+
+Current name: {column}
+Data type: {col_info['dtype']}
+Unique values: {col_info['unique_values']}
+Sample values: {col_info.get('sample_values', [])}
+
+Provide ONLY the suggested column name in snake_case format (e.g., customer_age, product_price).
+No explanations, just the name."""
+        
+        suggestion = self._call_llm(prompt)
+        
+        # Extract just the column name (remove any explanations)
+        suggested_name = suggestion.strip().split('\n')[0].strip()
+        # Remove any quotes or extra characters
+        suggested_name = suggested_name.replace('"', '').replace("'", '').strip()
+        
+        return suggested_name
+    
+    def suggest_all_column_renames(self, df: pd.DataFrame) -> Dict[str, str]:
+        """Suggest better names for all columns.
+        
+        Args:
+            df: DataFrame
+            
+        Returns:
+            Dictionary mapping old names to suggested new names
+        """
+        rename_map = {}
+        
+        for col in df.columns:
+            try:
+                suggested = self.suggest_column_rename(df, col)
+                if suggested and suggested != col:
+                    rename_map[col] = suggested
+            except Exception as e:
+                print(f"Could not rename '{col}': {e}")
+        
+        return rename_map
+    
+    def explain_data_quality_issues(self, df: pd.DataFrame) -> str:
+        """Explain detected data quality issues in natural language.
+        
+        Args:
+            df: DataFrame to analyze
+            
+        Returns:
+            Natural language explanation of issues
+        """
+        summary = self._get_dataframe_summary(df)
+        
+        prompt = f"""Analyze this dataset and explain any data quality issues found:
+
+Dataset shape: {summary['shape']['rows']} rows, {summary['shape']['columns']} columns
+Missing values: {sum(summary['missing_values'].values())} total
+Duplicate rows: {summary['duplicate_rows']}
+
+Column missing values: {dict(list(summary['missing_values'].items())[:10])}
+
+Provide a brief, actionable summary of data quality issues and recommendations."""
+        
+        return self._call_llm(prompt)
+    
+    def generate_data_documentation(self, df: pd.DataFrame) -> str:
+        """Generate comprehensive markdown documentation for the dataset.
+        
+        Args:
+            df: DataFrame to document
+            
+        Returns:
+            Markdown formatted documentation
+        """
+        summary = self._get_dataframe_summary(df)
+        
+        prompt = f"""Generate comprehensive markdown documentation for this dataset:
+
+Dataset: {summary['shape']['rows']} rows × {summary['shape']['columns']} columns
+
+Columns: {', '.join(summary['columns'][:20])}
+Data types: {summary['dtypes']}
+
+Create markdown documentation with:
+1. Overview section
+2. Column descriptions (purpose, type, range)
+3. Data quality notes
+4. Recommended preprocessing steps
+
+Format as clean, professional markdown."""
+        
+        return self._call_llm(prompt)
+    
+    def suggest_preprocessing_pipeline(self, df: pd.DataFrame, task: str = 'classification') -> str:
+        """Suggest a complete preprocessing pipeline for ML task.
+        
+        Args:
+            df: DataFrame
+            task: ML task ('classification', 'regression', 'clustering')
+            
+        Returns:
+            Suggested preprocessing steps
+        """
+        summary = self._get_dataframe_summary(df)
+        
+        prompt = f"""Suggest a complete preprocessing pipeline for this dataset:
+
+Task: {task}
+Shape: {summary['shape']['rows']} rows, {summary['shape']['columns']} columns
+Missing values: {sum(summary['missing_values'].values())}
+Duplicates: {summary['duplicate_rows']}
+
+Numeric columns: {len([k for k,v in summary['dtypes'].items() if 'int' in str(v) or 'float' in str(v)])}
+Categorical columns: {len([k for k,v in summary['dtypes'].items() if 'object' in str(v)])}
+
+Provide a step-by-step preprocessing pipeline with:
+1. Data cleaning steps
+2. Feature engineering suggestions
+3. Encoding/scaling methods
+4. Feature selection recommendations
+
+Be specific and actionable."""
+        
+        return self._call_llm(prompt)
 
 
 # Convenience functions for backward compatibility
@@ -509,3 +718,43 @@ def explain_cleaning_step(
     """
     suggestor = LLMSuggestor(provider=provider, api_key=api_key)
     return suggestor.explain_cleaning_step(action, details)
+
+
+def suggest_column_rename(
+    df: pd.DataFrame,
+    column: str,
+    provider: str = 'openai',
+    api_key: Optional[str] = None
+) -> str:
+    """Suggest better column name based on data content.
+    
+    Args:
+        df: DataFrame
+        column: Column to rename
+        provider: LLM provider
+        api_key: API key (optional)
+        
+    Returns:
+        Suggested column name
+    """
+    suggestor = LLMSuggestor(provider=provider, api_key=api_key)
+    return suggestor.suggest_column_rename(df, column)
+
+
+def generate_data_documentation(
+    df: pd.DataFrame,
+    provider: str = 'openai',
+    api_key: Optional[str] = None
+) -> str:
+    """Generate comprehensive data documentation.
+    
+    Args:
+        df: DataFrame to document
+        provider: LLM provider
+        api_key: API key (optional)
+        
+    Returns:
+        Markdown documentation
+    """
+    suggestor = LLMSuggestor(provider=provider, api_key=api_key)
+    return suggestor.generate_data_documentation(df)

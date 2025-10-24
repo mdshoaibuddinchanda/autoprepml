@@ -76,7 +76,7 @@ def plot_outliers(df: pd.DataFrame, outlier_indices: list = None,
             axes = [axes]
         
         for i, col in enumerate(cols_to_plot):
-            axes[i].boxplot(df[col].dropna(), vert=True)
+            axes[i].boxplot(df[col].dropna(), orientation='vertical')
             axes[i].set_title(col, fontsize=10)
             axes[i].grid(axis='y', alpha=0.3)
         
