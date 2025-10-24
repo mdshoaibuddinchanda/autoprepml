@@ -91,8 +91,8 @@ class TestBasicStatistics:
         """Test numeric columns summary."""
         stats = autoeda._compute_basic_stats()
         
-        assert 'numeric_columns' in stats
-        numeric_summary = stats['numeric_columns']
+        assert 'numeric_summary' in stats
+        numeric_summary = stats['numeric_summary']
         
         # Should have numeric columns
         assert len(numeric_summary) > 0
@@ -399,7 +399,7 @@ class TestEdgeCases:
         eda = AutoEDA(df)
         results = eda.analyze()
         
-        assert len(results['basic_stats']['numeric_columns']) == 3
+        assert len(results['basic_stats']['numeric_summary']) == 3
         assert len(results['categorical']) == 0
     
     def test_dataframe_with_only_categorical(self):
@@ -412,7 +412,7 @@ class TestEdgeCases:
         eda = AutoEDA(df)
         results = eda.analyze()
         
-        assert len(results['basic_stats']['numeric_columns']) == 0
+        assert len(results['basic_stats']['numeric_summary']) == 0
         assert len(results['categorical']) == 2
     
     def test_dataframe_with_duplicates(self):
@@ -437,8 +437,8 @@ class TestEdgeCases:
         eda = AutoEDA(df)
         results = eda.analyze()
         
-        # Constant column should be in numeric columns
-        numeric_cols = results['basic_stats']['numeric_columns']
+        # Constant column should be in numeric summary
+        numeric_cols = results['basic_stats']['numeric_summary']
         assert 'constant' in numeric_cols or 'varying' in numeric_cols
 
 
