@@ -3,6 +3,11 @@ import pytest
 import pandas as pd
 import numpy as np
 from pathlib import Path
+
+# Try to import dashboard module, skip all tests if dependencies missing
+pytest.importorskip("plotly", reason="plotly not installed")
+pytest.importorskip("streamlit", reason="streamlit not installed")
+
 from autoprepml.dashboard import (
     InteractiveDashboard,
     create_plotly_dashboard,
@@ -21,13 +26,19 @@ def sample_df():
     data = {
         'age': np.random.randint(18, 80, n_samples),
         'income': np.random.normal(50000, 20000, n_samples),
-        'credit_score': np.random.randint(300, 850, n_samples),
+        'credit_score': np.random.randint(300, 850, n_samples).astype(float),  # Float to allow NaN
         'loan_amount': np.random.uniform(1000, 50000, n_samples),
         'category': np.random.choice(['A', 'B', 'C', 'D'], n_samples),
         'target': np.random.choice([0, 1], n_samples)
     }
     
-    # Add missing values
+    df = pd.DataFrame(data)
+    
+    # Add missing values after DataFrame creation
+    df.loc[np.random.choice(n_samples, 10, replace=False), 'income'] = np.nan
+    df.loc[np.random.choice(n_samples, 5, replace=False), 'credit_score'] = np.nan
+    
+    return df
     data['income'][np.random.choice(n_samples, 10, replace=False)] = np.nan
     data['credit_score'][np.random.choice(n_samples, 5, replace=False)] = np.nan
     
