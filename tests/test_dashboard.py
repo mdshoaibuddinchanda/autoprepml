@@ -22,7 +22,7 @@ def sample_df():
     """Create a sample DataFrame for testing."""
     np.random.seed(42)
     n_samples = 100
-    
+
     data = {
         'age': np.random.randint(18, 80, n_samples),
         'income': np.random.normal(50000, 20000, n_samples),
@@ -31,13 +31,13 @@ def sample_df():
         'category': np.random.choice(['A', 'B', 'C', 'D'], n_samples),
         'target': np.random.choice([0, 1], n_samples)
     }
-    
+
     df = pd.DataFrame(data)
-    
+
     # Add missing values after DataFrame creation
     df.loc[np.random.choice(n_samples, 10, replace=False), 'income'] = np.nan
     df.loc[np.random.choice(n_samples, 5, replace=False), 'credit_score'] = np.nan
-    
+
     return df
 
 
@@ -49,53 +49,55 @@ def dashboard(sample_df):
 
 class TestInteractiveDashboardInit:
     """Test InteractiveDashboard initialization."""
-    
+
     def test_init_with_dataframe(self, sample_df):
         """Test initialization with valid DataFrame."""
         dashboard = InteractiveDashboard(sample_df)
         assert dashboard.df.equals(sample_df)
-    
+
     def test_init_with_invalid_input(self):
         """Test initialization with invalid input."""
-        with pytest.raises(TypeError):
+        # Expect ValueError for completely invalid input
+        with pytest.raises(ValueError, match="Input must be a pandas DataFrame"):
             InteractiveDashboard("not a dataframe")
-        
-        with pytest.raises(ValueError):
-            InteractiveDashboard(pd.DataFrame())  # Empty DataFrame
+
+        # Expect ValueError for empty DataFrame (logical safeguard)
+        with pytest.raises(ValueError, match="DataFrame cannot be empty"):
+            InteractiveDashboard(pd.DataFrame())
 
 
 class TestCreateDashboard:
     """Test dashboard creation."""
-    
+
     def test_create_dashboard_basic(self, dashboard, tmp_path):
         """Test basic dashboard creation."""
         output_path = tmp_path / "dashboard.html"
-        
+
         dashboard.create_dashboard(
             title="Test Dashboard",
             output_path=str(output_path)
         )
-        
+
         assert output_path.exists()
         assert output_path.suffix == '.html'
-    
+
     def test_create_dashboard_content(self, dashboard, tmp_path):
         """Test dashboard contains expected content."""
         output_path = tmp_path / "dashboard.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         content = output_path.read_text()
-        
+
         # Should be valid HTML with Plotly
         assert '<html>' in content.lower()
         assert 'plotly' in content.lower()
-    
+
     def test_create_dashboard_no_output(self, dashboard):
         """Test dashboard creation without output path."""
         # Should return HTML string
         result = dashboard.create_dashboard()
-        
+
         assert isinstance(result, str)
         assert len(result) > 0
         assert 'plotly' in result.lower()
@@ -103,146 +105,172 @@ class TestCreateDashboard:
 
 class TestPlotlyDashboard:
     """Test Plotly dashboard convenience function."""
-    
+
     def test_create_plotly_dashboard(self, sample_df, tmp_path):
         """Test create_plotly_dashboard function."""
         output_path = tmp_path / "plotly_dashboard.html"
-        
+
         create_plotly_dashboard(
             sample_df,
             title="Test Plotly Dashboard",
             output_path=str(output_path)
         )
-        
+
         assert output_path.exists()
-    
+
     def test_create_plotly_dashboard_custom_title(self, sample_df, tmp_path):
         """Test dashboard with custom title."""
         output_path = tmp_path / "custom_dashboard.html"
         title = "My Custom Dashboard"
-        
+
         create_plotly_dashboard(
             sample_df,
             title=title,
             output_path=str(output_path)
         )
-        
+
         content = output_path.read_text()
         assert title in content
 
 
 class TestCorrelationHeatmap:
     """Test correlation heatmap creation."""
-    
+
     def test_create_correlation_heatmap_basic(self, dashboard, tmp_path):
         """Test basic correlation heatmap."""
         output_path = tmp_path / "correlation.html"
-        
+
         dashboard.create_correlation_heatmap(output_path=str(output_path))
-        
+
         assert output_path.exists()
         assert output_path.suffix == '.html'
-    
+
     def test_create_correlation_heatmap_content(self, dashboard, tmp_path):
         """Test heatmap contains correlation data."""
         output_path = tmp_path / "correlation.html"
-        
+
         dashboard.create_correlation_heatmap(output_path=str(output_path))
-        
+
         content = output_path.read_text()
-        
+
         # Should contain Plotly and heatmap elements
         assert 'plotly' in content.lower()
         assert '<html>' in content.lower()
-    
+
     def test_create_correlation_heatmap_no_numeric(self):
         """Test heatmap with no numeric columns."""
         df = pd.DataFrame({
             'cat1': ['A', 'B', 'C'] * 10,
             'cat2': ['X', 'Y', 'Z'] * 10
         })
-        
+
         dashboard = InteractiveDashboard(df)
-        
+
         # Should handle gracefully or raise appropriate error
         with pytest.raises(ValueError):
             dashboard.create_correlation_heatmap()
-    
+
     def test_create_correlation_heatmap_function(self, sample_df, tmp_path):
         """Test correlation heatmap convenience function."""
         output_path = tmp_path / "corr_func.html"
-        
+
         create_correlation_heatmap(sample_df, output_path=str(output_path))
-        
+
         assert output_path.exists()
 
 
 class TestMissingDataPlot:
     """Test missing data visualization."""
-    
+
     def test_create_missing_data_plot_basic(self, dashboard, tmp_path):
         """Test basic missing data plot."""
         output_path = tmp_path / "missing.html"
-        
+
         dashboard.create_missing_data_plot(output_path=str(output_path))
-        
+
         assert output_path.exists()
         assert output_path.suffix == '.html'
-    
+
     def test_create_missing_data_plot_content(self, dashboard, tmp_path):
         """Test missing data plot contains data."""
         output_path = tmp_path / "missing.html"
-        
+
         dashboard.create_missing_data_plot(output_path=str(output_path))
-        
+
         content = output_path.read_text()
-        
+
         # Should contain Plotly visualization
         assert 'plotly' in content.lower()
-    
+
     def test_create_missing_data_plot_no_missing(self):
         """Test missing data plot with no missing values."""
         df = pd.DataFrame({
             'a': [1, 2, 3, 4, 5],
             'b': [10, 20, 30, 40, 50]
         })
-        
+
         dashboard = InteractiveDashboard(df)
         result = dashboard.create_missing_data_plot()
-        
+
         # Should still create visualization showing 0% missing
         assert result is not None
-    
+
     def test_create_missing_data_plot_function(self, sample_df, tmp_path):
         """Test missing data plot convenience function."""
         output_path = tmp_path / "missing_func.html"
-        
+
         create_missing_data_plot(sample_df, output_path=str(output_path))
-        
+
         assert output_path.exists()
 
 
 class TestStreamlitAppGeneration:
     """Test Streamlit app generation."""
-    
+
     def test_generate_streamlit_app_basic(self, dashboard, tmp_path):
         """Test basic Streamlit app generation."""
         output_path = tmp_path / "app.py"
-        
+
         dashboard.generate_streamlit_app(output_path=str(output_path))
-        
+
         assert output_path.exists()
         assert output_path.suffix == '.py'
-    
+
     def test_generate_streamlit_app_content(self, dashboard, tmp_path):
         """Test Streamlit app contains expected code."""
         output_path = tmp_path / "app.py"
-        
+
         dashboard.generate_streamlit_app(output_path=str(output_path))
-        
+
         content = output_path.read_text()
-        
+
         # Should contain Streamlit imports and code
+        assert 'import streamlit' in content
+        assert 'st.' in content  # Streamlit function calls
+        assert 'def ' in content  # Function definitions
+
+    def test_generate_streamlit_app_runnable(self, dashboard, tmp_path):
+        """Test generated Streamlit app is syntactically valid."""
+        output_path = tmp_path / "app.py"
+
+        dashboard.generate_streamlit_app(output_path=str(output_path))
+
+        # Try to compile the generated code
+        content = output_path.read_text()
+        try:
+            compile(content, str(output_path), 'exec')
+        except SyntaxError:
+            pytest.fail("Generated Streamlit app has syntax errors")
+
+    def test_generate_streamlit_app_function(self, sample_df, tmp_path):
+        """Test Streamlit app generation convenience function."""
+        output_path = tmp_path / "app_func.py"
+
+        generate_streamlit_app(sample_df, output_path=str(output_path))
+
+        assert output_path.exists()
+
+        content = output_path.read_text()
         assert 'import streamlit' in content
         assert 'st.' in content  # Streamlit function calls
         assert 'def ' in content  # Function definitions
