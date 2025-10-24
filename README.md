@@ -746,10 +746,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] YAML/JSON configuration system
 
 ### 🚧 Version 1.1.0 (Q1 2025)
-- [x] PyPI package publication
-- [ ] Advanced imputation (KNN, iterative)
-- [ ] SMOTE for class balancing
-- [ ] Enhanced documentation website
+- [ ] PyPI package publication
+- [x] Advanced imputation (KNN, iterative) ✅
+- [x] SMOTE for class balancing ✅
+- [x] Enhanced documentation website ✅
 - [ ] Video tutorials and examples
 
 ### 📋 Version 1.2.0 (Q2 2025)
