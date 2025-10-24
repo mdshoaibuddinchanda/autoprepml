@@ -39,10 +39,6 @@ def sample_df():
     df.loc[np.random.choice(n_samples, 5, replace=False), 'credit_score'] = np.nan
     
     return df
-    data['income'][np.random.choice(n_samples, 10, replace=False)] = np.nan
-    data['credit_score'][np.random.choice(n_samples, 5, replace=False)] = np.nan
-    
-    return pd.DataFrame(data)
 
 
 @pytest.fixture

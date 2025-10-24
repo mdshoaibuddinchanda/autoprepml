@@ -1,4 +1,6 @@
 """Tests for AutoFeatureEngine module - FULLY FIXED VERSION."""
+
+import contextlib
 import pytest
 import pandas as pd
 import numpy as np
@@ -246,6 +248,7 @@ class TestBinnedFeatures:
         """Test different binning strategies."""
         strategies = ['uniform', 'quantile', 'kmeans']
         
+# sourcery skip: no-loop-in-tests
         for strategy in strategies:
             fe = AutoFeatureEngine(sample_df.copy())
             result = fe.create_binned_features(
@@ -333,16 +336,13 @@ class TestDatetimeFeatures:
         """Test specific datetime features."""
         fe = AutoFeatureEngine(datetime_df)
         features = ['year', 'month', 'day']
-        
+
         result = fe.create_datetime_features(
             columns=['date'],
             features=features
         )
-        
-        # Check for specific features
-        assert 'date_year' in result.columns
-        assert 'date_month' in result.columns
-        assert 'date_day' in result.columns
+
+        self._extracted_from_test_create_datetime_features_all_12(result, 'date_day')
     
     def test_create_datetime_features_all(self, datetime_df):
         """Test all datetime features."""
@@ -351,11 +351,16 @@ class TestDatetimeFeatures:
             columns=['date'],
             features=['year', 'month', 'day', 'dayofweek', 'quarter', 'hour']
         )
-        
-        # Check for various features
+
+        self._extracted_from_test_create_datetime_features_all_12(
+            result, 'date_dayofweek'
+        )
+
+    # TODO Rename this here and in `test_create_datetime_features_specific` and `test_create_datetime_features_all`
+    def _extracted_from_test_create_datetime_features_all_12(self, result, arg1):
         assert 'date_year' in result.columns
         assert 'date_month' in result.columns
-        assert 'date_dayofweek' in result.columns
+        assert arg1 in result.columns
     
     def test_create_datetime_with_non_datetime(self, sample_df):
         """Test datetime features with non-datetime column."""
@@ -382,29 +387,23 @@ class TestFeatureSelection:
     def test_select_features_without_target(self, sample_df):
         """Test feature selection without target column."""
         fe = AutoFeatureEngine(sample_df.copy())
-        
+
         # API may work without target for unsupervised selection
-        try:
+        with contextlib.suppress(ValueError):
             fe.select_features(k=3)
-        except ValueError:
-            pass  # Expected if target is required
     
     def test_select_features_mutual_info(self, sample_df):
         """Test mutual information feature selection."""
-        fe = AutoFeatureEngine(sample_df.copy(), target_column='target')
-        
-        result = fe.select_features(k=3, method='mutual_info')
-        
-        # Should have selected features
-        assert result.shape[1] <= sample_df.shape[1]
+        self._extracted_from_test_select_features_f_test_3(sample_df, 'mutual_info')
     
     def test_select_features_f_test(self, sample_df):
         """Test F-test feature selection."""
+        self._extracted_from_test_select_features_f_test_3(sample_df, 'f_test')
+
+    # TODO Rename this here and in `test_select_features_mutual_info` and `test_select_features_f_test`
+    def _extracted_from_test_select_features_f_test_3(self, sample_df, method):
         fe = AutoFeatureEngine(sample_df.copy(), target_column='target')
-        
-        result = fe.select_features(k=3, method='f_test')
-        
-        # Should have selected features
+        result = fe.select_features(k=3, method=method)
         assert result.shape[1] <= sample_df.shape[1]
 
 
@@ -413,20 +412,20 @@ class TestFeatureImportance:
     
     def test_get_feature_importance_classification(self, sample_df):
         """Test feature importance for classification."""
-        fe = AutoFeatureEngine(sample_df.copy(), target_column='target')
-        
-        importance = fe.get_feature_importance(task='classification')
-        
-        # API returns a DataFrame, not dict
-        assert importance is None or isinstance(importance, (dict, pd.DataFrame))
+        self._extracted_from_test_get_feature_importance_regression_3(
+            sample_df, 'target', 'classification'
+        )
     
     def test_get_feature_importance_regression(self, sample_df):
         """Test feature importance for regression."""
-        fe = AutoFeatureEngine(sample_df.copy(), target_column='income')
-        
-        importance = fe.get_feature_importance(task='regression')
-        
-        # API returns a DataFrame, not dict
+        self._extracted_from_test_get_feature_importance_regression_3(
+            sample_df, 'income', 'regression'
+        )
+
+    # TODO Rename this here and in `test_get_feature_importance_classification` and `test_get_feature_importance_regression`
+    def _extracted_from_test_get_feature_importance_regression_3(self, sample_df, target_column, task):
+        fe = AutoFeatureEngine(sample_df.copy(), target_column=target_column)
+        importance = fe.get_feature_importance(task=task)
         assert importance is None or isinstance(importance, (dict, pd.DataFrame))
     
     def test_get_feature_importance_without_target(self, sample_df):
@@ -493,14 +492,11 @@ class TestEdgeCases:
             'cat1': ['A', 'B', 'C'] * 10,
             'cat2': ['X', 'Y', 'Z'] * 10
         })
-        
+
         fe = AutoFeatureEngine(df)
-        
+
         # Should handle or raise appropriate error for numeric operations
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        if len(numeric_cols) == 0:
-            # No numeric columns to create features from
-            assert True
     
     def test_constant_column(self):
         """Test with constant column."""
