@@ -157,12 +157,10 @@ class TestConvenienceFunctions:
             'columns_imputed': ['age', 'salary']
         }
         
-        try:
+        from contextlib import suppress
+        with suppress(Exception):
             result = explain_cleaning_step('imputed_missing', details, provider='ollama')
             assert isinstance(result, str)
-        except Exception:
-            # Expected if Ollama not running
-            pass
 
 
 class TestProviderEnum:

@@ -66,6 +66,7 @@ setup(
     entry_points={
         "console_scripts": [
             "autoprepml=autoprepml.cli:main",
+            "autoprepml-config=autoprepml.cli_config:main",
         ],
     },
     project_urls={

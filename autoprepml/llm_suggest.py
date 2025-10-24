@@ -5,6 +5,12 @@ import pandas as pd
 import json
 from enum import Enum
 
+try:
+    from .config_manager import AutoPrepMLConfig
+    HAS_CONFIG_MANAGER = True
+except ImportError:
+    HAS_CONFIG_MANAGER = False
+
 
 class LLMProvider(Enum):
     """Supported LLM providers"""
@@ -46,14 +52,33 @@ class LLMSuggestor:
         
         Args:
             provider: LLM provider ('openai', 'anthropic', 'google', 'ollama')
-            api_key: API key for the provider (not needed for Ollama)
+            api_key: API key for the provider (not needed for Ollama).
+                    If not provided, will check:
+                    1. AutoPrepML config file (~/.autoprepml/config.json)
+                    2. Environment variables (OPENAI_API_KEY, etc.)
             model: Model name (e.g., 'gpt-4', 'claude-3', 'gemini-pro', 'llama2')
             base_url: Custom base URL (for Ollama or custom endpoints)
             temperature: Sampling temperature (0-1, higher = more creative)
             max_tokens: Maximum tokens in response
         """
         self.provider = LLMProvider(provider.lower())
-        self.api_key = api_key or os.getenv(f"{provider.upper()}_API_KEY")
+        
+        # Try to get API key from multiple sources
+        if api_key:
+            self.api_key = api_key
+        elif HAS_CONFIG_MANAGER:
+            # Try config manager first
+            self.api_key = AutoPrepMLConfig.get_api_key(provider.lower())
+        else:
+            # Fallback to environment variable
+            self.api_key = os.getenv(f"{provider.upper()}_API_KEY")
+        
+        # Warn if API key is missing (except for Ollama)
+        if not self.api_key and self.provider != LLMProvider.OLLAMA:
+            print(f"⚠️  Warning: No API key found for {self.provider.value}")
+            print(f"   Set it with: autoprepml-config --set {self.provider.value}")
+            print(f"   Or set environment variable: {provider.upper()}_API_KEY")
+        
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.base_url = base_url
