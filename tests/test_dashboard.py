@@ -267,12 +267,14 @@ class TestStreamlitAppGeneration:
 
         self._extracted_from_test_generate_streamlit_app_function_7(output_path)
 
-    # TODO Rename this here and in `test_generate_streamlit_app_content` and `test_generate_streamlit_app_function`
     def _extracted_from_test_generate_streamlit_app_function_7(self, output_path):
+        """Validate generated Streamlit app contains expected imports and usage."""
         content = output_path.read_text()
+        # Check for Streamlit imports and usage (standard Streamlit app structure)
         assert 'import streamlit' in content
         assert 'st.' in content
-        assert 'def ' in content
+        # Verify it's using Streamlit components (not checking for functions, which aren't required)
+        assert any(component in content for component in ['st.title', 'st.header', 'st.dataframe', 'st.plotly_chart'])
 
 
 class TestDashboardWithDifferentDataTypes:
