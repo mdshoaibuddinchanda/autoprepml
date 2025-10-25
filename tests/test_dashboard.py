@@ -87,7 +87,7 @@ class TestCreateDashboard:
 
         dashboard.create_dashboard(output_path=str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding='utf-8')
 
         # Should be valid HTML with Plotly
         assert '<html>' in content.lower()
@@ -129,7 +129,7 @@ class TestPlotlyDashboard:
             output_path=str(output_path)
         )
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding='utf-8')
         assert title in content
 
 
@@ -151,7 +151,7 @@ class TestCorrelationHeatmap:
 
         dashboard.create_correlation_heatmap(output_path=str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding='utf-8')
 
         # Should contain Plotly and heatmap elements
         assert 'plotly' in content.lower()
@@ -197,7 +197,7 @@ class TestMissingDataPlot:
 
         dashboard.create_missing_data_plot(output_path=str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding='utf-8')
 
         # Should contain Plotly visualization
         assert 'plotly' in content.lower()
@@ -251,7 +251,7 @@ class TestStreamlitAppGeneration:
         dashboard.generate_streamlit_app(output_path=str(output_path))
 
         # Try to compile the generated code
-        content = output_path.read_text()
+        content = output_path.read_text(encoding='utf-8')
         try:
             compile(content, str(output_path), 'exec')
         except SyntaxError:
@@ -270,7 +270,7 @@ class TestStreamlitAppGeneration:
 
     def _extracted_from_test_generate_streamlit_app_function_7(self, output_path):
         """Validate generated Streamlit app contains expected imports and usage."""
-        content = output_path.read_text()
+        content = output_path.read_text(encoding='utf-8')
         # Check for Streamlit imports and usage (standard Streamlit app structure)
         assert 'import streamlit' in content
         assert 'st.' in content
