@@ -134,3 +134,11 @@ autoprepml.log
 reports/
 *.csv
 !examples/*.csv
+
+# Generated demo/example outputs
+examples/*_cleaned.csv
+examples/*_report.html
+examples/*.html
+examples/*.png
+examples/*.jpg
+examples/streamlit_app.py

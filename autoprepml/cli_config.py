@@ -1,6 +1,7 @@
 """CLI for managing AutoPrepML configuration and API keys"""
 import sys
 import argparse
+import getpass
 from .config_manager import AutoPrepMLConfig
 
 
@@ -9,38 +10,41 @@ def configure_interactive():
     print("\n🎯 AutoPrepML Configuration Wizard")
     print("=" * 60)
     print("\nWhich LLM provider would you like to configure?\n")
-    
+
     providers_list = list(AutoPrepMLConfig.PROVIDERS.keys())
     for idx, provider in enumerate(providers_list, 1):
         info = AutoPrepMLConfig.PROVIDERS[provider]
         print(f"{idx}. {info['name']}")
-        
+
     print(f"{len(providers_list) + 1}. Skip / Configure later")
-    
+
     try:
         choice = input(f"\nEnter your choice (1-{len(providers_list) + 1}): ").strip()
         choice_idx = int(choice) - 1
-        
+
         if choice_idx < 0 or choice_idx >= len(providers_list):
             print("\n✅ Configuration skipped. You can configure later using 'autoprepml-config'")
             return
-            
+
         provider = providers_list[choice_idx]
         info = AutoPrepMLConfig.PROVIDERS[provider]
-        
+
         print(f"\n📝 Configuring {info['name']}")
         print(f"ℹ️  {info['instructions']}\n")
-        
+
         if provider == 'ollama':
             print("✅ Ollama is a local LLM - no API key needed!")
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
             return
-            
-        if (api_key := input(f"Enter your {info['name']} API key (or press Enter to skip): ").strip()):
+
+        if api_key := getpass.getpass(
+            f"Enter your {info['name']} API key (or press Enter to skip): "
+        ).strip():
             AutoPrepMLConfig.set_api_key(provider, api_key)
+            print(f"✅ {info['name']} API key saved securely!")
         else:
             print("\n✅ Configuration skipped for this provider.")
-            
+
     except (ValueError, KeyboardInterrupt):
         print("\n\n✅ Configuration cancelled.")
 
@@ -100,8 +104,11 @@ Supported providers: openai, anthropic, google, ollama
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
             return
 
-        if (api_key := input(f"Enter your {info['name']} API key: ").strip()):
+        if api_key := getpass.getpass(
+            f"Enter your {info['name']} API key: "
+        ).strip():
             AutoPrepMLConfig.set_api_key(provider, api_key)
+            print(f"✅ {info['name']} API key saved securely!")
         else:
             print("❌ No API key entered. Configuration cancelled.")
 
