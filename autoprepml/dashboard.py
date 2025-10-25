@@ -510,7 +510,7 @@ class InteractiveDashboard:
         """
         return create_correlation_heatmap(self.df, output_path=output_path)
     
-    def create_missing_plot(self, output_path: str = "missing_data.html") -> str:
+    def create_missing_data_plot(self, output_path: str = "missing_data.html") -> str:
         """Create missing data visualization.
         
         Args:
@@ -520,6 +520,11 @@ class InteractiveDashboard:
             HTML string
         """
         return create_missing_data_plot(self.df, output_path=output_path)
+
+    # Backwards compatibility alias (deprecated)
+    def create_missing_plot(self, output_path: str = "missing_data.html") -> str:
+        """Alias for create_missing_data_plot for backward compatibility."""
+        return self.create_missing_data_plot(output_path=output_path)
     
     def generate_streamlit_app(self, output_path: str = "streamlit_app.py") -> None:
         """Generate Streamlit app file.
