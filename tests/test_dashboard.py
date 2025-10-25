@@ -261,7 +261,8 @@ class TestStreamlitAppGeneration:
         """Test Streamlit app generation convenience function."""
         output_path = tmp_path / "app_func.py"
 
-        generate_streamlit_app(sample_df, output_path=str(output_path))
+        # generate_streamlit_app creates a template app, doesn't need the DataFrame
+        generate_streamlit_app(output_path=str(output_path))
 
         assert output_path.exists()
 
