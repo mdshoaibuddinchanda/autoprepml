@@ -98,6 +98,7 @@ jobs:
         pip install -e ".[dev,viz,llm]"
     
     - name: Debug Environment
+      shell: bash
       run: |
         echo "Python version:"
         python --version
@@ -110,6 +111,7 @@ jobs:
         ls -la
     
     - name: Clear pytest cache
+      shell: bash
       run: |
         rm -rf .pytest_cache || true
         find . -type d -name "__pycache__" -exec rm -rf {} + || true
