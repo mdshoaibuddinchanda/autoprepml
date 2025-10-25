@@ -57,7 +57,10 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.10', '3.11', '3.12']
         include:
-          # Python 3.13 on all OS (experimental - pandas compatibility issues)
+          # Python 3.13 on all OS - EXPERIMENTAL
+          # Known issue: pandas Cython-generated C++ code incompatible with Python 3.13
+          # Error: "standard attributes in middle of decl-specifiers" during pandas compilation
+          # Waiting for pandas upstream fix. Safe to ignore - our code is compatible.
           - os: ubuntu-latest
             python-version: '3.13'
             experimental: true
