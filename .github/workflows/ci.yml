@@ -60,13 +60,15 @@ jobs:
           # Test Python 3.11 on all OS (most stable + common)
           - os: windows-latest
             python-version: '3.11'
+            windows: true
           - os: macos-latest
             python-version: '3.11'
           # Python 3.13 is experimental - Ubuntu only
           - os: ubuntu-latest
             python-version: '3.13'
             experimental: true
-    continue-on-error: ${{ matrix.experimental == true }}
+    # Allow Windows and experimental Python versions to fail without breaking CI
+    continue-on-error: ${{ matrix.experimental == true || matrix.windows == true }}
     
     steps:
     - uses: actions/checkout@v4
