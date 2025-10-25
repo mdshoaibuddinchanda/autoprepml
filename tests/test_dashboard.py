@@ -242,12 +242,7 @@ class TestStreamlitAppGeneration:
 
         dashboard.generate_streamlit_app(output_path=str(output_path))
 
-        content = output_path.read_text()
-
-        # Should contain Streamlit imports and code
-        assert 'import streamlit' in content
-        assert 'st.' in content  # Streamlit function calls
-        assert 'def ' in content  # Function definitions
+        self._extracted_from_test_generate_streamlit_app_function_7(output_path)
 
     def test_generate_streamlit_app_runnable(self, dashboard, tmp_path):
         """Test generated Streamlit app is syntactically valid."""
@@ -270,10 +265,14 @@ class TestStreamlitAppGeneration:
 
         assert output_path.exists()
 
+        self._extracted_from_test_generate_streamlit_app_function_7(output_path)
+
+    # TODO Rename this here and in `test_generate_streamlit_app_content` and `test_generate_streamlit_app_function`
+    def _extracted_from_test_generate_streamlit_app_function_7(self, output_path):
         content = output_path.read_text()
         assert 'import streamlit' in content
-        assert 'st.' in content  # Streamlit function calls
-        assert 'def ' in content  # Function definitions
+        assert 'st.' in content
+        assert 'def ' in content
 
 
 class TestDashboardWithDifferentDataTypes:
