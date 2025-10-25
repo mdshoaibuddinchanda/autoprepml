@@ -1,4 +1,6 @@
 """Automated Feature Engineering module for AutoPrepML"""
+
+import contextlib
 from typing import Dict, Any, List, Optional, Tuple, Union
 import pandas as pd
 import numpy as np
@@ -114,33 +116,28 @@ class AutoFeatureEngine:
             columns = self.df.select_dtypes(include=[np.number]).columns.tolist()
             if self.target_column and self.target_column in columns:
                 columns.remove(self.target_column)
-        
+
         if len(columns) < 2:
             warnings.warn("Need at least 2 columns for interactions")
             return self.df
-        
+
         interactions_created = 0
         new_features = {}
-        
+
         for i, col1 in enumerate(columns):
             for col2 in columns[i+1:]:
                 if interactions_created >= max_interactions:
                     break
-                
+
                 # Multiplication interaction
                 new_col_name = f"{col1}_x_{col2}"
                 new_features[new_col_name] = self.df[col1] * self.df[col2]
                 interactions_created += 1
-        
+
         if new_features:
-            new_df = pd.DataFrame(new_features, index=self.df.index)
-            self.df = pd.concat([self.df, new_df], axis=1)
-            
-            self.feature_log.append({
-                'operation': 'interaction_features',
-                'n_features_created': len(new_features)
-            })
-        
+            self._extracted_from_create_aggregation_features_36(
+                new_features, 'interaction_features'
+            )
         return self.df
     
     def create_ratio_features(self, 
@@ -159,36 +156,31 @@ class AutoFeatureEngine:
             columns = self.df.select_dtypes(include=[np.number]).columns.tolist()
             if self.target_column and self.target_column in columns:
                 columns.remove(self.target_column)
-        
+
         if len(columns) < 2:
             warnings.warn("Need at least 2 columns for ratios")
             return self.df
-        
+
         ratios_created = 0
         new_features = {}
-        
+
         for i, col1 in enumerate(columns):
             for col2 in columns[i+1:]:
                 if ratios_created >= max_ratios:
                     break
-                
+
                 # Avoid division by zero
                 if (self.df[col2] == 0).any():
                     continue
-                
+
                 new_col_name = f"{col1}_div_{col2}"
                 new_features[new_col_name] = self.df[col1] / self.df[col2]
                 ratios_created += 1
-        
+
         if new_features:
-            new_df = pd.DataFrame(new_features, index=self.df.index)
-            self.df = pd.concat([self.df, new_df], axis=1)
-            
-            self.feature_log.append({
-                'operation': 'ratio_features',
-                'n_features_created': len(new_features)
-            })
-        
+            self._extracted_from_create_aggregation_features_36(
+                new_features, 'ratio_features'
+            )
         return self.df
     
     def create_binned_features(self,
@@ -259,9 +251,7 @@ class AutoFeatureEngine:
         
         return self.df
     
-    def create_aggregation_features(self,
-                                   columns: Optional[List[str]] = None,
-                                   operations: List[str] = ['sum', 'mean', 'std']) -> pd.DataFrame:
+    def create_aggregation_features(self, columns: Optional[List[str]] = None, operations: List[str] = None) -> pd.DataFrame:
         """Create aggregation features across columns.
         
         Args:
@@ -271,17 +261,19 @@ class AutoFeatureEngine:
         Returns:
             DataFrame with aggregation features added
         """
+        if operations is None:
+            operations = ['sum', 'mean', 'std']
         if columns is None:
             columns = self.df.select_dtypes(include=[np.number]).columns.tolist()
             if self.target_column and self.target_column in columns:
                 columns.remove(self.target_column)
-        
+
         if len(columns) < 2:
             warnings.warn("Need at least 2 columns for aggregations")
             return self.df
-        
+
         new_features = {}
-        
+
         # Map operations to (feature_name, function) to simplify branching and avoid unnecessary f-strings
         ops_map = {
             'sum': ('agg_sum', lambda: self.df[columns].sum(axis=1)),
@@ -291,26 +283,27 @@ class AutoFeatureEngine:
             'max': ('agg_max', lambda: self.df[columns].max(axis=1)),
             'median': ('agg_median', lambda: self.df[columns].median(axis=1)),
         }
-        
+
         for op in operations:
             if op in ops_map:
                 name, func = ops_map[op]
                 new_features[name] = func()
-        
+
         if new_features:
-            new_df = pd.DataFrame(new_features, index=self.df.index)
-            self.df = pd.concat([self.df, new_df], axis=1)
-            
-            self.feature_log.append({
-                'operation': 'aggregation_features',
-                'n_features_created': len(new_features)
-            })
-        
+            self._extracted_from_create_aggregation_features_36(
+                new_features, 'aggregation_features'
+            )
         return self.df
+
+    # TODO Rename this here and in `create_interactions`, `create_ratio_features` and `create_aggregation_features`
+    def _extracted_from_create_aggregation_features_36(self, new_features, arg1):
+        new_df = pd.DataFrame(new_features, index=self.df.index)
+        self.df = pd.concat([self.df, new_df], axis=1)
+        self.feature_log.append(
+            {'operation': arg1, 'n_features_created': len(new_features)}
+        )
     
-    def create_datetime_features(self, 
-                                columns: Optional[List[str]] = None,
-                                features: List[str] = ['year', 'month', 'day', 'dayofweek', 'hour']) -> pd.DataFrame:
+    def create_datetime_features(self, columns: Optional[List[str]] = None, features: List[str] = None) -> pd.DataFrame:
         """Create features from datetime columns.
         
         Args:
@@ -320,24 +313,23 @@ class AutoFeatureEngine:
         Returns:
             DataFrame with datetime features added
         """
+        if features is None:
+            features = ['year', 'month', 'day', 'dayofweek', 'hour']
         if columns is None:
             columns = self.df.select_dtypes(include=['datetime64']).columns.tolist()
-        
+
         if not columns:
             # Try to convert object columns that might be dates
             for col in self.df.select_dtypes(include=['object']).columns:
-                try:
+                with contextlib.suppress(Exception):
                     self.df[col] = pd.to_datetime(self.df[col])
                     columns.append(col)
-                except:
-                    pass
-        
         if not columns:
             warnings.warn("No datetime columns found")
             return self.df
-        
+
         n_features_created = 0
-        
+
         for col in columns:
             if 'year' in features:
                 self.df[f"{col}_year"] = self.df[col].dt.year
@@ -352,25 +344,23 @@ class AutoFeatureEngine:
                 self.df[f"{col}_dayofweek"] = self.df[col].dt.dayofweek
                 n_features_created += 1
             if 'hour' in features:
-                try:
+                with contextlib.suppress(Exception):
                     self.df[f"{col}_hour"] = self.df[col].dt.hour
                     n_features_created += 1
-                except:
-                    pass
             if 'quarter' in features:
                 self.df[f"{col}_quarter"] = self.df[col].dt.quarter
                 n_features_created += 1
             if 'is_weekend' in features:
                 self.df[f"{col}_is_weekend"] = (self.df[col].dt.dayofweek >= 5).astype(int)
                 n_features_created += 1
-        
+
         if n_features_created > 0:
             self.feature_log.append({
                 'operation': 'datetime_features',
                 'columns': columns,
                 'n_features_created': n_features_created
             })
-        
+
         return self.df
     
     def select_features(self,
@@ -390,49 +380,53 @@ class AutoFeatureEngine:
         if self.target_column is None:
             warnings.warn("Target column not specified, skipping feature selection")
             return self.df
-        
+
         if self.target_column not in self.df.columns:
             warnings.warn(f"Target column '{self.target_column}' not found")
             return self.df
-        
+
         # Get feature columns (exclude target)
         X = self.df.drop(columns=[self.target_column])
         y = self.df[self.target_column]
-        
+
         # Select only numeric features
         numeric_cols = X.select_dtypes(include=[np.number]).columns
         X_numeric = X[numeric_cols]
-        
+
         if X_numeric.empty:
             warnings.warn("No numeric features for selection")
-            return self.df  
+            return self.df
         # Apply selection method
-        if method == 'mutual_info':
-            if task == 'classification':
-                scores = mutual_info_classif(X_numeric, y)
-            else:
-                scores = mutual_info_regression(X_numeric, y)
-        elif method == 'f_test':
-            if task == 'classification':
-                selector = SelectKBest(score_func=f_classif, k=min(k, len(numeric_cols)))
-            else:
-                selector = SelectKBest(score_func=f_regression, k=min(k, len(numeric_cols)))
+        if method == 'f_test':
+            selector = (
+                SelectKBest(score_func=f_classif, k=min(k, len(numeric_cols)))
+                if task == 'classification'
+                else SelectKBest(
+                    score_func=f_regression, k=min(k, len(numeric_cols))
+                )
+            )
             selector.fit(X_numeric, y)
             scores = selector.scores_
+        elif method == 'mutual_info':
+            scores = (
+                mutual_info_classif(X_numeric, y)
+                if task == 'classification'
+                else mutual_info_regression(X_numeric, y)
+            )
         else:
             # Variance-based
             scores = X_numeric.var().values
-        
+
         # Get top k features
         top_k_idx = np.argsort(scores)[-k:]
         selected_features = numeric_cols[top_k_idx].tolist()
-        
+
         # Keep selected features and target
         non_numeric_cols = X.select_dtypes(exclude=[np.number]).columns.tolist()
         columns_to_keep = selected_features + non_numeric_cols + [self.target_column]
-        
+
         self.df = self.df[columns_to_keep]
-        
+
         self.feature_log.append({
             'operation': 'feature_selection',
             'method': method,
@@ -440,7 +434,7 @@ class AutoFeatureEngine:
             'n_features_after': len(selected_features),
             'selected_features': selected_features
         })
-        
+
         return self.df
     
     def get_feature_importance(self, task: str = 'classification') -> pd.DataFrame:
@@ -454,24 +448,21 @@ class AutoFeatureEngine:
         """
         if self.target_column is None:
             raise ValueError("Target column required for feature importance")
-        
+
         X = self.df.drop(columns=[self.target_column])
         y = self.df[self.target_column]
-        
+
         numeric_cols = X.select_dtypes(include=[np.number]).columns
         X_numeric = X[numeric_cols]
-        
+
         if task == 'classification':
             scores = mutual_info_classif(X_numeric, y)
         else:
             scores = mutual_info_regression(X_numeric, y)
-        
-        importance_df = pd.DataFrame({
-            'feature': numeric_cols,
-            'importance': scores
-        }).sort_values('importance', ascending=False)
-        
-        return importance_df
+
+        return pd.DataFrame(
+            {'feature': numeric_cols, 'importance': scores}
+        ).sort_values('importance', ascending=False)
     
     def get_features(self) -> pd.DataFrame:
         """Get the DataFrame with all engineered features.
@@ -498,22 +489,20 @@ class AutoFeatureEngine:
         n_original = len(self.original_columns)
         n_current = len(self.df.columns)
         n_created = n_current - n_original
-        
+
         operations_count = {}
         for log in self.feature_log:
             op = log['operation']
             operations_count[op] = operations_count.get(op, 0) + 1
-        
-        summary = {
+
+        return {
             'original_features': n_original,
             'current_features': n_current,
             'features_created': n_created,
             'operations_performed': len(self.feature_log),
             'operations_breakdown': operations_count,
-            'feature_log': self.feature_log
+            'feature_log': self.feature_log,
         }
-        
-        return summary
     
     def reset(self) -> pd.DataFrame:
         """Reset to original features.

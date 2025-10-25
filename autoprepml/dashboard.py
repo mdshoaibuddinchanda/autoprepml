@@ -98,7 +98,9 @@ def create_plotly_dashboard(df: pd.DataFrame,
     html = fig.to_html(full_html=True, include_plotlyjs='cdn')
 
     if output_path:
-        Path(output_path).write_text(html, encoding='utf-8')
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file.write_text(html, encoding='utf-8')
         print(f"✅ Plotly dashboard saved to: {output_path}")
 
     return html
@@ -150,7 +152,9 @@ def create_correlation_heatmap(df: pd.DataFrame,
     html = fig.to_html(full_html=True, include_plotlyjs='cdn')
 
     if output_path:
-        Path(output_path).write_text(html, encoding='utf-8')
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file.write_text(html, encoding='utf-8')
         print(f"✅ Correlation heatmap saved to: {output_path}")
 
     return html
@@ -211,7 +215,9 @@ def create_missing_data_plot(df: pd.DataFrame,
     html = fig.to_html(full_html=True, include_plotlyjs='cdn')
 
     if output_path:
-        Path(output_path).write_text(html, encoding='utf-8')
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file.write_text(html, encoding='utf-8')
         print(f"✅ Missing data plot saved to: {output_path}")
 
     return html
@@ -450,7 +456,9 @@ else:
     """)
 '''
     
-    Path(output_path).write_text(app_code, encoding='utf-8')
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output_file.write_text(app_code, encoding='utf-8')
     print(f"✅ Streamlit app generated: {output_path}")
     print(f"   Run with: streamlit run {output_path}")
 
