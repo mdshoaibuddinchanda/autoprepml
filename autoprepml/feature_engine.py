@@ -215,11 +215,19 @@ class AutoFeatureEngine:
         if not columns:
             return self.df
         
-        discretizer = KBinsDiscretizer(
-            n_bins=n_bins,
-            encode=encode,
-            strategy=strategy
-        )
+        # Build discretizer kwargs
+        discretizer_kwargs = {
+            'n_bins': n_bins,
+            'encode': encode,
+            'strategy': strategy,
+            'subsample': 200_000  # Prevent memory issues with large datasets
+        }
+        
+        # Add quantile_method for quantile strategy to avoid deprecation warning
+        if strategy == 'quantile':
+            discretizer_kwargs['random_state'] = 42
+        
+        discretizer = KBinsDiscretizer(**discretizer_kwargs)
         
         binned_data = discretizer.fit_transform(self.df[columns])
         
@@ -274,19 +282,20 @@ class AutoFeatureEngine:
         
         new_features = {}
         
+        # Map operations to (feature_name, function) to simplify branching and avoid unnecessary f-strings
+        ops_map = {
+            'sum': ('agg_sum', lambda: self.df[columns].sum(axis=1)),
+            'mean': ('agg_mean', lambda: self.df[columns].mean(axis=1)),
+            'std': ('agg_std', lambda: self.df[columns].std(axis=1)),
+            'min': ('agg_min', lambda: self.df[columns].min(axis=1)),
+            'max': ('agg_max', lambda: self.df[columns].max(axis=1)),
+            'median': ('agg_median', lambda: self.df[columns].median(axis=1)),
+        }
+        
         for op in operations:
-            if op == 'sum':
-                new_features[f"agg_sum"] = self.df[columns].sum(axis=1)
-            elif op == 'mean':
-                new_features[f"agg_mean"] = self.df[columns].mean(axis=1)
-            elif op == 'std':
-                new_features[f"agg_std"] = self.df[columns].std(axis=1)
-            elif op == 'min':
-                new_features[f"agg_min"] = self.df[columns].min(axis=1)
-            elif op == 'max':
-                new_features[f"agg_max"] = self.df[columns].max(axis=1)
-            elif op == 'median':
-                new_features[f"agg_median"] = self.df[columns].median(axis=1)
+            if op in ops_map:
+                name, func = ops_map[op]
+                new_features[name] = func()
         
         if new_features:
             new_df = pd.DataFrame(new_features, index=self.df.index)
@@ -396,8 +405,7 @@ class AutoFeatureEngine:
         
         if X_numeric.empty:
             warnings.warn("No numeric features for selection")
-            return self.df
-        
+            return self.df  
         # Apply selection method
         if method == 'mutual_info':
             if task == 'classification':

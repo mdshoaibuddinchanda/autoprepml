@@ -95,6 +95,23 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         pip install -e ".[dev,viz,llm]"
     
+    - name: Debug Environment
+      run: |
+        echo "Python version:"
+        python --version
+        echo "Platform info:"
+        python -m platform
+        echo "Installed packages:"
+        pip list
+        echo "Working directory:"
+        pwd
+        ls -la
+    
+    - name: Clear pytest cache
+      run: |
+        rm -rf .pytest_cache || true
+        find . -type d -name "__pycache__" -exec rm -rf {} + || true
+    
     - name: Run tests with pytest
       id: run_tests
       shell: bash
