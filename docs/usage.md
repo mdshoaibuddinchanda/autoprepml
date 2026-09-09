@@ -120,8 +120,8 @@ cleaning:
   outlier_method: iforest
   outlier_contamination: 0.05
   remove_outliers: false
-  scale_method: standard
-  encode_method: label
+  scale_method: standard  # standard, minmax, robust, maxabs
+  encode_method: onehot  # recommended for nominal feature columns
   balance_method: oversample
 
 detection:

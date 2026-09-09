@@ -19,12 +19,18 @@ declared date format for timestamps, and list project-specific missing markers
 with `na_values`. For large files, pass these same options to
 `iter_chunks`; chunking changes memory use, not the schema.
 
+AutoPrepML validates known configuration keys and merges partial configuration
+files with safe defaults. Invalid scaling, encoding, outlier, or detection
+parameters fail at initialization rather than halfway through a run.
+
 The recommended order is:
 
 1. Validate the schema, row identity, and target definition.
 2. Split into train, validation, and test before fitting any statistics.
 3. Impute numeric and categorical values using training-only statistics.
-4. Encode categorical values with an unknown-category policy.
+4. Encode categorical values with an unknown-category policy. AutoPrepML's
+   high-level default is one-hot encoding; label encoding is opt-in for
+   genuinely ordinal values only.
 5. Normalize numeric features with `TabularNormalizer`.
 6. Fit the estimator inside a scikit-learn pipeline.
 
@@ -70,6 +76,10 @@ the 0 through 1 representation. The mean and standard deviation must be
 computed from the training images only and reused at inference. Augmentation
 belongs in the training split and must never alter masks, bounding boxes, or
 labels without a matching geometric transform.
+
+For a grayscale array shaped `(height, width)`, pass `channel_axis=None` when
+fitting or applying statistics. For arrays with an explicit channel dimension,
+use the axis containing the colour channels.
 
 ```python
 from autoprepml import ImagePrepML, fit_image_statistics

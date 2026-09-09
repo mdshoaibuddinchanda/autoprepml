@@ -30,7 +30,11 @@ def detect_missing(df: pd.DataFrame) -> Dict[str, Any]:
 
 
 def detect_outliers(
-    df: pd.DataFrame, method: str = "iforest", contamination: float = 0.05, threshold: float = 3.0
+    df: pd.DataFrame,
+    method: str = "iforest",
+    contamination: float = 0.05,
+    threshold: float = 3.0,
+    exclude_cols: list = None,
 ) -> Dict[str, Any]:
     """Detect outliers in numeric columns.
 
@@ -39,21 +43,34 @@ def detect_outliers(
         method: 'iforest' (Isolation Forest) or 'zscore' (Z-score method)
         contamination: Expected proportion of outliers (for iforest)
         threshold: Z-score threshold (for zscore method)
+        exclude_cols: Columns excluded from outlier detection, such as a target
+            column that is not an input feature.
 
     Returns:
         Dictionary with outlier statistics and indices
     """
-    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    exclude_cols = set(exclude_cols or [])
+    numeric_cols = [
+        column
+        for column in df.select_dtypes(include=[np.number]).columns.tolist()
+        if column not in exclude_cols and not pd.api.types.is_bool_dtype(df[column])
+    ]
 
     if len(numeric_cols) == 0:
         return {"error": "No numeric columns found", "outlier_count": 0}
 
-    numeric_df = df[numeric_cols].dropna()
+    non_finite = ~np.isfinite(df[numeric_cols].to_numpy(dtype=float))
+    non_finite_count = int(non_finite.sum())
+    numeric_df = df[numeric_cols].replace([np.inf, -np.inf], np.nan).dropna()
 
     if len(numeric_df) == 0:
         return {"error": "No valid numeric data after dropping NaN", "outlier_count": 0}
 
-    result = {"method": method, "numeric_columns": numeric_cols}
+    result = {
+        "method": method,
+        "numeric_columns": numeric_cols,
+        "non_finite_count": non_finite_count,
+    }
 
     if method == "iforest":
         iso = IsolationForest(contamination=contamination, random_state=42)
@@ -89,8 +106,12 @@ def detect_imbalance(df: pd.DataFrame, target_col: str, threshold: float = 0.3) 
     if target_col not in df.columns:
         return {"error": f"Column {target_col} not found"}
 
-    value_counts = df[target_col].value_counts()
-    total = len(df)
+    target = df[target_col].dropna()
+    missing_count = int(df[target_col].isna().sum())
+    if target.empty:
+        return {"error": f"Column {target_col} contains no non-missing labels"}
+    value_counts = target.value_counts()
+    total = len(target)
     proportions = (value_counts / total).round(4)
 
     min_proportion = proportions.min()
@@ -98,6 +119,7 @@ def detect_imbalance(df: pd.DataFrame, target_col: str, threshold: float = 0.3) 
 
     return {
         "target_column": target_col,
+        "missing_labels": missing_count,
         "class_distribution": value_counts.to_dict(),
         "class_proportions": proportions.to_dict(),
         "is_imbalanced": is_imbalanced,
@@ -115,6 +137,7 @@ def detect_all(
     contamination: float = 0.05,
     zscore_threshold: float = 3.0,
     imbalance_threshold: float = 0.3,
+    exclude_cols: list = None,
 ) -> Dict[str, Any]:
     """Run all detection functions and return comprehensive report.
 
@@ -132,6 +155,7 @@ def detect_all(
             method=outlier_method,
             contamination=contamination,
             threshold=zscore_threshold,
+            exclude_cols=exclude_cols,
         ),
     }
 

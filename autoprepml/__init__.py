@@ -47,6 +47,7 @@ from .normalization import (
     fit_tabular_normalizer,
     normalize_image_array,
 )
+from .config import validate_config
 
 __all__ = [
     # Core preprocessing
@@ -89,6 +90,7 @@ __all__ = [
     "fit_image_statistics",
     "normalize_image_array",
     "denormalize_image_array",
+    "validate_config",
     # Modules
     "detection",
     "cleaning",

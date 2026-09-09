@@ -37,7 +37,9 @@ class TextPrepML:
         Returns:
             Dictionary with detected issues
         """
-        text_series = self.df[self.text_column].dropna()
+        # Quality checks must remain safe for mixed input columns while
+        # keeping missing-text counts separate from empty strings.
+        text_series = self.df[self.text_column].dropna().astype(str)
 
         issues = {
             "missing_text": int(self.df[self.text_column].isnull().sum()),

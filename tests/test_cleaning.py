@@ -20,6 +20,19 @@ def test_impute_missing_median():
     assert result["x"].iloc[2] == 2.0
 
 
+def test_impute_missing_can_fit_statistics_on_training_frame():
+    train = pd.DataFrame({"x": [1.0, 2.0, 3.0]})
+    future = pd.DataFrame({"x": [100.0, np.nan]})
+    result = cleaning.impute_missing(future, strategy="median", fit_frame=train)
+
+    assert result["x"].tolist() == [100.0, 2.0]
+
+
+def test_impute_missing_rejects_unknown_strategy():
+    with pytest.raises(ValueError, match="strategy"):
+        cleaning.impute_missing(pd.DataFrame({"x": [1.0]}), strategy="unknown")
+
+
 def test_impute_missing_drop():
     df = pd.DataFrame({"x": [1, None, 3]})
     result = cleaning.impute_missing(df, strategy="drop")
@@ -51,6 +64,14 @@ def test_scale_features_exclude():
     df = pd.DataFrame({"a": [1, 2, 3], "b": [10, 20, 30]})
     result = cleaning.scale_features(df, method="standard", exclude_cols=["b"])
     assert not np.isclose(result["b"].mean(), 0, atol=0.1)  # b should not be scaled
+
+
+def test_scale_features_can_fit_statistics_on_training_frame():
+    train = pd.DataFrame({"x": [0.0, 10.0]})
+    future = pd.DataFrame({"x": [20.0]})
+    result = cleaning.scale_features(future, method="minmax", fit_frame=train)
+
+    assert result["x"].iloc[0] == 2.0
 
 
 def test_encode_categorical_label():

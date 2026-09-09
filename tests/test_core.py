@@ -125,6 +125,13 @@ def test_clean():
     assert "detection_results" in report
 
 
+def test_clean_uses_onehot_encoding_by_default_for_nominal_features():
+    df = pd.DataFrame({"feature": [1.0, 2.0, 3.0], "category": ["a", "b", "a"]})
+    cleaned, _ = AutoPrepML(df).clean()
+
+    assert any(column.startswith("category_") for column in cleaned.columns)
+
+
 def test_clean_auto_false_does_not_transform():
     df = pd.DataFrame({"value": [1.0, None, 3.0]})
     prep = AutoPrepML(df)
@@ -165,6 +172,27 @@ def test_clean_classification():
     clean_df, report = prep.clean(task="classification", target_col="target")
     # Check that balancing was applied
     assert len(clean_df) >= len(df)
+
+
+def test_clean_drops_missing_targets_instead_of_imputing_labels():
+    df = pd.DataFrame(
+        {
+            "feature": [1.0, 2.0, None, 4.0],
+            "target": [0, 1, None, 1],
+        }
+    )
+    cleaned, report = AutoPrepML(df).clean(task="classification", target_col="target")
+
+    assert len(cleaned) == 3
+    assert cleaned["target"].isna().sum() == 0
+    assert any(log["action"] == "dropped_missing_targets" for log in report["logs"])
+
+
+def test_clean_rejects_all_missing_targets():
+    df = pd.DataFrame({"feature": [1.0, 2.0], "target": [None, None]})
+
+    with pytest.raises(ValueError, match="No rows remain"):
+        AutoPrepML(df).clean(task="classification", target_col="target")
 
 
 @pytest.mark.parametrize("method", ["knn", "iterative"])

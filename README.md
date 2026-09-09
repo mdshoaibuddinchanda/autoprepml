@@ -741,8 +741,8 @@ cleaning:
   missing_strategy: auto  # auto, mean, median, mode, drop
   outlier_method: iforest  # iforest, zscore
   outlier_contamination: 0.1
-  scale_method: standard  # standard, minmax
-  encode_method: label  # label, onehot
+  scale_method: standard  # standard, minmax, robust, maxabs
+  encode_method: onehot  # onehot is recommended for nominal features; label is explicit-only
   balance_method: oversample  # oversample, undersample
   remove_outliers: false
 

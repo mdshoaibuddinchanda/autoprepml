@@ -34,6 +34,13 @@ def test_detect_outliers_zscore():
     assert result["method"] == "zscore"
 
 
+def test_detect_outliers_can_exclude_target_columns():
+    df = pd.DataFrame({"feature": [1, 2, 3, 4], "target": [0, 0, 0, 1000]})
+    result = detection.detect_outliers(df, method="zscore", threshold=1.0, exclude_cols=["target"])
+
+    assert result["numeric_columns"] == ["feature"]
+
+
 def test_detect_outliers_no_numeric():
     df = pd.DataFrame({"a": ["x", "y", "z"]})
     result = detection.detect_outliers(df)

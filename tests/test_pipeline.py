@@ -38,3 +38,29 @@ def test_preprocessing_pipeline_validates_frame():
         make_preprocessing_pipeline(_training_frame(), target_col="missing")
     with pytest.raises(ValueError, match="at least one"):
         make_preprocessing_pipeline(pd.DataFrame({"target": [1, 2]}), target_col="target")
+
+
+@pytest.mark.parametrize("scale_method", ["minmax", "robust", "maxabs"])
+def test_preprocessing_pipeline_supports_explicit_scalers(scale_method):
+    frame = _training_frame()
+    frame["active"] = [True, False, True, False, True, False]
+    pipeline = make_preprocessing_pipeline(frame, target_col="target", scale_method=scale_method)
+    transformed = pipeline.fit_transform(frame.drop(columns="target"))
+
+    assert transformed.shape[0] == len(frame)
+    assert (
+        pipeline.named_steps["preprocessor"]
+        .transformers_[0][1]
+        .named_steps["scaler"]
+        .__class__.__name__.lower()
+        .startswith(scale_method)
+    )
+
+
+def test_preprocessing_pipeline_handles_bool_only_features():
+    frame = pd.DataFrame({"active": [True, False, True, False], "target": [0, 1, 0, 1]})
+    pipeline = make_preprocessing_pipeline(frame, target_col="target")
+
+    transformed = pipeline.fit_transform(frame.drop(columns="target"))
+
+    assert transformed.shape == (4, 2)

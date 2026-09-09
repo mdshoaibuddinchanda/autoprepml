@@ -96,6 +96,10 @@ available when MLflow is installed. `make_preprocessing_pipeline` and
 `make_model_pipeline` build scikit-learn pipelines that fit preprocessing
 state on training data only.
 
+`make_preprocessing_pipeline` accepts `scale_method='standard'`, `'minmax'`,
+`'robust'`, or `'maxabs'`; numeric scalers are fitted only when the returned
+pipeline is trained.
+
 ### Normalization
 
 `TabularNormalizer(method='standard', columns=None)` is a fitted sklearn
@@ -112,6 +116,10 @@ normalized arrays back to uint8 pixels for image persistence.
 
 See the [advanced features guide](ADVANCED_FEATURES.md), [usage guide](usage.md), and [tutorials](tutorials.md) for examples.
 
+`validate_config(config)` returns a deep-merged, validated configuration and
+raises on invalid known values. `load_config` and `save_config` use this
+validation automatically.
+
 ### Time series feature safety
 
 `TimeSeriesPrepML.add_rolling_features(windows=None, functions=None, forecast_safe=True)` shifts the source series by one row by default. This prevents a forecasting feature from including the value it is intended to predict. Set `forecast_safe=False` when the rolling statistic is descriptive and contemporaneous by design. Supported functions are `mean`, `std`, `min`, and `max`.
@@ -125,7 +133,8 @@ See the [advanced features guide](ADVANCED_FEATURES.md), [usage guide](usage.md)
 `ImagePrepML.clean(augment=True, augmentation_config=...)` supports deterministic NumPy transforms without an additional augmentation dependency. Configuration keys are `horizontal_flip`, `vertical_flip`, `rotations` (90-degree increments), and `include_original`.
 
 `ImagePrepML` also accepts `normalization_mode`, `normalization_mean`, and
-`normalization_std`. The default remains `zero_one` for compatibility.
+`normalization_std`. The default remains `zero_one` for compatibility. Image
+`target_size` follows Pillow's `(width, height)` convention.
 
 
 ## Detection Module
@@ -138,7 +147,7 @@ Detect missing values in DataFrame.
 
 **Returns:** Dict with column names and missing statistics
 
-#### `detect_outliers(df: pd.DataFrame, method: str = 'iforest', contamination: float = 0.05, threshold: float = 3.0) -> Dict`
+#### `detect_outliers(df: pd.DataFrame, method: str = 'iforest', contamination: float = 0.05, threshold: float = 3.0, exclude_cols: list = None) -> Dict`
 
 Detect outliers in numeric columns.
 
@@ -146,6 +155,7 @@ Detect outliers in numeric columns.
 - `method`: 'iforest' or 'zscore'
 - `contamination`: Expected outlier proportion (for iforest)
 - `threshold`: Z-score threshold (for zscore)
+- `exclude_cols`: Numeric columns excluded from outlier detection, such as a target
 
 **Returns:** Dict with outlier count and indices
 
@@ -166,7 +176,7 @@ Run all detection functions.
 
 ### Functions
 
-#### `impute_missing(df: pd.DataFrame, strategy: str = 'auto', numeric_strategy: str = 'median', categorical_strategy: str = 'mode') -> pd.DataFrame`
+#### `impute_missing(df: pd.DataFrame, strategy: str = 'auto', numeric_strategy: str = 'median', categorical_strategy: str = 'mode', fit_frame: pd.DataFrame = None) -> pd.DataFrame`
 
 Impute missing values.
 
@@ -174,16 +184,18 @@ Impute missing values.
 - `strategy`: 'auto', 'median', 'mean', 'mode', 'drop'
 - `numeric_strategy`: Strategy for numeric columns
 - `categorical_strategy`: Strategy for categorical columns
+- `fit_frame`: Optional training frame used to learn fill values
 
 **Returns:** DataFrame with imputed values
 
-#### `scale_features(df: pd.DataFrame, method: str = 'standard', exclude_cols: list = None) -> pd.DataFrame`
+#### `scale_features(df: pd.DataFrame, method: str = 'standard', exclude_cols: list = None, fit_frame: pd.DataFrame = None) -> pd.DataFrame`
 
 Scale numeric features.
 
 **Parameters:**
 - `method`: 'standard', 'minmax', 'robust', or 'maxabs'
 - `exclude_cols`: Columns to exclude from scaling
+- `fit_frame`: Optional training frame used to learn scaling statistics
 
 **Returns:** DataFrame with scaled features
 
@@ -194,6 +206,10 @@ Encode categorical features.
 **Parameters:**
 - `method`: 'label' or 'onehot'
 - `exclude_cols`: Columns to exclude from encoding
+
+The low-level helper keeps `label` as its compatibility default. The
+high-level `AutoPrepML` workflow defaults to `onehot` for nominal features;
+use label encoding only for genuinely ordinal values.
 
 **Returns:** DataFrame with encoded features
 
@@ -315,7 +331,7 @@ Default configuration structure:
         'outlier_contamination': 0.05,
         'remove_outliers': False,
         'scale_method': 'standard',
-        'encode_method': 'label',
+        'encode_method': 'onehot',
         'balance_method': 'oversample'
     },
     'detection': {

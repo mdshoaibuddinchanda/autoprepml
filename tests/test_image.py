@@ -272,6 +272,16 @@ def test_invalid_image_normalization_mode():
             ImagePrepML(image_dir=tmpdir, normalization_mode="unknown")
 
 
+def test_image_constructor_validates_geometry_and_color_mode():
+    from autoprepml.image import ImagePrepML
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with pytest.raises(ValueError, match="target_size"):
+            ImagePrepML(image_dir=tmpdir, target_size=(0, 224))
+        with pytest.raises(ValueError, match="color_mode"):
+            ImagePrepML(image_dir=tmpdir, color_mode="cmyk")
+
+
 def test_no_images_found():
     """Test error when no images are found"""
     from autoprepml.image import ImagePrepML

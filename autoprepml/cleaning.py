@@ -26,6 +26,7 @@ def impute_missing(
     strategy: str = "auto",
     numeric_strategy: str = "median",
     categorical_strategy: str = "mode",
+    fit_frame: pd.DataFrame = None,
 ) -> pd.DataFrame:
     """Impute missing values in DataFrame.
 
@@ -34,11 +35,29 @@ def impute_missing(
         strategy: 'auto' (smart detection), 'median', 'mean', 'mode', 'drop'
         numeric_strategy: Strategy for numeric columns when strategy='auto'
         categorical_strategy: Strategy for categorical columns when strategy='auto'
+        fit_frame: Optional training frame used to learn fill values. When
+            omitted, values are learned from ``df`` for exploratory use.
 
     Returns:
         DataFrame with imputed values
     """
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("df must be a pandas DataFrame")
+    valid_strategies = {"auto", "median", "mean", "mode", "drop"}
+    if strategy not in valid_strategies:
+        raise ValueError(f"strategy must be one of: {', '.join(sorted(valid_strategies))}")
+    if numeric_strategy not in {"median", "mean", "mode"}:
+        raise ValueError("numeric_strategy must be median, mean, or mode")
+    if categorical_strategy not in {"mode"}:
+        raise ValueError("categorical_strategy must be mode")
+    if fit_frame is not None:
+        if not isinstance(fit_frame, pd.DataFrame):
+            raise TypeError("fit_frame must be a pandas DataFrame")
+        missing = [column for column in df.columns if column not in fit_frame.columns]
+        if missing:
+            raise ValueError(f"fit_frame is missing columns: {missing}")
     df_clean = df.copy()
+    statistics_frame = fit_frame if fit_frame is not None else df_clean
 
     for col in df_clean.columns:
         if df_clean[col].isnull().sum() == 0:
@@ -59,13 +78,16 @@ def impute_missing(
 
         # Apply imputation
         if current_strategy == "median" and pd.api.types.is_numeric_dtype(df_clean[col]):
-            fill_value = df_clean[col].median()
+            fill_value = statistics_frame[col].median()
         elif current_strategy == "mean" and pd.api.types.is_numeric_dtype(df_clean[col]):
-            fill_value = df_clean[col].mean()
+            fill_value = statistics_frame[col].mean()
         elif current_strategy == "mode":
-            mode_values = df_clean[col].mode()
+            mode_values = statistics_frame[col].mode()
             fill_value = mode_values.iloc[0] if len(mode_values) > 0 else ""
         else:
+            fill_value = 0 if pd.api.types.is_numeric_dtype(df_clean[col]) else ""
+
+        if pd.isna(fill_value):
             fill_value = 0 if pd.api.types.is_numeric_dtype(df_clean[col]) else ""
 
         df_clean[col] = df_clean[col].fillna(fill_value)
@@ -83,7 +105,9 @@ def impute_knn(df: pd.DataFrame, n_neighbors: int = 5, exclude_cols: list = None
     Args:
         df: Input DataFrame
         n_neighbors: Number of neighboring samples to use for imputation
-        exclude_cols: List of column names to exclude from imputation
+        exclude_cols: List of column names excluded from both imputation and
+            the neighbor feature matrix. Exclude targets and identifiers to
+            prevent leakage or meaningless distance calculations.
 
     Returns:
         DataFrame with KNN-imputed values
@@ -126,7 +150,9 @@ def impute_iterative(
         df: Input DataFrame
         max_iter: Maximum number of imputation rounds
         random_state: Random seed for reproducibility
-        exclude_cols: List of column names to exclude from imputation
+        exclude_cols: List of column names excluded from both imputation and
+            the iterative model. Exclude targets and identifiers to prevent
+            leakage or meaningless predictors.
 
     Returns:
         DataFrame with iteratively imputed values
@@ -157,7 +183,10 @@ def impute_iterative(
 
 
 def scale_features(
-    df: pd.DataFrame, method: str = "standard", exclude_cols: list = None
+    df: pd.DataFrame,
+    method: str = "standard",
+    exclude_cols: list = None,
+    fit_frame: pd.DataFrame = None,
 ) -> pd.DataFrame:
     """Scale numeric features.
 
@@ -168,18 +197,28 @@ def scale_features(
             :class:`autoprepml.TabularNormalizer` so statistics are fit on
             training rows and reused for later data.
         exclude_cols: List of column names to exclude from scaling
+        fit_frame: Optional training frame used to learn scaling statistics.
+            When omitted, statistics are learned from ``df`` for exploratory
+            use. Use :class:`autoprepml.TabularNormalizer` for a fitted object.
 
     Returns:
         DataFrame with scaled numeric features
     """
     df_scaled = df.copy()
     exclude_cols = exclude_cols or []
+    if fit_frame is not None and not isinstance(fit_frame, pd.DataFrame):
+        raise TypeError("fit_frame must be a pandas DataFrame")
 
     numeric_cols = df_scaled.select_dtypes(include=[np.number]).columns.tolist()
     cols_to_scale = [col for col in numeric_cols if col not in exclude_cols]
 
     if not cols_to_scale:
         return df_scaled
+
+    statistics_frame = fit_frame if fit_frame is not None else df_scaled
+    missing_fit_columns = [col for col in cols_to_scale if col not in statistics_frame.columns]
+    if missing_fit_columns:
+        raise ValueError(f"fit_frame is missing columns: {missing_fit_columns}")
 
     if method == "standard":
         scaler = StandardScaler()
@@ -192,7 +231,8 @@ def scale_features(
     else:
         raise ValueError(f"Unknown scaling method: {method}")
 
-    df_scaled[cols_to_scale] = scaler.fit_transform(df_scaled[cols_to_scale])
+    scaler.fit(statistics_frame[cols_to_scale])
+    df_scaled[cols_to_scale] = scaler.transform(df_scaled[cols_to_scale])
 
     return df_scaled
 

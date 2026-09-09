@@ -35,7 +35,7 @@ prep.save_report('churn_report.html')
 
 **What happens:**
 1. Missing values are imputed using the median for numeric columns and the mode for categorical columns.
-2. Categorical features are label encoded.
+2. Categorical features are one-hot encoded by default so nominal values are not given an artificial order.
 3. Numeric features are normalised with StandardScaler.
 4. Imbalanced classes are oversampled when the selected configuration enables balancing.
 
@@ -162,8 +162,8 @@ cleaning:
   outlier_method: iforest
   outlier_contamination: 0.03  # More conservative
   remove_outliers: false       # Keep outliers
-  scale_method: standard
-  encode_method: label
+  scale_method: standard  # standard, minmax, robust, maxabs
+  encode_method: onehot
   balance_method: oversample
 
 detection:

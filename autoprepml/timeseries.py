@@ -165,8 +165,14 @@ class TimeSeriesPrepML:
 
         missing_before = self.df[self.value_column].isnull().sum()
 
-        if method in {"linear", "time"}:
+        if method == "linear":
             self.df[self.value_column] = self.df[self.value_column].interpolate(method=method)
+        elif method == "time":
+            # Pandas' time interpolation requires a DatetimeIndex. Work on a
+            # chronological temporary index and restore the public schema.
+            ordered = self.df.sort_values(self.timestamp_column).set_index(self.timestamp_column)
+            ordered[self.value_column] = ordered[self.value_column].interpolate(method="time")
+            self.df = ordered.reset_index()
         elif method == "ffill":
             self.df[self.value_column] = self.df[self.value_column].ffill()
         elif method == "bfill":
@@ -247,6 +253,9 @@ class TimeSeriesPrepML:
             lags = [1, 7, 30]
         if not self.value_column:
             raise ValueError("value_column must be specified for lag features")
+        lags = list(lags)
+        if any(not isinstance(lag, int) or isinstance(lag, bool) or lag < 1 for lag in lags):
+            raise ValueError("lags must contain positive integers")
 
         for lag in lags:
             self.df[f"{self.value_column}_lag_{lag}"] = self.df[self.value_column].shift(lag)
@@ -342,6 +351,8 @@ class TimeSeriesPrepML:
                 raise TypeError("fit_end must be an integer row boundary")
             if fit_end < 1 or fit_end > len(self.df):
                 raise ValueError("fit_end must be between 1 and the number of rows")
+        if not self.df[self.timestamp_column].is_monotonic_increasing:
+            raise ValueError("sort_by_time must be called before fitting a time-series normalizer")
         fit_frame = self.df.iloc[:fit_end] if fit_end is not None else self.df
         if columns is None:
             if not self.value_column:
@@ -388,6 +399,9 @@ class TimeSeriesPrepML:
         Returns:
             Resampled DataFrame
         """
+        if agg_func not in {"sum", "mean", "min", "max", "count"}:
+            raise ValueError("agg_func must be sum, mean, min, max, or count")
+
         self.df = self.df.set_index(self.timestamp_column)
 
         if agg_func == "sum":

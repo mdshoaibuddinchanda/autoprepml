@@ -60,8 +60,8 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 ### Cleaning
 
 - **Imputation**: Median for numeric, mode for categorical
-- **Scaling**: StandardScaler or MinMaxScaler
-- **Encoding**: Label encoding or one-hot encoding
+- **Scaling**: Standard, min-max, robust, or max-absolute scaling
+- **Encoding**: One-hot encoding by default, with explicit label encoding for ordinal values
 - **Balancing**: Oversampling or undersampling for imbalanced classes
 
 ### Reporting

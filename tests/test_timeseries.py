@@ -137,6 +137,20 @@ def test_interpolate_missing_ffill():
     assert result["value"].iloc[2] == 10
 
 
+def test_interpolate_missing_time_uses_timestamp_values():
+    df = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2024-01-01", "2024-01-02", "2024-01-03"]),
+            "value": [1.0, np.nan, 3.0],
+        }
+    )
+    result = TimeSeriesPrepML(
+        df, timestamp_column="date", value_column="value"
+    ).interpolate_missing(method="time")
+
+    assert result["value"].tolist() == [1.0, 2.0, 3.0]
+
+
 def test_detect_outliers_zscore(sample_timeseries_df):
     """Test outlier detection with z-score"""
     prep = TimeSeriesPrepML(sample_timeseries_df, timestamp_column="date", value_column="value")
@@ -334,3 +348,27 @@ def test_time_series_normalizer_requires_fit():
     prep = TimeSeriesPrepML(df, timestamp_column="date", value_column="value")
     with pytest.raises(ValueError, match="fit_normalizer"):
         prep.transform_normalized()
+
+
+def test_lag_features_reject_future_or_invalid_lags(sample_timeseries_df):
+    prep = TimeSeriesPrepML(sample_timeseries_df, timestamp_column="date", value_column="value")
+    with pytest.raises(ValueError, match="positive integers"):
+        prep.add_lag_features(lags=[0, -1])
+
+
+def test_resample_rejects_unknown_aggregation(sample_timeseries_df):
+    prep = TimeSeriesPrepML(sample_timeseries_df, timestamp_column="date", value_column="value")
+    with pytest.raises(ValueError, match="agg_func"):
+        prep.resample("D", agg_func="median")
+
+
+def test_time_series_normalizer_requires_chronological_input():
+    df = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2024-01-02", "2024-01-01"]),
+            "value": [2.0, 1.0],
+        }
+    )
+    prep = TimeSeriesPrepML(df, timestamp_column="date", value_column="value")
+    with pytest.raises(ValueError, match="sort_by_time"):
+        prep.fit_normalizer()

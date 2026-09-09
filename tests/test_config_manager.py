@@ -6,7 +6,13 @@ import json
 import stat
 from pathlib import Path
 from autoprepml.config_manager import AutoPrepMLConfig
-from autoprepml.config import DEFAULT_CONFIG, get_default_config, load_config, save_config
+from autoprepml.config import (
+    DEFAULT_CONFIG,
+    get_default_config,
+    load_config,
+    save_config,
+    validate_config,
+)
 
 
 def test_default_config_isolation():
@@ -15,6 +21,14 @@ def test_default_config_isolation():
     config["cleaning"]["scale_method"] = "minmax"
 
     assert DEFAULT_CONFIG["cleaning"]["scale_method"] == "standard"
+    assert DEFAULT_CONFIG["cleaning"]["encode_method"] == "onehot"
+
+
+def test_validate_config_rejects_invalid_known_values():
+    with pytest.raises(ValueError, match="scale_method"):
+        validate_config({"cleaning": {"scale_method": "unknown"}})
+    with pytest.raises(ValueError, match="contamination"):
+        validate_config({"detection": {"contamination": 2.0}})
 
 
 def test_file_config_merge_does_not_mutate_defaults(tmp_path):

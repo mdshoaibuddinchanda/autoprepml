@@ -4,6 +4,7 @@ from typing import Dict, Any, List, Tuple, Optional
 import numpy as np
 from pathlib import Path
 import json
+import hashlib
 
 from .normalization import denormalize_image_array, normalize_image_array
 
@@ -42,18 +43,36 @@ class ImagePrepML:
         Args:
             image_dir: Directory containing images
             image_paths: List of specific image paths
-            target_size: Target image dimensions (height, width)
+            target_size: Target image dimensions as ``(width, height)``,
+                matching Pillow's ``Image.resize`` convention.
             color_mode: Color mode ('rgb', 'grayscale', 'rgba')
             normalize: Whether to normalize pixel values
             normalization_mode: ``zero_one``, ``minus_one_one``, ``standard``, or ``none``
             normalization_mean: Training-set channel mean for ``standard`` mode
             normalization_std: Training-set channel standard deviation for ``standard`` mode
         """
+        if (
+            not isinstance(target_size, (tuple, list))
+            or len(target_size) != 2
+            or any(
+                not isinstance(dimension, (int, np.integer))
+                or isinstance(dimension, bool)
+                or dimension <= 0
+                for dimension in target_size
+            )
+        ):
+            raise ValueError("target_size must contain two positive integers: (width, height)")
+        if not isinstance(color_mode, str):
+            raise TypeError("color_mode must be a string")
+        self.color_mode = color_mode.lower().strip()
+        if self.color_mode not in {"rgb", "rgba", "grayscale", "gray"}:
+            raise ValueError("color_mode must be rgb, rgba, grayscale, or gray")
+        if not isinstance(normalize, (bool, np.bool_)):
+            raise TypeError("normalize must be a boolean")
         self.image_dir = Path(image_dir) if image_dir else None
         self.image_paths = image_paths or []
-        self.target_size = target_size
-        self.color_mode = color_mode.lower()
-        self.normalize = normalize
+        self.target_size = tuple(int(dimension) for dimension in target_size)
+        self.normalize = bool(normalize)
         if not isinstance(normalization_mode, str):
             raise TypeError("normalization_mode must be a string")
         self.normalization_mode = normalization_mode.lower().strip()
@@ -94,8 +113,8 @@ class ImagePrepML:
         else:
             self.image_paths = [Path(p) for p in collected_paths]
 
-        # Remove duplicates
-        self.image_paths = list(set(self.image_paths))
+        # Remove duplicates while keeping a deterministic processing order.
+        self.image_paths = sorted(set(self.image_paths), key=lambda path: str(path).lower())
 
         if not self.image_paths:
             raise ValueError("No images found. Provide image_dir or image_paths.")
@@ -135,6 +154,10 @@ class ImagePrepML:
             "low_quality": [],
             "duplicates": [],
         }
+
+        # ``detect`` is repeatable; do not append stale metadata when callers
+        # run it after adding or removing files.
+        self.image_info = []
 
         sizes = {}
         color_modes = {}
@@ -177,7 +200,7 @@ class ImagePrepML:
                     )
 
                 # Check for duplicates (simple hash-based)
-                img_hash = hash(img.tobytes())
+                img_hash = hashlib.sha256(img.tobytes()).hexdigest()
                 if img_hash in file_hashes:
                     issues["duplicates"].append(
                         {"path": str(img_path), "duplicate_of": file_hashes[img_hash]}
@@ -596,9 +619,8 @@ class ImagePrepML:
         indices = np.arange(n)
 
         if shuffle:
-            if random_state is not None:
-                np.random.seed(random_state)
-            np.random.shuffle(indices)
+            rng = np.random.default_rng(random_state)
+            rng.shuffle(indices)
 
         train_end = int(n * train_ratio)
         val_end = train_end + int(n * val_ratio)

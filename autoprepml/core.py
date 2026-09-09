@@ -14,7 +14,7 @@ import pandas as pd
 from . import detection
 from . import cleaning
 from . import visualization
-from .config import load_config
+from .config import load_config, validate_config
 
 # Optional LLM support
 try:
@@ -96,7 +96,7 @@ class AutoPrepML:
         if config_path:
             self.config = load_config(config_path)
         elif config:
-            self.config = copy.deepcopy(config)
+            self.config = validate_config(config)
         else:
             self.config = load_config()
 
@@ -160,6 +160,7 @@ class AutoPrepML:
             contamination=detection_config.get("contamination", 0.05),
             zscore_threshold=detection_config.get("zscore_threshold", 3.0),
             imbalance_threshold=detection_config.get("imbalance_threshold", 0.3),
+            exclude_cols=[target_col] if target_col else None,
         )
         self._detection_target_col = target_col
         if cache_key is not None:
@@ -204,6 +205,20 @@ class AutoPrepML:
 
         df_clean = self.df.copy()
 
+        # A missing target is not a feature missing value.  It cannot provide
+        # a supervised training signal, so remove the row before fitting any
+        # feature statistics or balancing classes.
+        if target_col is not None:
+            missing_target = df_clean[target_col].isna()
+            missing_target_count = int(missing_target.sum())
+            if missing_target_count:
+                df_clean = df_clean.loc[~missing_target].copy()
+                self._log_action(
+                    "dropped_missing_targets", {"column": target_col, "count": missing_target_count}
+                )
+                if df_clean.empty:
+                    raise ValueError("No rows remain after dropping missing target labels")
+
         # Run detection first
         if not self.detection_results or self._detection_target_col != target_col:
             self.detect(target_col)
@@ -215,10 +230,16 @@ class AutoPrepML:
         # Step 1: Handle missing values with advanced options
         if self.detection_results.get("missing_values"):
             if use_advanced and imputation_method == "knn":
-                df_clean = cleaning.impute_knn(df_clean)
+                df_clean = cleaning.impute_knn(
+                    df_clean,
+                    exclude_cols=[target_col] if target_col else None,
+                )
                 self._log_action("imputed_missing", {"strategy": "knn"})
             elif use_advanced and imputation_method == "iterative":
-                df_clean = cleaning.impute_iterative(df_clean)
+                df_clean = cleaning.impute_iterative(
+                    df_clean,
+                    exclude_cols=[target_col] if target_col else None,
+                )
                 self._log_action("imputed_missing", {"strategy": "iterative"})
             else:
                 cleaning_config = self.config.get("cleaning", {})
@@ -243,11 +264,11 @@ class AutoPrepML:
         cleaning_config = self.config.get("cleaning", {})
         df_clean = cleaning.encode_categorical(
             df_clean,
-            method=cleaning_config.get("encode_method", "label"),
+            method=cleaning_config.get("encode_method", "onehot"),
             exclude_cols=[target_col] if target_col else None,
         )
         self._log_action(
-            "encoded_categorical", {"method": cleaning_config.get("encode_method", "label")}
+            "encoded_categorical", {"method": cleaning_config.get("encode_method", "onehot")}
         )
 
         # Step 4: Scale features
@@ -268,6 +289,16 @@ class AutoPrepML:
                     "balance_method", "oversample"
                 )
                 if selected_balance_method == "smote":
+                    categorical_features = [
+                        column
+                        for column in self.df.select_dtypes(include=["object", "category"]).columns
+                        if column != target_col
+                    ]
+                    if categorical_features:
+                        raise ValueError(
+                            "SMOTE requires numeric features. Categorical columns found: "
+                            f"{categorical_features}. Use oversample or an SMOTENC workflow."
+                        )
                     df_clean = cleaning.balance_classes_smote(df_clean, target_col)
                     self._log_action("balanced_classes", {"method": "smote"})
                 else:

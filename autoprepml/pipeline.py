@@ -7,13 +7,26 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import (
+    MaxAbsScaler,
+    MinMaxScaler,
+    OneHotEncoder,
+    RobustScaler,
+    StandardScaler,
+    FunctionTransformer,
+)
+
+
+def _as_object(frame: Any) -> Any:
+    """Convert boolean extension blocks to an imputer-compatible object block."""
+    return frame.astype(object)
 
 
 def make_preprocessing_pipeline(
     frame: pd.DataFrame,
     target_col: Optional[str] = None,
     scale_numeric: bool = True,
+    scale_method: str = "standard",
     numeric_strategy: str = "median",
     categorical_strategy: str = "most_frequent",
 ) -> Pipeline:
@@ -26,7 +39,8 @@ def make_preprocessing_pipeline(
     Args:
         frame: Representative training frame used to identify column roles.
         target_col: Optional target column to exclude from preprocessing.
-        scale_numeric: Add ``StandardScaler`` after numeric imputation.
+        scale_numeric: Add a numeric scaler after imputation.
+        scale_method: ``standard``, ``minmax``, ``robust``, or ``maxabs``.
         numeric_strategy: Strategy passed to ``SimpleImputer``.
         categorical_strategy: Strategy passed to ``SimpleImputer``.
     """
@@ -36,20 +50,39 @@ def make_preprocessing_pipeline(
         raise ValueError(f"Target column '{target_col}' not found in DataFrame")
     if not isinstance(scale_numeric, bool):
         raise TypeError("scale_numeric must be a boolean")
+    if not isinstance(scale_method, str):
+        raise TypeError("scale_method must be a string")
+    scale_method = scale_method.lower().strip()
+    if scale_method not in {"standard", "minmax", "robust", "maxabs"}:
+        raise ValueError("scale_method must be standard, minmax, robust, or maxabs")
 
     feature_frame = frame.drop(columns=[target_col]) if target_col else frame
-    numeric_columns = feature_frame.select_dtypes(include=["number", "bool"]).columns.tolist()
+    numeric_columns = [
+        column
+        for column in feature_frame.select_dtypes(include=["number"]).columns
+        if not pd.api.types.is_bool_dtype(feature_frame[column])
+    ]
+    boolean_columns = feature_frame.select_dtypes(include=["bool"]).columns.tolist()
     categorical_columns = [
-        column for column in feature_frame.columns if column not in numeric_columns
+        column
+        for column in feature_frame.columns
+        if column not in numeric_columns and column not in boolean_columns
     ]
 
     transformers = []
     if numeric_columns:
         numeric_steps = [("imputer", SimpleImputer(strategy=numeric_strategy))]
         if scale_numeric:
-            numeric_steps.append(("scaler", StandardScaler()))
+            scaler_types = {
+                "standard": StandardScaler,
+                "minmax": MinMaxScaler,
+                "robust": RobustScaler,
+                "maxabs": MaxAbsScaler,
+            }
+            numeric_steps.append(("scaler", scaler_types[scale_method]()))
         transformers.append(("numeric", Pipeline(numeric_steps), numeric_columns))
-    if categorical_columns:
+    if categorical_columns or boolean_columns:
+        categorical_columns = categorical_columns + boolean_columns
         encoder_options = {"handle_unknown": "ignore"}
         if "sparse_output" in inspect.signature(OneHotEncoder).parameters:
             encoder_options["sparse_output"] = True
@@ -57,6 +90,17 @@ def make_preprocessing_pipeline(
             encoder_options["sparse"] = True
         categorical_pipeline = Pipeline(
             [
+                # scikit-learn's SimpleImputer rejects a bool-only block;
+                # object conversion keeps booleans categorical and preserves
+                # the missing-value policy for mixed or bool-only frames.
+                (
+                    "as_object",
+                    FunctionTransformer(
+                        _as_object,
+                        validate=False,
+                        feature_names_out="one-to-one",
+                    ),
+                ),
                 ("imputer", SimpleImputer(strategy=categorical_strategy)),
                 ("encoder", OneHotEncoder(**encoder_options)),
             ]
