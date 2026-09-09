@@ -1,9 +1,15 @@
 """Reporting utilities for AutoPrepML"""
 
 import json
-from jinja2 import Template
-from typing import Dict, Any
 from datetime import datetime
+from typing import Any, Dict
+
+from jinja2 import Environment, select_autoescape
+
+
+_TEMPLATE_ENVIRONMENT = Environment(
+    autoescape=select_autoescape(default=True, default_for_string=True)
+)
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -196,7 +202,7 @@ def generate_html_report(report: Dict[str, Any]) -> str:
     if "detection_results" not in report:
         return generate_universal_html_report(report)
     # Use detailed template for AutoPrepML
-    tpl = Template(HTML_TEMPLATE)
+    tpl = _TEMPLATE_ENVIRONMENT.from_string(HTML_TEMPLATE)
     return tpl.render(**report)
 
 
@@ -382,5 +388,5 @@ def generate_universal_html_report(report: Dict[str, Any]) -> str:
         "timestamp",
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     )
-    tpl = Template(UNIVERSAL_TEMPLATE)
+    tpl = _TEMPLATE_ENVIRONMENT.from_string(UNIVERSAL_TEMPLATE)
     return tpl.render(**render_context)

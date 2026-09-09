@@ -3,6 +3,8 @@
 import copy
 import hashlib
 import logging
+import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -334,16 +336,31 @@ class AutoPrepML:
 
         report = self.report(include_plots=True)
         output_file = Path(output_path)
-        output_file.parent.mkdir(parents=True, exist_ok=True)
 
         if output_file.suffix.lower() == ".json":
-            with output_file.open("w", encoding="utf-8") as f:
-                f.write(generate_json_report(report))
+            report_content = generate_json_report(report)
         elif output_file.suffix.lower() == ".html":
-            with output_file.open("w", encoding="utf-8") as f:
-                f.write(generate_html_report(report))
+            report_content = generate_html_report(report)
         else:
             raise ValueError("Output path must end with .json or .html")
+
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = None
+        try:
+            file_descriptor, temporary_name = tempfile.mkstemp(
+                prefix=f".{output_file.stem}-",
+                suffix=".tmp",
+                dir=output_file.parent,
+            )
+            temporary_path = Path(temporary_name)
+            with os.fdopen(file_descriptor, "w", encoding="utf-8") as report_file:
+                report_file.write(report_content)
+                report_file.flush()
+                os.fsync(report_file.fileno())
+            os.replace(temporary_path, output_file)
+        finally:
+            if temporary_path is not None and temporary_path.exists():
+                temporary_path.unlink()
 
         self._log_action("saved_report", {"path": output_path})
 

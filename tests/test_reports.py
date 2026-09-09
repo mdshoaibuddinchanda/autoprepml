@@ -64,3 +64,29 @@ def test_json_report_does_not_replace_original_plots():
     generate_json_report(report)
 
     assert report["plots"]["missing_plot"] == "secret-base64"
+
+
+def test_html_report_escapes_untrusted_values():
+    """Column names and log values cannot inject markup into HTML reports."""
+    report = {
+        "timestamp": "2025-10-23",
+        "original_shape": (1, 1),
+        "cleaned_shape": None,
+        "detection_results": {
+            "missing_values": {
+                "<script>alert(1)</script>": {
+                    "count": 1,
+                    "percent": 100.0,
+                    "dtype": "object",
+                }
+            },
+            "outliers": {"outlier_count": 0},
+        },
+        "logs": [{"action": "<img src=x onerror=alert(1)>"}],
+    }
+
+    html = generate_html_report(report)
+
+    assert "<script>alert(1)</script>" not in html
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
+    assert "&lt;img" in html or r"\u003cimg" in html
