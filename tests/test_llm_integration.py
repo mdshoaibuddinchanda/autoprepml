@@ -3,6 +3,7 @@
 import pytest
 import pandas as pd
 import numpy as np
+from types import SimpleNamespace
 
 # Skip all tests in this module if LLM dependencies are not available
 pytest.importorskip("openai", reason="openai not installed")
@@ -236,6 +237,116 @@ class TestErrorHandling:
         summary = suggestor._get_dataframe_summary(df)
         assert summary["shape"]["rows"] == 0
         assert summary["shape"]["columns"] == 0
+
+
+class TestLLMCalls:
+    """Provider adapters are exercised with deterministic fake clients."""
+
+    @staticmethod
+    def _suggestor(provider, client):
+        suggestor = object.__new__(LLMSuggestor)
+        suggestor.provider = provider
+        suggestor.client = client
+        suggestor.model = "test-model"
+        suggestor.temperature = 0.2
+        suggestor.max_tokens = 32
+        suggestor.base_url = "http://localhost:11434"
+        suggestor._google_legacy = False
+        return suggestor
+
+    def test_openai_and_anthropic_calls(self):
+        openai_client = SimpleNamespace(
+            chat=SimpleNamespace(
+                completions=SimpleNamespace(
+                    create=lambda **_kwargs: SimpleNamespace(
+                        choices=[SimpleNamespace(message=SimpleNamespace(content="openai"))]
+                    )
+                )
+            )
+        )
+        anthropic_client = SimpleNamespace(
+            messages=SimpleNamespace(
+                create=lambda **_kwargs: SimpleNamespace(
+                    content=[SimpleNamespace(text="anthropic")]
+                )
+            )
+        )
+
+        assert (
+            self._suggestor(LLMProvider.OPENAI, openai_client)._call_llm("prompt", "system")
+            == "openai"
+        )
+        assert (
+            self._suggestor(LLMProvider.ANTHROPIC, anthropic_client)._call_llm("prompt", "system")
+            == "anthropic"
+        )
+
+    def test_google_modern_and_ollama_calls(self):
+        google_calls = []
+
+        class GoogleModels:
+            def generate_content(self, **kwargs):
+                google_calls.append(kwargs)
+                return SimpleNamespace(text="google")
+
+        google_client = SimpleNamespace(models=GoogleModels())
+        ollama_client = SimpleNamespace(chat=lambda **_kwargs: {"message": {"content": "ollama"}})
+
+        assert (
+            self._suggestor(LLMProvider.GOOGLE, google_client)._call_llm("prompt", "system")
+            == "google"
+        )
+        assert google_calls[0]["model"] == "test-model"
+        assert (
+            self._suggestor(LLMProvider.OLLAMA, ollama_client)._call_llm("prompt", "system")
+            == "ollama"
+        )
+
+    def test_legacy_google_and_error_calls(self):
+        legacy_client = SimpleNamespace(
+            generate_content=lambda *_args, **_kwargs: SimpleNamespace(
+                candidates=[SimpleNamespace(finish_reason=1)], text="legacy"
+            )
+        )
+        legacy = self._suggestor(LLMProvider.GOOGLE, legacy_client)
+        legacy._google_legacy = True
+        assert legacy._call_llm("prompt") == "legacy"
+
+        blocked_client = SimpleNamespace(
+            generate_content=lambda *_args, **_kwargs: SimpleNamespace(
+                candidates=[SimpleNamespace(finish_reason=2)], text="blocked"
+            )
+        )
+        blocked = self._suggestor(LLMProvider.GOOGLE, blocked_client)
+        blocked._google_legacy = True
+        assert "blocked by safety filters" in blocked._call_llm("prompt")
+
+        failing = self._suggestor(
+            LLMProvider.OLLAMA,
+            SimpleNamespace(chat=lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("boom"))),
+        )
+        assert failing._call_llm("prompt").startswith("Error calling ollama: boom")
+
+    def test_response_parsing_and_rename_helpers(self, monkeypatch):
+        suggestor = object.__new__(LLMSuggestor)
+        suggestor.include_samples = False
+        suggestor._call_llm = lambda *_args, **_kwargs: '{"quality_score": 8}'
+        frame = pd.DataFrame({"age": [1, 2, 3]})
+        assert suggestor.analyze_dataframe(frame)["quality_score"] == 8
+
+        suggestor._call_llm = lambda *_args, **_kwargs: '```json\n[{"name": "age2"}]\n```'
+        assert suggestor.suggest_features(frame) == [{"name": "age2"}]
+
+        suggestor._call_llm = lambda *_args, **_kwargs: "'customer_age' explanation"
+        assert suggestor.suggest_column_rename(frame, "age") == "customer_age explanation"
+        assert "Error: Column" in suggestor.suggest_column_rename(frame, "missing")
+
+        monkeypatch.setattr(
+            suggestor,
+            "suggest_column_rename",
+            lambda _df, column: "new_" + column,
+        )
+        assert suggestor.suggest_all_column_renames(frame) == {"age": "new_age"}
 
 
 # Integration tests (require actual API keys or running Ollama)
