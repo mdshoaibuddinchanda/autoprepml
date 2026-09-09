@@ -2,7 +2,15 @@
 import pytest
 import pandas as pd
 import numpy as np
+from autoprepml import cleaning
 from autoprepml.cleaning import impute_knn, impute_iterative, balance_classes_smote
+
+
+def test_smote_dependency_is_importable():
+    """The required SMOTE dependency must not silently degrade to skipped tests."""
+    assert cleaning.SMOTE_AVAILABLE, (
+        "imbalanced-learn could not import with the installed scikit-learn version"
+    )
 
 
 class TestAdvancedImputation:

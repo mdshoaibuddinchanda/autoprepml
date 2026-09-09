@@ -2,12 +2,13 @@
 from typing import Optional, Dict, Any, Tuple
 import pandas as pd
 import logging
+import copy
 from datetime import datetime
 
 from . import detection
 from . import cleaning
 from . import visualization
-from .config import load_config, DEFAULT_CONFIG
+from .config import load_config
 
 # Optional LLM support
 try:
@@ -60,9 +61,9 @@ class AutoPrepML:
         if config_path:
             self.config = load_config(config_path)
         elif config:
-            self.config = config
+            self.config = copy.deepcopy(config)
         else:
-            self.config = DEFAULT_CONFIG.copy()
+            self.config = load_config()
         
         # Initialize LLM if enabled
         self.llm_enabled = enable_llm

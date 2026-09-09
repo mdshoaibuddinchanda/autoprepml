@@ -4,6 +4,29 @@ import os
 import json
 from pathlib import Path
 from autoprepml.config_manager import AutoPrepMLConfig
+from autoprepml.config import DEFAULT_CONFIG, get_default_config, load_config
+
+
+def test_default_config_isolation():
+    """Returned defaults must not share nested state with the module constant."""
+    config = get_default_config()
+    config['cleaning']['scale_method'] = 'minmax'
+
+    assert DEFAULT_CONFIG['cleaning']['scale_method'] == 'standard'
+
+
+def test_file_config_merge_does_not_mutate_defaults(tmp_path):
+    """Loading an override must preserve defaults for later callers."""
+    config_path = tmp_path / 'config.json'
+    config_path.write_text(
+        json.dumps({'cleaning': {'scale_method': 'minmax'}}),
+        encoding='utf-8',
+    )
+
+    loaded = load_config(str(config_path))
+
+    assert loaded['cleaning']['scale_method'] == 'minmax'
+    assert DEFAULT_CONFIG['cleaning']['scale_method'] == 'standard'
 
 
 class TestAutoPrepMLConfig:

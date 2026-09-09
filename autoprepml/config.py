@@ -1,6 +1,7 @@
 """Configuration management for AutoPrepML"""
 import os
 import json
+import copy
 import yaml
 from typing import Dict, Any, Optional
 
@@ -47,7 +48,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
         Configuration dictionary
     """
     if config_path is None:
-        return DEFAULT_CONFIG.copy()
+        return copy.deepcopy(DEFAULT_CONFIG)
     
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config file not found: {config_path}")
@@ -61,7 +62,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
             raise ValueError("Config file must be YAML or JSON")
     
     # Merge with defaults (user config overrides defaults)
-    config = DEFAULT_CONFIG.copy()
+    config = copy.deepcopy(DEFAULT_CONFIG)
     if user_config:
         for section, values in user_config.items():
             if section in config and isinstance(config[section], dict):
@@ -92,4 +93,4 @@ def get_default_config() -> Dict[str, Any]:
     Returns:
         Default configuration dictionary
     """
-    return DEFAULT_CONFIG.copy()
+    return copy.deepcopy(DEFAULT_CONFIG)
