@@ -118,6 +118,41 @@ jobs:
           --junitxml=pytest.xml
           --tb=short
 
+      - name: Publish test failure summary
+        if: failure()
+        shell: python {0}
+        run: |
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          report = Path("pytest.xml")
+          messages = []
+          if report.exists():
+              root = ET.parse(report).getroot()
+              for case in root.findall(".//testcase"):
+                  problem = case.find("failure") or case.find("error")
+                  if problem is not None:
+                      detail = " ".join((problem.text or "").split())
+                      messages.append(
+                          f"{case.attrib.get('classname', '')}.{case.attrib.get('name', '')}: "
+                          f"{detail[:400]}"
+                      )
+              for problem in root.findall("./errors/error"):
+                  messages.append("test session error: " + " ".join((problem.text or "").split())[:400])
+
+          if not messages:
+              messages.append("pytest exited with a failure; pytest.xml contained no details")
+
+          summary = "\n".join(messages)
+          print("::error title=pytest failures::" + summary.replace("\n", " | "))
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              with open(summary_path, "a", encoding="utf-8") as stream:
+                  stream.write("### Pytest failures\n\n")
+                  stream.write("\n".join(f"- {message}" for message in messages))
+                  stream.write("\n")
+
       - name: Verify installed dependency graph
         run: python -m pip check
 
