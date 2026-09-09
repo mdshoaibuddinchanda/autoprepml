@@ -87,7 +87,13 @@ class TestLLMSuggestor:
         assert info["missing_count"] == 0
         assert info["unique_values"] == 3
         assert "top_values" in info
-        assert "A" in info["top_values"]
+        assert "A" not in info["top_values"]
+        assert info["top_values"]["class_1"] == 3
+
+        sample_enabled = LLMSuggestor(provider="ollama", include_samples=True)
+        sample_info = sample_enabled._get_column_info(df, "category")
+        assert "A" in sample_info["top_values"]
+        assert sample_info["sample_values"][:2] == ["A", "B"]
 
     def test_get_dataframe_summary(self):
         """Test DataFrame summary generation"""
@@ -135,6 +141,17 @@ class TestLLMSuggestor:
         summary = suggestor._get_dataframe_summary(df)
 
         assert summary["duplicate_rows"] == 2  # Two duplicate rows
+
+    def test_raw_samples_are_opt_in(self, monkeypatch):
+        """LLM context redacts record values unless explicitly enabled."""
+        monkeypatch.delenv("AUTOPREPML_LLM_INCLUDE_SAMPLES", raising=False)
+        df = pd.DataFrame({"secret": ["customer-123", "customer-456"]})
+
+        redacted = LLMSuggestor(provider="ollama")._get_dataframe_summary(df)
+        assert "customer-123" not in str(redacted)
+
+        enabled = LLMSuggestor(provider="ollama", include_samples=True)
+        assert "customer-123" in str(enabled._get_dataframe_summary(df))
 
 
 class TestConvenienceFunctions:

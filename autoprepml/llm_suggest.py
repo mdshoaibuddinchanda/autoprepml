@@ -1,10 +1,11 @@
 """LLM integration for AutoPrepML - AI-powered data preprocessing suggestions"""
 
-import os
-from typing import Optional, Dict, Any, List
-import pandas as pd
-import json
 from enum import Enum
+import json
+import os
+from typing import Any, Dict, List, Optional
+
+import pandas as pd
 
 try:
     from .config_manager import AutoPrepMLConfig
@@ -50,6 +51,7 @@ class LLMSuggestor:
         base_url: Optional[str] = None,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        include_samples: Optional[bool] = None,
     ):
         """Initialize LLM Suggestor with fully dynamic configuration.
 
@@ -66,6 +68,9 @@ class LLMSuggestor:
                         Default: Environment variable <PROVIDER>_TEMPERATURE or 0.7
             max_tokens: Maximum tokens in response.
                        Default: Environment variable <PROVIDER>_MAX_TOKENS or 500
+            include_samples: Include raw sample values in prompts. Defaults to
+                ``AUTOPREPML_LLM_INCLUDE_SAMPLES`` or ``False`` to avoid
+                sending potentially sensitive records to a provider.
 
         Environment Variables for Dynamic Configuration:
             - <PROVIDER>_API_KEY: API key (e.g., GOOGLE_API_KEY)
@@ -112,6 +117,14 @@ class LLMSuggestor:
 
         # Set model with priority: parameter > env var > default
         self.model = model or self._get_default_model()
+        if include_samples is None:
+            include_samples = os.getenv("AUTOPREPML_LLM_INCLUDE_SAMPLES", "false").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+        self.include_samples = include_samples
 
         # Initialize client
         self.client = self._initialize_client()
@@ -476,10 +489,22 @@ Return as a JSON array of objects with keys: name, method, impact
         else:
             # Categorical columns
             value_counts = col.value_counts().head(5)
+            top_values = (
+                value_counts.to_dict()
+                if self.include_samples
+                else {
+                    f"class_{index + 1}": int(count)
+                    for index, count in enumerate(value_counts.tolist())
+                }
+            )
             info |= {
-                "top_values": value_counts.to_dict(),
-                "sample_values": col.dropna().head(5).tolist(),
+                "top_values": top_values,
             }
+            if self.include_samples:
+                info["sample_values"] = col.dropna().head(5).tolist()
+
+        if pd.api.types.is_numeric_dtype(col) and self.include_samples:
+            info["sample_values"] = col.dropna().head(5).tolist()
 
         return info
 
@@ -505,15 +530,30 @@ Return as a JSON array of objects with keys: name, method, impact
         # Categorical columns summary
         categorical_cols = df.select_dtypes(include=["object", "category"]).columns
         if len(categorical_cols) > 0:
-            summary["categorical_summary"] = {
-                col: df[col].value_counts().head(5).to_dict()
-                for col in categorical_cols[:5]  # Limit to first 5
-            }
+            summary["categorical_summary"] = {}
+            for col in categorical_cols[:5]:  # Limit to first 5
+                value_counts = df[col].value_counts().head(5)
+                summary["categorical_summary"][col] = (
+                    value_counts.to_dict()
+                    if self.include_samples
+                    else {
+                        "unique_values": int(df[col].nunique()),
+                        "top_counts": [int(count) for count in value_counts.tolist()],
+                    }
+                )
 
         # Target column analysis (if specified)
         if target_col and target_col in df.columns:
+            target_counts = df[target_col].value_counts()
             target_info = {
-                "value_counts": df[target_col].value_counts().to_dict(),
+                "value_counts": (
+                    target_counts.to_dict()
+                    if self.include_samples
+                    else {
+                        f"class_{index + 1}": int(count)
+                        for index, count in enumerate(target_counts.tolist())
+                    }
+                ),
                 "unique_values": int(df[target_col].nunique()),
             }
             if pd.api.types.is_numeric_dtype(df[target_col]):
