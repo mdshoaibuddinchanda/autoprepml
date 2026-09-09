@@ -375,3 +375,34 @@ def test_directed_vs_undirected():
     assert len(edge_list) == 2
     assert (1, 2) in edge_list
     assert (2, 1) in edge_list
+
+
+def test_undirected_graph_normalizes_edges_and_features():
+    """Undirected mode should share duplicate, adjacency, and density semantics."""
+    nodes = pd.DataFrame({"id": [1, 2, 3]})
+    edges = pd.DataFrame({"source": [1, 2], "target": [2, 1]})
+    prep = GraphPrepML(
+        nodes_df=nodes,
+        edges_df=edges,
+        directed=False,
+    )
+
+    assert prep.detect_issues()["edges"]["duplicate_edges"] == 1
+    prep.add_node_features()
+    assert prep.nodes_df.set_index("id").loc[1, "degree"] == 2
+    assert prep.nodes_df.set_index("id").loc[2, "degree"] == 2
+    assert prep.to_adjacency_dict() == {1: [2], 2: [1]}
+    assert prep.get_graph_stats()["density"] == 4 / 6
+
+    prep.remove_duplicate_edges()
+    assert len(prep.edges_df) == 1
+
+
+def test_graph_stats_without_nodes_are_safe():
+    """Edge-only graphs should expose basic stats without raising."""
+    prep = GraphPrepML(edges_df=pd.DataFrame({"source": [1], "target": [2]}))
+    stats = prep.get_graph_stats()
+
+    assert stats["directed"] is True
+    assert stats["num_edges"] == 1
+    assert "density" not in stats

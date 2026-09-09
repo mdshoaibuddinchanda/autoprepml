@@ -194,7 +194,9 @@ def test_add_lag_features(sample_timeseries_df):
 
 def test_add_rolling_features(sample_timeseries_df):
     """Test rolling window statistics"""
-    prep = TimeSeriesPrepML(sample_timeseries_df, timestamp_column="date", value_column="value")
+    clean_values = sample_timeseries_df.copy()
+    clean_values["value"] = np.arange(len(clean_values))
+    prep = TimeSeriesPrepML(clean_values, timestamp_column="date", value_column="value")
     result = prep.add_rolling_features(windows=[3], functions=["mean", "std"])
 
     assert "value_rolling_mean_3" in result.columns
@@ -203,6 +205,30 @@ def test_add_rolling_features(sample_timeseries_df):
     # First 2 rows should be NaN (window size 3)
     assert pd.isna(result["value_rolling_mean_3"].iloc[0])
     assert pd.isna(result["value_rolling_mean_3"].iloc[1])
+
+    # Forecast-safe features use only observations strictly before the row.
+    assert pd.isna(result["value_rolling_mean_3"].iloc[2])
+    assert result["value_rolling_mean_3"].iloc[3] == clean_values["value"].iloc[:3].mean()
+
+
+def test_add_rolling_features_can_include_current_value(sample_timeseries_df):
+    """Descriptive rolling statistics can explicitly include the current row."""
+    clean_values = sample_timeseries_df.copy()
+    clean_values["value"] = np.arange(len(clean_values))
+    prep = TimeSeriesPrepML(clean_values, timestamp_column="date", value_column="value")
+    result = prep.add_rolling_features(windows=[2], forecast_safe=False)
+
+    assert result["value_rolling_mean_2"].iloc[1] == clean_values["value"].iloc[:2].mean()
+
+
+def test_add_rolling_features_validates_configuration(sample_timeseries_df):
+    """Invalid rolling windows and functions should fail before mutation."""
+    prep = TimeSeriesPrepML(sample_timeseries_df, timestamp_column="date", value_column="value")
+
+    with pytest.raises(ValueError, match="positive integers"):
+        prep.add_rolling_features(windows=[0])
+    with pytest.raises(ValueError, match="Unsupported rolling function"):
+        prep.add_rolling_features(functions=["median"])
 
 
 def test_resample_daily_to_weekly():

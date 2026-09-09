@@ -1,5 +1,6 @@
 """Graph data preprocessing module for AutoPrepML"""
 
+from collections import deque
 from typing import Dict, Any, List, Tuple, Optional
 import pandas as pd
 
@@ -21,6 +22,7 @@ class GraphPrepML:
         node_id_col: str = "id",
         source_col: str = "source",
         target_col: str = "target",
+        directed: bool = True,
     ):
         """Initialize GraphPrepML.
 
@@ -30,6 +32,7 @@ class GraphPrepML:
             node_id_col: Column name for node IDs
             source_col: Column name for edge source nodes
             target_col: Column name for edge target nodes
+            directed: Whether edge direction is significant. Defaults to True.
         """
         self.nodes_df = nodes_df.copy() if nodes_df is not None else None
         self.edges_df = edges_df.copy() if edges_df is not None else None
@@ -39,6 +42,9 @@ class GraphPrepML:
         self.node_id_col = node_id_col
         self.source_col = source_col
         self.target_col = target_col
+        if not isinstance(directed, bool):
+            raise TypeError("directed must be a boolean")
+        self.directed = directed
         self.log = []
 
         # Validation
@@ -50,6 +56,23 @@ class GraphPrepML:
                 raise ValueError(f"Column '{source_col}' not found in edges DataFrame")
             if target_col not in self.edges_df.columns:
                 raise ValueError(f"Column '{target_col}' not found in edges DataFrame")
+
+    def _edge_keys(self) -> pd.Series:
+        """Return direction-aware keys used for duplicate and multi-edge logic."""
+        if self.edges_df is None:
+            return pd.Series(dtype=object)
+
+        pairs = self.edges_df[[self.source_col, self.target_col]].itertuples(index=False, name=None)
+        if self.directed:
+            keys = list(pairs)
+        else:
+            keys = [
+                tuple(
+                    sorted((source, target), key=lambda value: (type(value).__name__, repr(value)))
+                )
+                for source, target in pairs
+            ]
+        return pd.Series(keys, index=self.edges_df.index, dtype=object)
 
     def detect_issues(self) -> Dict[str, Any]:
         """Detect graph data quality issues.
@@ -75,11 +98,10 @@ class GraphPrepML:
             source_ids = set(self.edges_df[self.source_col].dropna())
             target_ids = set(self.edges_df[self.target_col].dropna())
 
+            duplicate_edges = self._edge_keys().duplicated().sum()
             issues["edges"] = {
                 "total_edges": len(self.edges_df),
-                "duplicate_edges": int(
-                    self.edges_df.duplicated(subset=[self.source_col, self.target_col]).sum()
-                ),
+                "duplicate_edges": int(duplicate_edges),
                 "self_loops": int(
                     (self.edges_df[self.source_col] == self.edges_df[self.target_col]).sum()
                 ),
@@ -170,10 +192,12 @@ class GraphPrepML:
         if self.edges_df is None:
             raise ValueError("No edges DataFrame provided")
 
+        if keep not in ("first", "last", False):
+            raise ValueError("keep must be 'first', 'last', or False")
+
         original_len = len(self.edges_df)
-        self.edges_df = self.edges_df.drop_duplicates(
-            subset=[self.source_col, self.target_col], keep=keep
-        )
+        duplicate_mask = self._edge_keys().duplicated(keep=keep)
+        self.edges_df = self.edges_df.loc[~duplicate_mask].copy()
         removed = original_len - len(self.edges_df)
 
         self.log.append({"action": "remove_duplicate_edges", "removed": removed})
@@ -190,13 +214,25 @@ class GraphPrepML:
 
         node_ids = self.nodes_df[self.node_id_col]
 
-        # Calculate degrees
-        out_degree = self.edges_df.groupby(self.source_col).size()
-        in_degree = self.edges_df.groupby(self.target_col).size()
+        if self.directed:
+            out_degree = self.edges_df.groupby(self.source_col).size()
+            in_degree = self.edges_df.groupby(self.target_col).size()
 
-        self.nodes_df["out_degree"] = node_ids.map(out_degree).fillna(0).astype(int)
-        self.nodes_df["in_degree"] = node_ids.map(in_degree).fillna(0).astype(int)
-        self.nodes_df["total_degree"] = self.nodes_df["out_degree"] + self.nodes_df["in_degree"]
+            self.nodes_df["out_degree"] = node_ids.map(out_degree).fillna(0).astype(int)
+            self.nodes_df["in_degree"] = node_ids.map(in_degree).fillna(0).astype(int)
+            self.nodes_df["total_degree"] = self.nodes_df["out_degree"] + self.nodes_df["in_degree"]
+        else:
+            incident = pd.concat(
+                [self.edges_df[self.source_col], self.edges_df[self.target_col]],
+                ignore_index=True,
+            ).value_counts()
+            degree = node_ids.map(incident).fillna(0).astype(int)
+            self.nodes_df["degree"] = degree
+            # Keep the directed column names as compatible aliases while
+            # reporting a single incident degree for undirected graphs.
+            self.nodes_df["out_degree"] = degree
+            self.nodes_df["in_degree"] = degree
+            self.nodes_df["total_degree"] = degree
 
         # Identify isolated nodes
         self.nodes_df["is_isolated"] = self.nodes_df["total_degree"] == 0
@@ -213,11 +249,11 @@ class GraphPrepML:
         if self.edges_df is None:
             raise ValueError("No edges DataFrame provided")
 
-        # Count multi-edges (same source and target pairs)
-        edge_counts = self.edges_df.groupby([self.source_col, self.target_col]).size()
-        self.edges_df["edge_count"] = self.edges_df.apply(
-            lambda row: edge_counts.get((row[self.source_col], row[self.target_col]), 1), axis=1
-        )
+        # Count multi-edges using the same direction semantics as duplicate
+        # detection and removal.
+        edge_keys = self._edge_keys()
+        edge_counts = edge_keys.value_counts()
+        self.edges_df["edge_count"] = edge_keys.map(edge_counts).astype(int)
 
         self.log.append({"action": "add_edge_features", "features": 1})
         return self.edges_df
@@ -237,13 +273,8 @@ class GraphPrepML:
             source = row[self.source_col]
             target = row[self.target_col]
 
-            if source not in adjacency:
-                adjacency[source] = []
-            if target not in adjacency:
-                adjacency[target] = []
-
-            adjacency[source].append(target)
-            adjacency[target].append(source)
+            adjacency.setdefault(source, set()).add(target)
+            adjacency.setdefault(target, set()).add(source)
 
         # BFS to find components
         visited = set()
@@ -253,11 +284,11 @@ class GraphPrepML:
         for node_id in self.nodes_df[self.node_id_col]:
             if node_id not in visited:
                 # Start new component
-                queue = [node_id]
+                queue = deque([node_id])
                 visited.add(node_id)
 
                 while queue:
-                    current = queue.pop(0)
+                    current = queue.popleft()
                     node_to_component[current] = component_id
 
                     if current in adjacency:
@@ -320,9 +351,13 @@ class GraphPrepML:
             source = row[self.source_col]
             target = row[self.target_col]
 
-            if source not in adjacency:
-                adjacency[source] = []
-            adjacency[source].append(target)
+            adjacency.setdefault(source, [])
+            if self.directed or target not in adjacency[source]:
+                adjacency[source].append(target)
+            if not self.directed:
+                adjacency.setdefault(target, [])
+                if source not in adjacency[target]:
+                    adjacency[target].append(source)
 
         return adjacency
 
@@ -334,6 +369,8 @@ class GraphPrepML:
         """
         stats = {}
 
+        stats["directed"] = self.directed
+
         if self.nodes_df is not None:
             stats["num_nodes"] = len(self.nodes_df)
 
@@ -341,14 +378,15 @@ class GraphPrepML:
             stats["num_edges"] = len(self.edges_df)
 
             if self.nodes_df is not None:
-                stats["density"] = (
-                    (2 * len(self.edges_df)) / (len(self.nodes_df) * (len(self.nodes_df) - 1))
-                    if len(self.nodes_df) > 1
-                    else 0
-                )
+                denominator = len(self.nodes_df) * (len(self.nodes_df) - 1)
+                if denominator:
+                    multiplier = 1 if self.directed else 2
+                    stats["density"] = multiplier * len(self.edges_df) / denominator
+                else:
+                    stats["density"] = 0
 
             # Average degree
-            if "total_degree" in self.nodes_df.columns:
+            if self.nodes_df is not None and "total_degree" in self.nodes_df.columns:
                 stats["avg_degree"] = float(self.nodes_df["total_degree"].mean())
 
         return stats

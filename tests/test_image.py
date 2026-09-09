@@ -266,5 +266,44 @@ def test_color_mode_conversion():
         assert processed.shape[-1] == 3
 
 
+def test_image_augmentation_flips_images():
+    """Configured augmentation should add deterministic transformed samples."""
+    pytest.importorskip("PIL")
+    from autoprepml.image import ImagePrepML
+    from PIL import Image
+    import numpy as np
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = np.array([[0, 1, 2], [3, 4, 5]], dtype=np.uint8)
+        Image.fromarray(source, mode="L").save(Path(tmpdir) / "test.png")
+
+        prep = ImagePrepML(
+            image_dir=tmpdir,
+            target_size=(3, 2),
+            color_mode="grayscale",
+            normalize=False,
+        )
+        prep.detect(verbose=False)
+        processed = prep.clean(
+            augment=True,
+            augmentation_config={"horizontal_flip": True},
+        )
+
+        assert processed.shape == (2, 2, 3)
+        np.testing.assert_array_equal(processed[0], source)
+        np.testing.assert_array_equal(processed[1], source[:, ::-1])
+        assert prep.log[-1]["augmented"] is True
+
+
+def test_image_augmentation_rejects_unknown_options():
+    """Unsupported augmentation options should fail clearly."""
+    import numpy as np
+    from autoprepml.image import ImagePrepML
+
+    prep = object.__new__(ImagePrepML)
+    with pytest.raises(ValueError, match="Unsupported augmentation option"):
+        prep._augment_images(np.zeros((1, 2, 2), dtype=np.uint8), {"zoom": 2})
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

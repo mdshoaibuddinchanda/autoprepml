@@ -76,6 +76,18 @@ The package also exports the following high level classes:
 
 See the [advanced features guide](ADVANCED_FEATURES.md), [usage guide](usage.md), and [tutorials](tutorials.md) for examples.
 
+### Time series feature safety
+
+`TimeSeriesPrepML.add_rolling_features(windows=None, functions=None, forecast_safe=True)` shifts the source series by one row by default. This prevents a forecasting feature from including the value it is intended to predict. Set `forecast_safe=False` when the rolling statistic is descriptive and contemporaneous by design. Supported functions are `mean`, `std`, `min`, and `max`.
+
+### Graph direction
+
+`GraphPrepML(..., directed=True)` treats `(source, target)` and `(target, source)` as different edges. Set `directed=False` for an undirected graph; duplicate detection, edge counts, adjacency conversion, degree features, and density then use undirected semantics consistently. The default remains directed for compatibility.
+
+### Image augmentation
+
+`ImagePrepML.clean(augment=True, augmentation_config=...)` supports deterministic NumPy transforms without an additional augmentation dependency. Configuration keys are `horizontal_flip`, `vertical_flip`, `rotations` (90-degree increments), and `include_original`.
+
 
 ## Detection Module
 

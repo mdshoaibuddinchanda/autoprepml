@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Expanded the CI coverage matrix to Python 3.9 through 3.14.
 - Added Python-version-specific dependency ranges so supported environments resolve compatible releases.
+- Added deterministic NumPy image augmentation with validated flip and rotation options.
+- Made rolling time-series features forecast-safe by default, with an explicit contemporaneous mode.
+- Added explicit directed or undirected graph semantics for duplicate edges, degree features, adjacency, and density.
+- Consolidated the testing baseline in the root README and removed mutable test-count and coverage claims from supporting documentation.
 
 ## [1.3.0]: 2025-10-24
 

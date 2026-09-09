@@ -9,8 +9,6 @@
   [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
   [![Python 3.9 through 3.14](https://img.shields.io/badge/python-3.9--3.14-blue.svg)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Tests](https://img.shields.io/badge/tests-332%20passing-brightgreen.svg)](tests/)
-  [![Coverage](https://img.shields.io/badge/coverage-89%25-brightgreen.svg)](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml)
   
   <p align="center">
     <a href="#quick-start-guide">Quick Start</a> |
@@ -42,7 +40,7 @@ The processing flow is straightforward:
 - **Visual Reports**: HTML reports with embedded plots and statistics
 - **Highly Configurable**: YAML/JSON configuration for reproducibility
 - **CLI + Python API**: Use from command line or Python scripts
-- **Production readiness baseline**: 332 tests passing, 89% local line coverage, and blocking CI/CD gates
+- **Production readiness baseline**: Automated tests, coverage, linting, security, packaging, and documentation gates
 
 ### Advanced Features (v1.3.0)
 - **AutoEDA**: Automated exploratory data analysis with insights generation
@@ -431,6 +429,11 @@ prep.fill_missing_timestamps(freq='D')
 prep.interpolate_missing(method='linear')
 prep.add_time_features()
 prep.add_lag_features(lags=[1, 7, 30])
+prep.add_rolling_features(
+    windows=[7, 30],
+    functions=['mean', 'std'],
+    forecast_safe=True,  # Exclude the value being predicted
+)
 
 # Get enhanced data
 enhanced_df = prep.df
@@ -445,7 +448,8 @@ edges_df = pd.read_csv('edges.csv')
 
 # Initialize graph
 prep = GraphPrepML(nodes_df=nodes_df, edges_df=edges_df,
-                   node_id_col='id', source_col='source', target_col='target')
+                   node_id_col='id', source_col='source', target_col='target',
+                   directed=True)
 
 # Validate and clean
 prep.validate_node_ids()
@@ -477,7 +481,9 @@ issues = prep.detect()
 processed_images = prep.clean(
     remove_corrupted=True,
     resize=True,
-    convert_mode=True
+    convert_mode=True,
+    augment=True,
+    augmentation_config={"horizontal_flip": True, "rotations": [90]},
 )
 
 # Split dataset
@@ -632,6 +638,7 @@ cleaned_df.to_csv('reviews_cleaned.csv', index=False)
 - Time feature extraction (year, month, day, hour, day of week, quarter, weekend)
 - Lag features (1-day, 7-day, 30-day, custom)
 - Rolling window statistics (mean, std, min, max)
+- Forecast-safe rolling statistics that exclude the current observation by default
 - Resampling to different frequencies
 
 **Example:**
@@ -684,6 +691,7 @@ enhanced_df.to_csv('sales_enhanced.csv', index=False)
 - Connected component identification (BFS algorithm)
 - Isolated node filtering
 - Graph statistics (density, average degree)
+- Explicit directed or undirected semantics for degrees, duplicates, adjacency, and density
 - Format conversion (edge list, adjacency dict)
 
 **Example:**
@@ -696,7 +704,8 @@ edges = pd.read_csv('friendships.csv')
 prep = GraphPrepML(nodes_df=nodes, edges_df=edges,
                    node_id_col='user_id',
                    source_col='from_user',
-                   target_col='to_user')
+                   target_col='to_user',
+                   directed=False)
 
 # Detect issues
 issues = prep.detect_issues()
@@ -811,7 +820,7 @@ After running demos, you'll find these files in your directory:
 
 ## Testing
 
-The repository currently passes 332 tests locally, with two tests skipped when their optional integrations are unavailable. The latest local run reports 88.96 percent line coverage. Continuous integration runs the coverage suite on Python 3.9 through 3.14, enforces a 75 percent minimum, and also runs linting, security checks, packaging checks, and the strict documentation build.
+The CI baseline runs the complete pytest suite with coverage on Python 3.9 through 3.14. Every runtime enforces the 75 percent line coverage threshold, and cross-platform checks run on Windows and macOS with Python 3.12. The same workflow also gates linting, security, packaging, and strict documentation builds. See the [CI workflow](.github/workflows/ci.yml) for current run results.
 
 ### Run the test suite
 

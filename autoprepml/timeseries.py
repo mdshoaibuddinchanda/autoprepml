@@ -253,12 +253,21 @@ class TimeSeriesPrepML:
         self.log.append({"action": "add_lag_features", "lags": lags})
         return self.df
 
-    def add_rolling_features(self, windows: list = None, functions: list = None) -> pd.DataFrame:
+    def add_rolling_features(
+        self,
+        windows: list = None,
+        functions: list = None,
+        forecast_safe: bool = True,
+    ) -> pd.DataFrame:
         """Add rolling window statistics.
 
         Args:
             windows: List of window sizes
             functions: List of functions ('mean', 'std', 'min', 'max')
+            forecast_safe: Shift the source values by one row before rolling
+                so a feature never includes the value it is intended to
+                predict. Set to ``False`` for contemporaneous descriptive
+                statistics.
 
         Returns:
             DataFrame with rolling features
@@ -269,21 +278,46 @@ class TimeSeriesPrepML:
             functions = ["mean"]
         if not self.value_column:
             raise ValueError("value_column must be specified for rolling features")
+        if not isinstance(forecast_safe, bool):
+            raise TypeError("forecast_safe must be a boolean")
+
+        windows = list(windows)
+        if any(
+            not isinstance(window, int) or isinstance(window, bool) or window < 1
+            for window in windows
+        ):
+            raise ValueError("rolling windows must be positive integers")
+
+        functions = list(functions)
+        supported_functions = {"mean", "std", "min", "max"}
+        unsupported = set(functions).difference(supported_functions)
+        if unsupported:
+            names = ", ".join(sorted(str(function) for function in unsupported))
+            raise ValueError(f"Unsupported rolling function(s): {names}")
+
+        source = (
+            self.df[self.value_column].shift(1) if forecast_safe else self.df[self.value_column]
+        )
 
         for window in windows:
             for func in functions:
                 col_name = f"{self.value_column}_rolling_{func}_{window}"
                 if func == "mean":
-                    self.df[col_name] = self.df[self.value_column].rolling(window=window).mean()
+                    self.df[col_name] = source.rolling(window=window).mean()
                 elif func == "std":
-                    self.df[col_name] = self.df[self.value_column].rolling(window=window).std()
+                    self.df[col_name] = source.rolling(window=window).std()
                 elif func == "min":
-                    self.df[col_name] = self.df[self.value_column].rolling(window=window).min()
+                    self.df[col_name] = source.rolling(window=window).min()
                 elif func == "max":
-                    self.df[col_name] = self.df[self.value_column].rolling(window=window).max()
+                    self.df[col_name] = source.rolling(window=window).max()
 
         self.log.append(
-            {"action": "add_rolling_features", "windows": windows, "functions": functions}
+            {
+                "action": "add_rolling_features",
+                "windows": windows,
+                "functions": functions,
+                "forecast_safe": forecast_safe,
+            }
         )
         return self.df
 

@@ -50,15 +50,11 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 - **Text**: NLP preprocessing, tokenization, feature extraction
 - **Time Series**: Temporal analysis, resampling, lag features
 - **Graph**: Network data, node/edge validation
-- **Image**: Computer vision preprocessing, augmentation
+- **Image**: Computer vision preprocessing with deterministic flips and rotations
 
-## Testing & CI/CD
+## Testing and CI/CD
 
-- **332 tests** passing locally, with two optional integration tests skipped when unavailable
-- **89 percent local line coverage**, with a 75 percent CI threshold
-- **Python 3.9 through 3.14 coverage matrix** on every supported runtime
-- **Blocking CI checks** for linting, tests, security, packaging, and documentation
-- **Cross platform** validation on Ubuntu, Windows, and macOS
+The [root README testing section](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/README.md#testing) is the canonical source for the current quality baseline. Continuous integration runs the test and coverage suite on Python 3.9 through 3.14, with additional Windows and macOS validation on Python 3.12, and blocks linting, security, packaging, and documentation regressions.
 
 ## Contributing
 

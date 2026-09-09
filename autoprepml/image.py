@@ -234,8 +234,10 @@ class ImagePrepML:
             remove_corrupted: Remove corrupted images
             resize: Resize images to target size
             convert_mode: Convert color mode
-            augment: Apply data augmentation
-            augmentation_config: Augmentation parameters
+            augment: Apply deterministic NumPy augmentation transforms
+            augmentation_config: Dictionary with optional ``horizontal_flip``,
+                ``vertical_flip``, ``rotations`` (90-degree increments), and
+                ``include_original`` keys
 
         Returns:
             Numpy array of processed images
@@ -285,9 +287,11 @@ class ImagePrepML:
         # Convert to numpy array
         processed_array = np.array(processed)
 
-        # Apply augmentation if requested
-        if augment and augmentation_config:
-            processed_array = self._augment_images(processed_array, augmentation_config)
+        # Apply augmentation if requested. An empty configuration is a valid
+        # no-op, which keeps ``augment=True`` safe when configuration is
+        # supplied dynamically.
+        if augment:
+            processed_array = self._augment_images(processed_array, augmentation_config or {})
 
         self.images = processed_array
 
@@ -298,7 +302,7 @@ class ImagePrepML:
                 "processed_count": len(processed),
                 "output_shape": processed_array.shape,
                 "normalized": self.normalize,
-                "augmented": augment,
+                "augmented": len(processed_array) != len(processed),
             }
         )
 
@@ -313,11 +317,65 @@ class ImagePrepML:
 
         Returns:
             Augmented images
+
+        Supported configuration keys are ``horizontal_flip``,
+        ``vertical_flip``, ``rotations`` and ``include_original``. Rotations
+        must be 90-degree increments and can be supplied as one integer or a
+        sequence of integers. The implementation uses NumPy only, so the
+        preprocessing path remains deterministic and does not add a runtime
+        dependency on an augmentation framework.
         """
-        # This would use libraries like imgaug, albumentations, or tf.keras
-        # For now, return original images
-        # TODO: Implement augmentation with optional dependencies
-        return images
+        if not isinstance(config, dict):
+            raise TypeError("augmentation_config must be a dictionary")
+        if images.size == 0:
+            return np.array(images, copy=True)
+        if images.ndim < 3:
+            raise ValueError("images must have shape (n, height, width[, channels])")
+
+        allowed = {"horizontal_flip", "vertical_flip", "rotations", "include_original"}
+        unknown = set(config).difference(allowed)
+        if unknown:
+            names = ", ".join(sorted(str(name) for name in unknown))
+            raise ValueError(f"Unsupported augmentation option(s): {names}")
+
+        for name in ("horizontal_flip", "vertical_flip", "include_original"):
+            if name in config and not isinstance(config[name], (bool, np.bool_)):
+                raise TypeError(f"{name} must be a boolean")
+
+        rotations = config.get("rotations", ())
+        if isinstance(rotations, (int, np.integer)):
+            rotations = [rotations]
+        elif isinstance(rotations, (list, tuple, set)):
+            rotations = list(rotations)
+        else:
+            raise TypeError("rotations must be an integer or a sequence of integers")
+
+        normalized_rotations = []
+        for rotation in rotations:
+            if not isinstance(rotation, (int, np.integer)):
+                raise TypeError("each rotation must be an integer")
+            if rotation % 90 != 0:
+                raise ValueError("rotations must be multiples of 90 degrees")
+            angle = int(rotation) % 360
+            if angle and angle not in normalized_rotations:
+                normalized_rotations.append(angle)
+
+        include_original = config.get("include_original", True)
+        variants = [np.array(images, copy=True)] if include_original else []
+
+        if config.get("horizontal_flip", False):
+            variants.append(np.flip(images, axis=2))
+        if config.get("vertical_flip", False):
+            variants.append(np.flip(images, axis=1))
+        for angle in normalized_rotations:
+            variants.append(np.rot90(images, k=angle // 90, axes=(1, 2)))
+
+        if not variants:
+            raise ValueError("augmentation_config must enable a transform or include_original=True")
+
+        # Concatenation also normalizes negative strides introduced by flip
+        # and rotate operations, making the result safe for downstream code.
+        return np.concatenate([np.asarray(variant) for variant in variants], axis=0)
 
     def save_processed(self, output_dir: str, format: str = "png", prefix: str = "processed_"):
         """Save processed images to directory.
