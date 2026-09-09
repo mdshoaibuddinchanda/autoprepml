@@ -2,7 +2,7 @@
 
 Real-world examples and use cases for AutoPrepML.
 
-## Tutorial 1: Classification Task - Customer Churn Prediction
+## Tutorial 1: Classification Task: Customer Churn Prediction
 
 ### Scenario
 
@@ -34,14 +34,13 @@ prep.save_report('churn_report.html')
 ```
 
 **What happens:**
-1. Missing values → Imputed (median for numeric, mode for categorical)
-2. Categorical features → Label encoded
-3. Numeric features → StandardScaler normalization
-4. Class imbalance → Oversampling minority class
+1. Missing values are imputed using the median for numeric columns and the mode for categorical columns.
+2. Categorical features are label encoded.
+3. Numeric features are normalised with StandardScaler.
+4. Imbalanced classes are oversampled when the selected configuration enables balancing.
 
----
 
-## Tutorial 2: Regression Task - House Price Prediction
+## Tutorial 2: Regression Task: House Price Prediction
 
 ### Scenario
 
@@ -72,7 +71,6 @@ clean_df, report = prep.clean(task='regression', target_col='price')
 - Outliers removed (optional for regression)
 - Mean imputation for price-related columns
 
----
 
 ## Tutorial 3: Custom Preprocessing Pipeline
 
@@ -119,7 +117,6 @@ plots = {
 }
 ```
 
----
 
 ## Tutorial 4: Batch Processing with CLI
 
@@ -145,10 +142,9 @@ for file in data/*.csv; do
         --target label
 done
 
-echo "Batch processing complete!"
+echo "Batch processing complete"
 ```
 
----
 
 ## Tutorial 5: Using Configuration Files
 
@@ -195,7 +191,6 @@ prep = AutoPrepML(df, config_path='preprocessing_config.yaml')
 clean_df, report = prep.clean(task='classification', target_col='label')
 ```
 
----
 
 ## Tutorial 6: Handling Large Datasets
 
@@ -226,7 +221,6 @@ for chunk in pd.read_csv('large_data.csv', chunksize=chunk_size):
 print(f"Processed large file in chunks. Output: {output_file}")
 ```
 
----
 
 ## Tutorial 7: Integration with ML Workflow
 
@@ -262,7 +256,6 @@ print(classification_report(y_test, y_pred))
 prep.save_report('preprocessing_report.html')
 ```
 
----
 
 ## Best Practices
 
@@ -286,7 +279,7 @@ Ensures reproducibility across runs.
 
 ```python
 clean_df, report = prep.clean()
-assert clean_df.isnull().sum().sum() == 0, "Still have missing values!"
+assert clean_df.isnull().sum().sum() == 0, "Missing values remain"
 ```
 
 Always verify cleaning was successful.
@@ -304,34 +297,33 @@ logging.basicConfig(filename='prep.log', level=logging.INFO)
 
 Track what transformations were applied.
 
----
 
 ## Common Pitfalls
 
-### ❌ Don't: Apply same config to all datasets
+### Avoid reusing one configuration for every dataset
 
 ```python
-# Bad - using same config for different datasets
+# Example of a poor choice: reuse one configuration for unrelated datasets
 prep1 = AutoPrepML(medical_data, config_path='config.yaml')
-prep2 = AutoPrepML(financial_data, config_path='config.yaml')  # Same config!
+prep2 = AutoPrepML(financial_data, config_path='config.yaml')  # Reuse the versioned configuration
 ```
 
-### ✅ Do: Customize config per domain
+### Customize configuration by domain
 
 ```python
 prep1 = AutoPrepML(medical_data, config_path='medical_config.yaml')
 prep2 = AutoPrepML(financial_data, config_path='finance_config.yaml')
 ```
 
-### ❌ Don't: Ignore detection results
+### Review detection results before cleaning
 
 ```python
-# Bad - clean without checking what's wrong
+# Example of a poor choice: clean without reviewing detection results
 prep = AutoPrepML(df)
 clean_df, _ = prep.clean()
 ```
 
-### ✅ Do: Review detection first
+### Confirm the cleaning result
 
 ```python
 prep = AutoPrepML(df)
@@ -340,10 +332,9 @@ print(results)  # Review before cleaning
 clean_df, report = prep.clean()
 ```
 
----
 
 ## Need Help?
 
 - Check the [API Reference](api_reference.md)
 - See [Usage Guide](usage.md)
-- Open an [issue on GitHub](https://github.com/yourusername/autoprepml/issues)
+- Open an [issue on GitHub](https://github.com/mdshoaibuddinchanda/autoprepml/issues)

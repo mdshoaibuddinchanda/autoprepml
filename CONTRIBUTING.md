@@ -1,14 +1,14 @@
 # Contributing to AutoPrepML
 
-Thank you for your interest in contributing to AutoPrepML! We welcome contributions from the community.
+Thank you for your interest in contributing to AutoPrepML. Contributions from the community are welcome.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # 1. Fork the repository on GitHub
 
 # 2. Clone your fork
-git clone https://github.com/YOUR_USERNAME/autoprepml.git
+git clone https://github.com/mdshoaibuddinchanda/autoprepml.git
 cd autoprepml
 
 # 3. Create a virtual environment
@@ -33,7 +33,7 @@ git push origin feature/your-feature-name
 # 8. Open a Pull Request on GitHub
 ```
 
-## 🎯 Ways to Contribute
+## Ways to Contribute
 
 ### 1. Report Bugs
 - Open an [issue](https://github.com/mdshoaibuddinchanda/autoprepml/issues) with detailed steps to reproduce
@@ -47,7 +47,7 @@ git push origin feature/your-feature-name
 
 ### 3. Submit Pull Requests
 - Fix bugs or implement new features
-- Write tests for your changes (maintain >90% coverage)
+- Write tests for your changes and preserve the repository coverage threshold
 - Update documentation as needed
 - Follow code style guidelines (see below)
 
@@ -61,7 +61,7 @@ git push origin feature/your-feature-name
 - Add edge case tests
 - Improve test clarity
 
-## 📝 Code Style Guidelines
+## Code Style Guidelines
 
 ### Python Style
 - Follow [PEP 8](https://pep8.org/) guidelines
@@ -93,7 +93,7 @@ def function_name(param1: str, param2: int) -> bool:
 - Write tests for all new features
 - Use descriptive test names: `test_should_remove_duplicates_when_flag_is_true`
 - Organize tests by module: `tests/test_<module_name>.py`
-- Aim for >90% code coverage
+- Cover normal, error, and boundary cases for new behaviour
 - Run tests before committing: `pytest tests/ -v`
 
 ### Commit Messages
@@ -106,7 +106,7 @@ Add text cleaning functionality for URLs and HTML
 - Updated documentation with examples
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Run All Tests
 ```bash
@@ -135,7 +135,17 @@ open htmlcov/index.html
 xdg-open htmlcov/index.html
 ```
 
-## 📦 Adding New Features
+### Run Repository Quality Checks
+
+```bash
+ruff check autoprepml tests
+black --check autoprepml tests
+mkdocs build --strict
+```
+
+Run these checks before opening a pull request. The CI workflow runs the same quality gates together with security and package build checks.
+
+## Adding New Features
 
 ### 1. New Data Type Module
 If adding a new data type (e.g., `ImagePrepML`):
@@ -165,45 +175,45 @@ If adding a CLI option:
 4. Update README CLI reference table
 5. Add examples to documentation
 
-## 🔍 Code Review Process
+## Code Review Process
 
 1. **Automated Checks**: GitHub Actions will run tests and linting
 2. **Manual Review**: Maintainers will review code quality and design
 3. **Feedback**: Address any requested changes
 4. **Merge**: Once approved, your PR will be merged
 
-## 📋 Pull Request Checklist
+## Pull Request Checklist
 
 Before submitting a PR, ensure:
 
 - [ ] Code follows PEP 8 style guidelines
 - [ ] All tests pass: `pytest tests/ -v`
 - [ ] New tests added for new features
-- [ ] Code coverage >90%: `pytest tests/ --cov=autoprepml`
+- [ ] Coverage remains above the configured threshold: `pytest tests/ --cov=autoprepml`
 - [ ] Docstrings added to new functions/classes
 - [ ] Documentation updated (README, docs/)
 - [ ] Examples added if applicable
 - [ ] Commit messages are descriptive
 - [ ] No merge conflicts with main branch
 
-## 🐛 Reporting Security Issues
+## Reporting Security Issues
 
 If you discover a security vulnerability, please email directly instead of opening a public issue.
 
-## 📜 License
+## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
 
-## 🙏 Recognition
+## Recognition
 
 All contributors will be recognized in:
 - GitHub contributors page
 - CHANGELOG.md
 - README.md acknowledgments section
 
-## 📧 Questions?
+## Questions?
 
 - **GitHub Discussions**: [Ask questions](https://github.com/mdshoaibuddinchanda/autoprepml/discussions)
 - **Issues**: [Technical questions](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
 
-Thank you for contributing to AutoPrepML! 🎉
+Thank you for contributing to AutoPrepML.

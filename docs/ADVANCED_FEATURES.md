@@ -1,15 +1,14 @@
 # Advanced Features Guide
 
-## 🚀 Version 1.1.0 Features
+## Advanced preprocessing features
 
-This guide covers the advanced features added in AutoPrepML v1.1.0:
+This guide covers advanced preprocessing capabilities available in AutoPrepML:
 - Advanced Imputation (KNN, Iterative)
 - SMOTE for Class Balancing
 - Enhanced Documentation
 
----
 
-## 1️⃣ Advanced Imputation
+## 1 Advanced Imputation
 
 ### Overview
 
@@ -26,7 +25,6 @@ Simple imputation (mean, median, mode) can be too basic for complex datasets. Au
 | **KNN** | Datasets with local patterns | Considers neighbors | Slower, needs tuning |
 | **Iterative** | Complex relationships between features | Most accurate | Slowest, may overfit |
 
----
 
 ### KNN Imputation
 
@@ -91,7 +89,6 @@ df_clean = impute_knn(df, n_neighbors=5)
 assert df_clean.isnull().sum().sum() == 0
 ```
 
----
 
 ### Iterative Imputation (MICE)
 
@@ -153,7 +150,6 @@ df_clean = impute_iterative(df, max_iter=15, random_state=42)
 # Captures relationships between vital signs
 ```
 
----
 
 ### Comparison: Simple vs Advanced Imputation
 
@@ -181,12 +177,11 @@ print("KNN:", df_knn.loc[2, 'age'])  # ~37.5 (based on neighbors)
 df_iter = impute_iterative(df, max_iter=10, random_state=42)
 print("Iterative:", df_iter.loc[2, 'age'])  # ~39.2 (predictive model)
 
-# KNN and Iterative are closer to true patterns!
+# KNN and Iterative methods can better preserve relationships in the data.
 ```
 
----
 
-## 2️⃣ SMOTE Class Balancing
+## 2 SMOTE Class Balancing
 
 ### Overview
 
@@ -201,7 +196,7 @@ print("Iterative:", df_iter.loc[2, 'age'])  # ~39.2 (predictive model)
 # Class 0: 900 samples (90%)
 # Class 1: 100 samples (10%)
 
-# Model trained on this: 90% accuracy by just predicting class 0!
+# A model can appear accurate by predicting only class 0.
 ```
 
 **Traditional Solution**: Oversample by duplication
@@ -219,7 +214,6 @@ print("Iterative:", df_iter.loc[2, 'age'])  # ~39.2 (predictive model)
 # Model learns better decision boundaries
 ```
 
----
 
 ### Basic Usage
 
@@ -245,7 +239,7 @@ df_balanced = balance_classes_smote(df, target_col='label', random_state=42)
 print("\nAfter SMOTE:")
 print(df_balanced['label'].value_counts())
 # 0: 90
-# 1: 90 (synthetic samples created!)
+# 1: 90 (synthetic samples created)
 ```
 
 ### Installation
@@ -262,7 +256,6 @@ Or install with AutoPrepML:
 pip install autoprepml[advanced]  # Includes imbalanced-learn
 ```
 
----
 
 ### Advanced Options
 
@@ -309,29 +302,27 @@ df_balanced = balance_classes_smote(
 )
 ```
 
----
 
 ### Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `df` | DataFrame | - | Input data with features and target |
-| `target_col` | str | - | Name of target column |
+| `df` | DataFrame | Required | Input data with features and target |
+| `target_col` | str | Required | Name of target column |
 | `sampling_strategy` | str/float | 'auto' | 'auto', 'minority', or custom ratio |
 | `k_neighbors` | int | 5 | Number of nearest neighbors |
 | `random_state` | int | 42 | Random seed for reproducibility |
 
----
 
 ### Important Notes
 
-#### ⚠️ Features Must Be Numeric
+#### Features Must Be Numeric
 
 ```python
-# ❌ This will fail (categorical feature)
+# This will fail (categorical feature)
 df = pd.DataFrame({
     'age': [25, 30, 35] * 30 + [40, 45],
-    'gender': ['M', 'F', 'M'] * 30 + ['M', 'F'],  # Categorical!
+    'gender': ['M', 'F', 'M'] * 30 + ['M', 'F'],  # Categorical column
     'label': [0] * 90 + [1] * 10
 })
 
@@ -342,7 +333,7 @@ df_encoded = encode_categorical(df, method='label', exclude_cols=['label'])
 df_balanced = balance_classes_smote(df_encoded, target_col='label')
 ```
 
-#### 📊 Multiclass Support
+#### Multiclass Support
 
 ```python
 # SMOTE works with multiple classes
@@ -361,7 +352,6 @@ print(df_balanced['label'].value_counts())
 # 2: 100
 ```
 
----
 
 ### Complete Example: Fraud Detection
 
@@ -393,7 +383,7 @@ df_balanced = balance_classes_smote(
 print("\nBalanced distribution:")
 print(df_balanced['is_fraud'].value_counts())
 # Legitimate: 9,500
-# Fraud: 9,500 (synthetic samples!)
+# Fraud: 9,500 (synthetic samples)
 
 # Step 3: Train model on balanced data
 from sklearn.ensemble import RandomForestClassifier
@@ -407,13 +397,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 clf = RandomForestClassifier(random_state=42)
 clf.fit(X_train, y_train)
 
-# Model trained on balanced data performs much better!
+# A model trained on balanced data can learn the minority class more effectively.
 # Recall on fraud cases: 85% (vs 30% without SMOTE)
 ```
 
----
 
-## 3️⃣ Best Practices
+## 3 Best Practices
 
 ### Combining Features
 
@@ -429,7 +418,7 @@ df_encoded = encode_categorical(df_imputed, method='label', exclude_cols=['targe
 # Step 3: Balance classes with SMOTE
 df_final = balance_classes_smote(df_encoded, target_col='target', random_state=42)
 
-# Ready for ML!
+# The data is ready for the next modelling step.
 ```
 
 ### When to Use What
@@ -443,9 +432,8 @@ df_final = balance_classes_smote(df_encoded, target_col='target', random_state=4
 | **Severe imbalance (95/5)** | SMOTE |
 | **Small minority class** | SMOTE with lower k_neighbors |
 
----
 
-## 📚 API Reference
+## API Reference
 
 ### `impute_knn(df, n_neighbors=5, exclude_cols=None)`
 
@@ -453,7 +441,6 @@ Impute missing values using K-Nearest Neighbors.
 
 **Returns**: DataFrame with imputed values
 
----
 
 ### `impute_iterative(df, max_iter=10, random_state=42, exclude_cols=None)`
 
@@ -461,7 +448,6 @@ Impute missing values using Iterative Imputer (MICE).
 
 **Returns**: DataFrame with imputed values
 
----
 
 ### `balance_classes_smote(df, target_col, sampling_strategy='auto', k_neighbors=5, random_state=42)`
 
@@ -473,9 +459,8 @@ Balance classes using SMOTE synthetic oversampling.
 - `ImportError` if imbalanced-learn not installed
 - `ValueError` if features are non-numeric
 
----
 
-## 🧪 Testing
+## Testing
 
 All features include comprehensive tests:
 
@@ -490,9 +475,8 @@ pytest tests/test_advanced_features.py::TestAdvancedImputation::test_knn_imputat
 pytest tests/test_advanced_features.py::TestSMOTE::test_smote_basic -v
 ```
 
----
 
-## 📝 Changelog
+## Changelog
 
 ### v1.1.0 (Q1 2025)
 
@@ -506,18 +490,16 @@ pytest tests/test_advanced_features.py::TestSMOTE::test_smote_basic -v
 **Dependencies**:
 - Added `imbalanced-learn==0.12.0`
 
----
 
-## 🔮 Coming Soon (v1.2.0)
+## Future work
 
-- LLM integration for smart suggestions
-- Image data preprocessing
-- Audio/video metadata extraction
-- Advanced SMOTE variants (ADASYN, BorderlineSMOTE)
+- Benchmark advanced transformations on representative datasets.
+- Add chunked and parallel execution for large workloads.
+- Evaluate additional resampling methods such as ADASYN and BorderlineSMOTE.
+- Document storage adapters and streaming integrations as they become available.
 
----
 
-## 💡 Questions?
+## Questions?
 
 - **GitHub Issues**: [Report bugs or ask questions](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
 - **Discussions**: [Community forum](https://github.com/mdshoaibuddinchanda/autoprepml/discussions)

@@ -7,11 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.0] - 2025-10-24
+## [1.3.0]: 2025-10-24
 
-### Added - AutoEDA Module
+### Added: AutoEDA Module
 - **AutoEDA Class**: Automated exploratory data analysis
-  - `analyze()` - Comprehensive EDA with configurable components
+  - `analyze()`: Comprehensive EDA with configurable components
   - Statistical summaries (mean, std, quartiles, skewness, kurtosis)
   - Missing value analysis with counts and percentages
   - Correlation matrix computation with high correlation detection
@@ -20,38 +20,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Categorical variable analysis (cardinality, mode, value counts)
   - Automated insights generation in natural language
 - **Report Generation**:
-  - `generate_report()` - Interactive HTML reports with visualizations
-  - `to_json()` - Export analysis results to JSON format
+  - `generate_report()`: Interactive HTML reports with visualizations
+  - `to_json()`: Export analysis results to JSON format
 - **Full Integration**: Added to `autoprepml` package exports
 - **Example Script**: `examples/demo_autoeda.py` with complete workflow
 - **Test Suite**: 40+ comprehensive tests for AutoEDA module
 
-### Added - AutoFeatureEngine Module
+### Added: AutoFeatureEngine Module
 - **AutoFeatureEngine Class**: Intelligent feature engineering
-  - `create_polynomial_features()` - Polynomial and interaction terms
-  - `create_interactions()` - Pairwise multiplication features
-  - `create_ratio_features()` - Division-based features
-  - `create_binned_features()` - Discretization (uniform, quantile, kmeans)
-  - `create_aggregation_features()` - Row-wise aggregations (sum, mean, std, min, max)
-  - `create_datetime_features()` - Extract temporal components
-  - `select_features()` - Feature selection (mutual_info, f_test)
-  - `get_feature_importance()` - Rank features by importance
+  - `create_polynomial_features()`: Polynomial and interaction terms
+  - `create_interactions()`: Pairwise multiplication features
+  - `create_ratio_features()`: Division-based features
+  - `create_binned_features()`: Discretization (uniform, quantile, kmeans)
+  - `create_aggregation_features()`: Row-wise aggregations (sum, mean, std, min, max)
+  - `create_datetime_features()`: Extract temporal components
+  - `select_features()`: Feature selection (mutual_info, f_test)
+  - `get_feature_importance()`: Rank features by importance
 - **Convenience Function**: `auto_feature_engineering()` for quick feature creation
 - **Full Integration**: Added to `autoprepml` package exports
 - **Example Script**: `examples/demo_feature_engine.py` with all methods
 - **Test Suite**: 45+ comprehensive tests for feature engineering
 
-### Added - Interactive Dashboard Module
+### Added: Interactive Dashboard Module
 - **InteractiveDashboard Class**: Visualization and app generation
-  - `create_dashboard()` - Multi-subplot Plotly dashboards
-  - `create_correlation_heatmap()` - Interactive correlation matrix
-  - `create_missing_data_plot()` - Missing value visualization
-  - `generate_streamlit_app()` - Full Streamlit app generation
+  - `create_dashboard()`: Multi-subplot Plotly dashboards
+  - `create_correlation_heatmap()`: Interactive correlation matrix
+  - `create_missing_data_plot()`: Missing value visualization
+  - `generate_streamlit_app()`: Full Streamlit app generation
 - **Convenience Functions**:
-  - `create_plotly_dashboard()` - Quick dashboard creation
-  - `create_correlation_heatmap()` - Standalone heatmap
-  - `create_missing_data_plot()` - Standalone missing data viz
-  - `generate_streamlit_app()` - Standalone app generator
+  - `create_plotly_dashboard()`: Quick dashboard creation
+  - `create_correlation_heatmap()`: Standalone heatmap
+  - `create_missing_data_plot()`: Standalone missing data viz
+  - `generate_streamlit_app()`: Standalone app generator
 - **Streamlit App Features**:
   - File upload functionality
   - Overview tab (shape, dtypes, memory usage)
@@ -62,16 +62,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Example Script**: `examples/demo_dashboard.py` with all visualizations
 - **Test Suite**: 35+ comprehensive tests for dashboard module
 
-### Added - Enhanced LLM Assistant
+### Added: Enhanced LLM Assistant
 - **New LLM Methods**: Expanded AI-powered capabilities
-  - `suggest_column_rename()` - Intelligent column name suggestions
-  - `suggest_all_column_renames()` - Batch rename all columns
-  - `explain_data_quality_issues()` - Natural language quality explanations
-  - `generate_data_documentation()` - Auto-generate Markdown documentation
-  - `suggest_preprocessing_pipeline()` - Complete pipeline recommendations
+  - `suggest_column_rename()`: Intelligent column name suggestions
+  - `suggest_all_column_renames()`: Batch rename all columns
+  - `explain_data_quality_issues()`: Natural language quality explanations
+  - `generate_data_documentation()`: Auto-generate Markdown documentation
+  - `suggest_preprocessing_pipeline()`: Complete pipeline recommendations
 - **Convenience Functions**:
-  - `suggest_column_rename()` - Quick column rename
-  - `generate_data_documentation()` - Quick doc generation
+  - `suggest_column_rename()`: Quick column rename
+  - `generate_data_documentation()`: Quick doc generation
 - **Full Integration**: Enhanced existing LLMSuggestor class
 - **Example Script**: `examples/demo_llm_assistant.py` with all features
 - **Use Cases**:
@@ -80,13 +80,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Data quality insights in plain English
   - Preprocessing workflow recommendations
 
-### Added - Dependencies
+### Added: Dependencies
 - **Visualization Libraries**:
-  - `plotly>=5.0.0` - Interactive visualizations
-  - `streamlit>=1.0.0` - Web app framework (optional)
+  - `plotly>=5.0.0`: Interactive visualizations
+  - `streamlit>=1.0.0`: Web app framework (optional)
 - **Installation Options**:
-  - `pip install autoprepml[viz]` - With visualization support
-  - `pip install autoprepml[all]` - Complete installation
+  - `pip install autoprepml[viz]`: With visualization support
+  - `pip install autoprepml[all]`: Complete installation
 
 ### Changed
 - Updated package version to 1.3.0
@@ -107,9 +107,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Total test count: 158 tests (all passing)
 - Test coverage maintained at 95%+
 
-## [1.2.0] - 2025-10-24
+## [1.2.0]: 2025-10-24
 
-### Added - Image Preprocessing Module
+### Added: Image Preprocessing Module
 - **ImagePrepML Class**: Complete image data preprocessing
   - Support for multiple formats: PNG, JPG, JPEG, BMP, GIF, TIFF, WEBP
   - Automatic issue detection (corruption, size mismatch, color mode)
@@ -133,19 +133,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Example Script**: `examples/demo_image.py` with complete workflow
 - **Test Suite**: 17 comprehensive tests for image module
 
-## [1.0.1] - 2025-10-24 (v1.2.0 Features)
+## [1.0.1]: 2025-10-24 (v1.2.0 Features)
 
-### Added - LLM Integration (v1.2.0)
+### Added: LLM Integration (v1.2.0)
 - **Multi-Provider LLM Support**: AI-powered preprocessing suggestions
   - OpenAI (GPT-4, GPT-3.5-turbo)
   - Anthropic (Claude-3-Sonnet, Claude-3-Opus)
   - Google (Gemini Pro)
   - Ollama (Local LLMs: llama2, mistral, codellama, phi)
 - **LLMSuggestor Class**: Unified interface for all LLM providers
-  - `suggest_fix()` - AI suggestions for data quality issues
-  - `analyze_dataframe()` - Comprehensive dataset analysis
-  - `explain_cleaning_step()` - Natural language explanations
-  - `suggest_features()` - Feature engineering recommendations
+  - `suggest_fix()`: AI suggestions for data quality issues
+  - `analyze_dataframe()`: Comprehensive dataset analysis
+  - `explain_cleaning_step()`: Natural language explanations
+  - `suggest_features()`: Feature engineering recommendations
 - **Configuration Management**: Secure API key storage
   - `AutoPrepMLConfig` class for key management
   - Config stored in `~/.autoprepml/config.json`
@@ -156,20 +156,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Support for all 4 LLM providers
 - **Core Integration**: LLM support in AutoPrepML class
   - `enable_llm` parameter for initialization
-  - `get_llm_suggestions()` - Get AI suggestions
-  - `analyze_with_llm()` - AI dataset analysis
-  - `get_feature_suggestions()` - Feature ideas
-  - `explain_step()` - Natural language explanations
+  - `get_llm_suggestions()`: Get AI suggestions
+  - `analyze_with_llm()`: AI dataset analysis
+  - `get_feature_suggestions()`: Feature ideas
+  - `explain_step()`: Natural language explanations
 - **Optional Dependencies**: LLM packages as extras
   - Install with: `pip install autoprepml[llm]`
   - Graceful degradation when not installed
 
-### Added - Advanced Features (v1.1.0)
+### Added: Advanced Features (v1.1.0)
 - **Advanced Imputation Methods**:
-  - `impute_knn()` - K-Nearest Neighbors imputation
-  - `impute_iterative()` - Iterative/MICE imputation
+  - `impute_knn()`: K-Nearest Neighbors imputation
+  - `impute_iterative()`: Iterative/MICE imputation
 - **SMOTE Class Balancing**:
-  - `balance_classes_smote()` - Synthetic Minority Over-sampling
+  - `balance_classes_smote()`: Synthetic Minority Over-sampling
   - Configurable sampling strategies
   - Support for multiclass problems
 - **Core Integration**: Advanced methods in AutoPrepML
@@ -177,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `imputation_method` parameter (simple/knn/iterative)
   - `balance_method` parameter (oversample/undersample/smote)
 
-### Added - Documentation
+### Added: Documentation
 - **LLM Configuration Guide** (`docs/LLM_CONFIGURATION.md`)
   - Comprehensive setup for all 4 providers
   - Security best practices
@@ -203,7 +203,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Priority matrix
   - Timeline and dependencies
 
-### Added - Testing
+### Added: Testing
 - **21 LLM Integration Tests** (`test_llm_integration.py`)
   - Provider initialization tests
   - Data profiling tests
@@ -219,10 +219,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - SMOTE balancing tests
 - **Total Test Count**: 159 tests (125 passing, 7 skipped, 27 requiring optional dependencies)
 
-### Added - Examples
+### Added: Examples
 - **Complete Integration Demo** (`examples/complete_integration_demo.py`)
   - Demonstrates all v1.2.0 features
-  - Shows basic → advanced → LLM workflow
+  - Shows basic  to  advanced  to  LLM workflow
   - Multiple provider examples
   - 300+ lines with comprehensive examples
 
@@ -267,7 +267,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for environment variables
 - Optional dependencies prevent bloat
 
-## [1.0.0] - 2025-01-23
+## [1.0.0]: 2025-01-23
 
 ### Added
 - **Multi-Modal Support**: Complete preprocessing for 4 data types
@@ -302,7 +302,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restructured roadmap with version targets
 - Reduced redundancy in contact/license sections
 
-## [0.1.0] - 2024-12-15
+## [0.1.0]: 2024-12-15
 
 ### Added
 - Initial release with tabular data support
@@ -311,7 +311,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI support
 - 41 unit tests
 
----
 
 ## Version Naming Convention
 
@@ -321,4 +320,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Upcoming Releases
 
-See [README.md Roadmap](README.md#️-roadmap) for planned features.
+See the [README roadmap](README.md#roadmap) for planned features.

@@ -1,15 +1,16 @@
-# AutoPrepML v1.3.0 - Release Summary
+# AutoPrepML v1.3.0 Release Summary
 
-## ✅ Successfully Released!
+This page records the v1.3.0 release snapshot. Current test and coverage figures are maintained in the repository README and CI workflow.
+
+## Release status
 
 **Repository:** https://github.com/mdshoaibuddinchanda/autoprepml  
 **Version:** v1.3.0  
 **Release Date:** October 24, 2025  
 **Commit:** 9a96ecd
 
----
 
-## 🎯 Major Features
+## Major Features
 
 ### 1. AutoEDA Module (504 lines)
 - Automated exploratory data analysis
@@ -40,21 +41,20 @@
   - Overview, EDA, Preprocessing, Feature Engineering tabs
 
 ### 4. Enhanced LLM Assistant
-New AI-powered capabilities:
+New model assisted capabilities:
 - Smart column renaming suggestions
 - Automated data documentation generation
 - Natural language quality issue explanations
 - Complete preprocessing pipeline recommendations
 
----
 
-## 📊 CI/CD Testing Setup
+## CI/CD Testing Setup
 
 ### Automated Testing Matrix
 ```
 Python Versions: 3.10, 3.11, 3.12, 3.13
 Operating Systems: Ubuntu, Windows, macOS
-Total Combinations: 12 (4 Python × 3 OS)
+Total Combinations: 12 (4 Python x 3 OS)
 ```
 
 ### Test Configuration
@@ -69,9 +69,8 @@ Total Combinations: 12 (4 Python × 3 OS)
 - **New Tests:** 103 (autoeda, feature_engine, dashboard)
 - **Existing Tests:** 158 (100% still passing)
 
----
 
-## 📦 Installation & Dependencies
+## Installation & Dependencies
 
 ### Core Installation
 ```bash
@@ -94,12 +93,11 @@ pip install autoprepml[all]
 ```
 
 ### New Dependencies (v1.3.0)
-- `plotly>=5.0.0` - Interactive visualizations
-- `streamlit>=1.0.0` - Web app framework
+- `plotly>=5.0.0`: Interactive visualizations
+- `streamlit>=1.0.0`: Web app framework
 
----
 
-## 🚀 Quick Start Examples
+## Quick Start Examples
 
 ### AutoEDA
 ```python
@@ -142,46 +140,43 @@ explanation = suggestor.explain_data_quality_issues(df)
 pipeline = suggestor.suggest_preprocessing_pipeline(df, task='classification')
 ```
 
----
 
-## 📁 Project Structure
+## Project Structure
 
 ### New Files
 ```
 autoprepml/
-├── autoeda.py              (504 lines) - EDA module
-├── feature_engine.py       (567 lines) - Feature engineering
-├── dashboard.py            (462 lines) - Interactive dashboards
-└── image.py                (620 lines) - Image preprocessing
+ autoeda.py              (504 lines): EDA module
+ feature_engine.py       (567 lines): Feature engineering
+ dashboard.py            (462 lines): Interactive dashboards
+ image.py                (620 lines): Image preprocessing
 
 examples/
-├── demo_autoeda.py         - AutoEDA demonstration
-├── demo_feature_engine.py  - Feature engineering demo
-├── demo_dashboard.py       - Dashboard demo
-└── demo_llm_assistant.py   - LLM assistant demo
+ demo_autoeda.py         : AutoEDA demonstration
+ demo_feature_engine.py  : Feature engineering demo
+ demo_dashboard.py       : Dashboard demo
+ demo_llm_assistant.py   : LLM assistant demo
 
 tests/
-├── test_autoeda.py         (30 tests)
-├── test_feature_engine.py  (35 tests)
-└── test_dashboard.py       (38 tests)
+ test_autoeda.py         (30 tests)
+ test_feature_engine.py  (35 tests)
+ test_dashboard.py       (38 tests)
 
 docs/
-├── DYNAMIC_LLM_CONFIGURATION.md
-└── QUICK_START_CLI.md
+ DYNAMIC_LLM_CONFIGURATION.md
+ QUICK_START_CLI.md
 ```
 
----
 
-## 🔗 Important Links
+## Important Links
 
 - **GitHub Repository:** https://github.com/mdshoaibuddinchanda/autoprepml
 - **CI/CD Actions:** https://github.com/mdshoaibuddinchanda/autoprepml/actions
 - **PyPI Package:** https://pypi.org/project/autoprepml/ (to be published)
 - **Issue Tracker:** https://github.com/mdshoaibuddinchanda/autoprepml/issues
 
----
 
-## 📋 Next Steps
+## Next Steps
 
 ### For Publishing to PyPI
 
@@ -215,7 +210,7 @@ docs/
 1. Go to: https://github.com/mdshoaibuddinchanda/autoprepml/releases
 2. Click "Create a new release"
 3. Select tag: v1.3.0
-4. Title: "v1.3.0 - AutoEDA, Feature Engineering & Interactive Dashboards"
+4. Title: "v1.3.0: AutoEDA, Feature Engineering & Interactive Dashboards"
 5. Copy release notes from CHANGELOG.md
 6. Attach distribution files from `dist/` folder
 7. Publish release
@@ -226,9 +221,8 @@ docs/
 - Ensure all 12 test combinations pass
 - Review coverage reports on Codecov
 
----
 
-## 🎉 Release Highlights
+## Release Highlights
 
 - **+1,533 lines** of new feature code
 - **+103 new tests** for comprehensive coverage
@@ -237,22 +231,20 @@ docs/
 - **Multi-version testing** (Python 3.10-3.13)
 - **Cross-platform support** (Ubuntu, Windows, macOS)
 - **Enhanced documentation** with examples
-- **Beta status** - production-ready features
+- **Beta status**: production-ready features
 
----
 
-## 📈 Version History
+## Version History
 
-- **v1.3.0** (Oct 24, 2025) - AutoEDA, Feature Engineering, Dashboards, Enhanced LLM
-- **v1.2.0** (Oct 24, 2025) - Image preprocessing, Dynamic LLM configuration
-- **v1.1.0** - Advanced imputation (KNN, MICE), SMOTE balancing
-- **v1.0.1** - Initial PyPI release
-- **v1.0.0** - Multi-modal data preprocessing (Tabular, Text, Time Series, Graph)
+- **v1.3.0** (Oct 24, 2025): AutoEDA, Feature Engineering, Dashboards, Enhanced LLM
+- **v1.2.0** (Oct 24, 2025): Image preprocessing, Dynamic LLM configuration
+- **v1.1.0**: Advanced imputation (KNN, MICE), SMOTE balancing
+- **v1.0.1**: Initial PyPI release
+- **v1.0.0**: Multi-modal data preprocessing (Tabular, Text, Time Series, Graph)
 
----
 
-**Status:** ✅ Released and Live on GitHub  
-**CI/CD:** ✅ Configured and Running  
-**Documentation:** ✅ Complete  
-**Examples:** ✅ Included  
-**Tests:** ✅ 207/269 Passing
+**Status:** Released and live on GitHub
+**CI/CD:** Configured and running
+**Documentation:** Complete
+**Examples:** Included
+**Tests:** 207 of 269 passing

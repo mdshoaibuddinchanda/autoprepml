@@ -2,7 +2,7 @@
 
 ## Overview
 
-AutoPrepML supports AI-powered preprocessing suggestions using Large Language Models (LLMs) from multiple providers. This guide explains how to configure API keys and use the LLM features.
+AutoPrepML provides optional model assisted preprocessing suggestions through multiple providers. This guide explains credential configuration, provider selection, and safe use of the LLM features.
 
 ## Quick Start
 
@@ -18,31 +18,31 @@ autoprepml-config --set openai
 
 ## Supported Providers
 
-### 1. **OpenAI (GPT-4, GPT-3.5)**
-- **Get API Key**: https://platform.openai.com/api-keys
-- **Models**: `gpt-4`, `gpt-3.5-turbo`
+### 1. **OpenAI**
+- **Get an API key**: https://platform.openai.com/api-keys
+- **Models**: Provide any model identifier available to your account, such as `gpt-4o-mini`.
 - **Configure**:
   ```bash
   autoprepml-config --set openai
   ```
 
-### 2. **Anthropic (Claude)**
-- **Get API Key**: https://console.anthropic.com/settings/keys
-- **Models**: `claude-3-sonnet-20240229`, `claude-3-opus-20240229`
+### 2. **Anthropic Claude**
+- **Get an API key**: https://console.anthropic.com/settings/keys
+- **Models**: Provide any model identifier available to your account.
 - **Configure**:
   ```bash
   autoprepml-config --set anthropic
   ```
 
-### 3. **Google (Gemini)**
-- **Get API Key**: https://makersuite.google.com/app/apikey
-- **Models**: `gemini-pro`, `gemini-ultra`
+### 3. **Google Gemini**
+- **Get an API key**: https://aistudio.google.com/apikey
+- **Models**: Provide any model identifier supported by the installed `google-genai` SDK. See the dynamic configuration guide for discovery examples.
 - **Configure**:
   ```bash
   autoprepml-config --set google
   ```
 
-### 4. **Ollama (Local LLMs)** ⭐ No API Key Needed!
+### 4. **Ollama local models**
 - **Install**: https://ollama.ai/
 - **Models**: `llama2`, `mistral`, `codellama`, `phi`
 - **Setup**:
@@ -51,7 +51,7 @@ autoprepml-config --set openai
   # Pull a model
   ollama pull llama2
   
-  # No configuration needed!
+  # No API key is required.
   ```
 
 ## CLI Commands
@@ -83,14 +83,14 @@ autoprepml-config --info
 ### Example Output
 
 ```
-🔑 AutoPrepML API Key Configuration
+AutoPrepML API key configuration
 ============================================================
-✅ OpenAI               (saved):    sk-proj-...xYz123
-✅ Anthropic (Claude)   (from env): sk-ant-a...456def
-❌ Google (Gemini)      Not configured
-ℹ️  Ollama (Local)      (local):    No API key needed
+OpenAI               (saved):     sk-proj-...xYz123
+Anthropic (Claude)   (from env):  sk-ant-a...456def
+Google (Gemini)      Not configured
+Ollama (local)       (local):     No API key needed
 
-💡 Tip: Use 'autoprepml-config --set <provider>' to configure API keys
+Tip: use `autoprepml-config --set <provider>` to configure a provider.
 ============================================================
 ```
 
@@ -158,17 +158,17 @@ print(analysis)
 ### Using Different Providers
 
 ```python
-# OpenAI GPT-4
-suggestor_gpt4 = LLMSuggestor(provider='openai', model='gpt-4')
+# OpenAI
+suggestor_openai = LLMSuggestor(provider='openai', model='gpt-4o-mini')
 
-# Anthropic Claude-3
+# Anthropic Claude
 suggestor_claude = LLMSuggestor(provider='anthropic')
 
 # Google Gemini
 suggestor_gemini = LLMSuggestor(provider='google')
 
-# Local Ollama (no API key needed!)
-suggestor_local = LLMSuggestor(provider='ollama', model='llama2')
+# Local Ollama; no API key is required
+suggestor_local = LLMSuggestor(provider='ollama', model='llama3.2')
 ```
 
 ### Explain Cleaning Steps
@@ -192,7 +192,7 @@ features = suggestor.suggest_features(
     target_col='price'
 )
 for feature in features:
-    print(f"- {feature}")
+    print(feature)
 ```
 
 ## Configuration File Location
@@ -217,7 +217,9 @@ Example config file:
 2. **Use environment variables** for production deployments
 3. **Rotate keys regularly** via provider dashboards
 4. **Use separate keys** for development and production
-5. **Consider Ollama** for privacy-sensitive data (runs locally)
+5. **Consider Ollama** for privacy sensitive data because it runs locally.
+
+By default, AutoPrepML sends aggregate dataset metadata to an LLM rather than raw samples. Only include raw samples when the `include_samples` option or `AUTOPREPML_LLM_INCLUDE_SAMPLES` environment variable is explicitly enabled and the data policy permits it.
 
 ## Troubleshooting
 
@@ -225,9 +227,9 @@ Example config file:
 
 If you see:
 ```
-⚠️  Warning: No API key found for openai
-   Set it with: autoprepml-config --set openai
-   Or set environment variable: OPENAI_API_KEY
+Warning: no API key found for openai
+Set it with: `autoprepml-config --set openai`
+Or set the `OPENAI_API_KEY` environment variable
 ```
 
 **Solution**: Configure the API key using one of the methods above.
@@ -254,22 +256,22 @@ df = pd.DataFrame({'age': [25, 30, None, 45]})
 try:
     suggestor = LLMSuggestor(provider='openai')
     result = suggestor.suggest_fix(df, 'age', 'missing')
-    print("✅ Connection successful!")
+    print("Connection successful")
     print(result)
 except Exception as e:
-    print(f"❌ Error: {e}")
+    print(f"Error: {e}")
 ```
 
 ## Cost Considerations
 
 | Provider | Free Tier | Pricing |
 |----------|-----------|---------|
-| **Ollama** | ✅ Unlimited (local) | Free |
+| **Ollama** | Unlimited locally | No provider charge |
 | **OpenAI** | Limited trial credits | Pay-per-token |
 | **Anthropic** | Limited trial | Pay-per-token |
 | **Google Gemini** | Free tier available | Pay-per-token |
 
-**💡 Tip**: Use Ollama for development/testing to avoid API costs!
+For development and testing, Ollama can keep data on the local machine and avoid provider charges.
 
 ## Next Steps
 

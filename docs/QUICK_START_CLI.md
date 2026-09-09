@@ -1,4 +1,4 @@
-# AutoPrepML CLI Configuration - Quick Start
+# AutoPrepML CLI Configuration: Quick Start
 
 ## Installation
 
@@ -8,12 +8,12 @@ pip install autoprepml[llm]
 
 ## First Time Setup
 
-After installing AutoPrepML, you'll be prompted to configure your LLM provider when you first try to use LLM features:
+After installing AutoPrepML, configure a provider before using LLM features. If no credential is available, the command reports:
 
 ```
-⚠️  Warning: No API key found for openai
-   Set it with: autoprepml-config --set openai
-   Or set environment variable: OPENAI_API_KEY
+Warning: no API key found for openai
+Set it with: autoprepml-config --set openai
+Or set the `OPENAI_API_KEY` environment variable
 ```
 
 ## Quick Configuration
@@ -26,7 +26,7 @@ autoprepml-config
 
 You'll see:
 ```
-🎯 AutoPrepML Configuration Wizard
+AutoPrepML configuration wizard
 ============================================================
 
 Which LLM provider would you like to configure?
@@ -79,14 +79,14 @@ autoprepml-config --list
 
 Output:
 ```
-🔑 AutoPrepML API Key Configuration
+AutoPrepML API key configuration
 ============================================================
-✅ OpenAI               (saved):    sk-proj-...xYz123
-❌ Anthropic (Claude)   Not configured
-❌ Google (Gemini)      Not configured
-ℹ️  Ollama (Local)      (local):    No API key needed
+OpenAI               (saved):     sk-proj-...xYz123
+Anthropic (Claude)   Not configured
+Google (Gemini)      Not configured
+Ollama (local)       (local):     No API key needed
 
-💡 Tip: Use 'autoprepml-config --set <provider>' to configure API keys
+Tip: use `autoprepml-config --set <provider>` to configure a provider.
 ============================================================
 ```
 
@@ -99,7 +99,7 @@ autoprepml-config --check openai
 
 Output:
 ```
-✅ OpenAI API key is configured: sk-proj-...xYz123
+ OpenAI API key is configured: sk-proj-...xYz123
 ```
 
 ## Remove API Key
@@ -108,9 +108,9 @@ Output:
 autoprepml-config --remove openai
 ```
 
-## Using Ollama (Local LLM - No API Key Needed!)
+## Using Ollama locally
 
-Ollama runs locally on your machine - perfect for privacy and cost savings!
+Ollama runs on your machine. This can be useful when data must remain local and for development without provider charges.
 
 ### 1. Install Ollama
 
@@ -133,7 +133,7 @@ ollama pull phi
 ```python
 from autoprepml.llm_suggest import LLMSuggestor
 
-# No API key needed!
+# No API key is required
 suggestor = LLMSuggestor(provider='ollama', model='llama2')
 
 # Use it immediately
@@ -171,7 +171,7 @@ print(analysis)
 print("\n=== Feature Suggestions ===")
 features = suggestor.suggest_features(df, task='regression', target_col='salary')
 for feature in features:
-    print(f"  • {feature}")
+    print(f"  {feature}")
 
 # Explain a cleaning step
 print("\n=== Step Explanation ===")
@@ -201,19 +201,19 @@ Example `config.json`:
 
 ## Security Best Practices
 
-1. ✅ **Never commit** `config.json` to version control
-2. ✅ **Use environment variables** for production/CI/CD
-3. ✅ **Rotate keys regularly** via provider dashboards
-4. ✅ **Use separate keys** for dev and production
-5. ✅ **Consider Ollama** for sensitive data (runs locally)
+1.  **Never commit** `config.json` to version control
+2.  **Use environment variables** for production/CI/CD
+3.  **Rotate keys regularly** via provider dashboards
+4.  **Use separate keys** for dev and production
+5.  **Consider Ollama** for sensitive data (runs locally)
 
 ## Troubleshooting
 
-### "No API key found" Warning
+### No API key warning
 
 **Problem**:
 ```
-⚠️  Warning: No API key found for openai
+Warning: no API key found for openai
 ```
 
 **Solution**:
@@ -237,7 +237,7 @@ key = AutoPrepMLConfig.get_api_key('openai')
 if key:
     print(f"Key found: {key[:10]}...")
 else:
-    print("No key configured!")
+    print("No key configured")
 ```
 
 ### Permission Denied on Config File
@@ -256,22 +256,22 @@ chmod 600 ~/.autoprepml/config.json
 
 ## Next Steps
 
-- 📖 Read the [Full LLM Configuration Guide](./LLM_CONFIGURATION.md)
-- 🚀 Explore [Advanced Features](./ADVANCED_FEATURES.md)
-- 💻 Check out the [code examples](https://github.com/mdshoaibuddinchanda/autoprepml/tree/main/examples)
-- 📚 Review the [API Reference](api_reference.md)
+- Read the [Full LLM Configuration Guide](./LLM_CONFIGURATION.md)
+- Explore [Advanced Features](./ADVANCED_FEATURES.md)
+- Check out the [code examples](https://github.com/mdshoaibuddinchanda/autoprepml/tree/main/examples)
+- Review the [API Reference](api_reference.md)
 
 ## Get API Keys
 
 - **OpenAI**: https://platform.openai.com/api-keys
 - **Anthropic**: https://console.anthropic.com/settings/keys
-- **Google Gemini**: https://makersuite.google.com/app/apikey
-- **Ollama**: https://ollama.ai/ (No key needed - runs locally!)
+- **Google Gemini**: https://aistudio.google.com/apikey
+- **Ollama**: https://ollama.ai/ (no key required for local use)
 
 ## Support
 
-Having issues? We're here to help!
+For help, open an issue or start a discussion using the links below.
 
-- 🐛 **Bug Reports**: https://github.com/mdshoaibuddinchanda/autoprepml/issues
-- 📧 **Email**: mdshoaibuddinchanda@gmail.com
-- 💬 **Discussions**: https://github.com/mdshoaibuddinchanda/autoprepml/discussions
+- **Bug Reports**: https://github.com/mdshoaibuddinchanda/autoprepml/issues
+- **Email**: mdshoaibuddinchanda@gmail.com
+- **Discussions**: https://github.com/mdshoaibuddinchanda/autoprepml/discussions

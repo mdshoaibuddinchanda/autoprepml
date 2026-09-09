@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API documentation for AutoPrepML.
+This page summarises the public API exposed by AutoPrepML 1.3.0. Type signatures are representative; consult the package source and docstrings for the complete contract.
 
 ## Core Module
 
@@ -62,7 +62,20 @@ Generate comprehensive preprocessing report.
 
 Save report to file (.json or .html).
 
----
+## Modality and analysis classes
+
+The package also exports the following high level classes:
+
+* `TextPrepML`: clean, tokenize, and profile text columns.
+* `TimeSeriesPrepML`: validate timestamps, fill gaps, and create temporal features.
+* `GraphPrepML`: validate nodes and edges, calculate graph features, and report graph statistics.
+* `ImagePrepML`: inspect, clean, transform, split, and report image datasets.
+* `AutoEDA`: compute statistical summaries, correlations, distributions, outliers, and generated insights.
+* `AutoFeatureEngine`: create, select, and rank engineered features.
+* `InteractiveDashboard`: create Plotly visualisations and Streamlit applications.
+
+See the [advanced features guide](ADVANCED_FEATURES.md), [usage guide](usage.md), and [tutorials](tutorials.md) for examples.
+
 
 ## Detection Module
 
@@ -97,7 +110,6 @@ Run all detection functions.
 
 **Returns:** Complete detection results
 
----
 
 ## Cleaning Module
 
@@ -149,7 +161,6 @@ Remove rows identified as outliers.
 
 **Returns:** DataFrame with outliers removed
 
----
 
 ## Visualization Module
 
@@ -185,7 +196,6 @@ Generate all visualization plots.
 
 **Returns:** Dict with plot names and base64 images
 
----
 
 ## Configuration Module
 
@@ -199,13 +209,12 @@ Load configuration from YAML or JSON file.
 
 #### `save_config(config: Dict, output_path: str) -> None`
 
-Save configuration to YAML file.
+Save configuration to a YAML or JSON file. The format is selected from the output extension.
 
 #### `get_default_config() -> Dict`
 
 Return default configuration.
 
----
 
 ## Reporting Module
 
@@ -223,7 +232,6 @@ Generate HTML report from report dictionary.
 
 **Returns:** HTML string
 
----
 
 ## LLM Suggestions Module
 
@@ -231,7 +239,7 @@ Generate HTML report from report dictionary.
 
 #### `suggest_fix(df: pd.DataFrame, column: Optional[str] = None, issue_type: str = 'missing') -> str`
 
-Generate AI-powered suggestions for data cleaning (placeholder).
+Generate model assisted suggestions for a data quality issue. Provider credentials and optional dependencies are required.
 
 **Returns:** Suggestion text string
 
@@ -241,7 +249,6 @@ Generate natural language explanation of cleaning step.
 
 **Returns:** Human-readable explanation
 
----
 
 ## Configuration Schema
 

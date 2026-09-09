@@ -13,80 +13,79 @@
   [![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen.svg)](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml)
   
   <p align="center">
-    <a href="#-quick-start-guide">Quick Start</a> •
-    <a href="#-installation">Installation</a> •
-    <a href="#-examples-directory">Examples</a> •
-    <a href="#-documentation">Docs</a> •
-    <a href="#-contributing">Contributing</a>
+    <a href="#quick-start-guide">Quick Start</a> |
+    <a href="#installation">Installation</a> |
+    <a href="#examples-directory">Examples</a> |
+    <a href="#documentation">Documentation</a> |
+    <a href="#contributing">Contributing</a>
   </p>
 </div>
 
 <br>
 
-> **Automate data preprocessing for ANY data type — Tabular, Text, Time Series, Graphs, and Images.**
+> **A practical preprocessing library for tabular, text, time series, graph, and image data.**
 
 A comprehensive Python library that automatically detects, cleans, and transforms data across multiple modalities. Built for real-world ML pipelines with one-line automation and detailed reporting.
 
-```
-┌─────────────┐      ┌──────────────┐      ┌─────────────────┐      ┌────────────┐
-│  Raw Data   │      │  AutoPrepML  │      │  Cleaned Data   │      │   Report   │
-│ (Any Type)  │ ───> │   Detects    │ ───> │   Transformed   │ ───> │ (HTML/JSON)│
-└─────────────┘      │   Cleans     │      │    Features     │      └────────────┘
-                     └──────────────┘      └─────────────────┘
-```
+The processing flow is straightforward:
 
-## 🎯 Features
+1. Load raw data from a supported source.
+2. Detect quality issues and record the findings.
+3. Apply configured cleaning and feature transformations.
+4. Export the processed data and a reproducible report.
+
+## Features
 
 ### Core Features
-- ✨ **Multi-Modal Support** - Works with 5 different data types out of the box
-- 🔍 **Automatic Issue Detection** - Missing values, outliers, duplicates, anomalies
-- 📊 **Visual Reports** - HTML reports with embedded plots and statistics
-- ⚙️ **Highly Configurable** - YAML/JSON configuration for reproducibility
-- 🚀 **CLI + Python API** - Use from command line or Python scripts
-- 🧪 **Production Ready baseline** - 323 tests passing, 88% local line coverage, blocking CI/CD gates
+- **Multi-Modal Support**: Works with 5 different data types out of the box
+- **Automatic Issue Detection**: Missing values, outliers, duplicates, anomalies
+- **Visual Reports**: HTML reports with embedded plots and statistics
+- **Highly Configurable**: YAML/JSON configuration for reproducibility
+- **CLI + Python API**: Use from command line or Python scripts
+- **Production readiness baseline**: 323 tests passing, 88% local line coverage, and blocking CI/CD gates
 
-### Advanced Features (v1.3.0) 🆕
-- 📊 **AutoEDA** - Automated exploratory data analysis with insights generation
-- ⚙️ **AutoFeatureEngine** - Intelligent feature engineering with 8 creation methods
-- 📈 **Interactive Dashboards** - Plotly visualizations and Streamlit app generation
-- 🤖 **Enhanced LLM Assistant** - Column renaming, documentation, quality analysis
+### Advanced Features (v1.3.0)
+- **AutoEDA**: Automated exploratory data analysis with insights generation
+- **AutoFeatureEngine**: Intelligent feature engineering with 8 creation methods
+- **Interactive Dashboards**: Plotly visualizations and Streamlit app generation
+- **Enhanced LLM Assistant**: Column renaming, documentation, quality analysis
 
 ### Previous Releases
-- 🤖 **LLM Integration** - AI-powered suggestions with GPT-4, Claude, Gemini, Ollama (v1.2.0)
-- 🖼️ **Image Preprocessing** - Automatic image cleaning, resizing, normalization (v1.2.0)
-- 🆕 **Advanced Imputation** - KNN and Iterative (MICE) imputation methods (v1.1.0)
-- 🎯 **SMOTE Balancing** - Synthetic minority oversampling for imbalanced data (v1.1.0)
+- **LLM Integration**: AI-powered suggestions with GPT-4, Claude, Gemini, Ollama (v1.2.0)
+- **Image Preprocessing**: Automatic image cleaning, resizing, normalization (v1.2.0)
+- **Advanced Imputation**: KNN and Iterative (MICE) imputation methods (v1.1.0)
+- **SMOTE Balancing**: Synthetic minority oversampling for imbalanced data (v1.1.0)
 
-## 📋 Quick Navigation
+## Quick Navigation
 
 | Section | Description |
 |---------|-------------|
-| [📊 Supported Data Types](#-supported-data-types) | Overview of Tabular, Text, Time Series, Graph |
-| [📦 Installation](#-installation) | Install from source or PyPI (v1.0.1+) |
-| [🚀 Quick Start](#-quick-start-guide) | 5-minute tutorial for each data type |
-| [🆕 v1.3.0 Features](#-v130-new-features) | AutoEDA, Feature Engineering, Dashboards (NEW!) |
-| [🆕 Advanced Features](docs/ADVANCED_FEATURES.md) | KNN/Iterative Imputation, SMOTE (v1.1.0) |
-| [🤖 LLM Integration](docs/LLM_CONFIGURATION.md) | AI-powered suggestions with multiple providers (v1.2.0) |
-| [🎯 Dynamic LLM Config](docs/DYNAMIC_LLM_CONFIGURATION.md) | Use ANY model - no hardcoded values! |
-| [⚙️ CLI Configuration](docs/QUICK_START_CLI.md) | Manage API keys with autoprepml-config |
-| [💻 CLI Reference](#-command-line-usage) | Command-line options and examples |
-| [🔧 Examples](#-examples-directory) | Working demo scripts with outputs |
-| [📚 Full API](#-complete-feature-reference) | Comprehensive function documentation |
-| [⚙️ Configuration](#️-configuration) | YAML/JSON config for reproducibility |
-| [🧪 Testing](#-testing) | Run tests and check coverage |
-| [🛠️ Development](#️-development-setup) | Contributing guide |
+| [Supported Data Types](#supported-data-types) | Overview of tabular, text, time series, graph, and image data |
+| [Installation](#installation) | Install from source or PyPI |
+| [Quick Start](#quick-start-guide) | A short tutorial for each data type |
+| [Version 1.3.0 Features](#v130-new-features) | AutoEDA, feature engineering, dashboards |
+| [Advanced Features](docs/ADVANCED_FEATURES.md) | KNN and iterative imputation, and SMOTE |
+| [LLM Integration](docs/LLM_CONFIGURATION.md) | Model assisted suggestions from multiple providers |
+| [Dynamic LLM Configuration](docs/DYNAMIC_LLM_CONFIGURATION.md) | Configure supported models at runtime |
+| [CLI Configuration](docs/QUICK_START_CLI.md) | Manage provider credentials with autoprepml-config |
+| [CLI Reference](#command-line-usage) | Command line options and examples |
+| [Examples](#examples-directory) | Working demo scripts with outputs |
+| [Full API](#complete-feature-reference) | Function and class reference |
+| [Configuration](#configuration) | YAML and JSON configuration for reproducibility |
+| [Testing](#testing) | Run tests and inspect coverage |
+| [Development](#development-setup) | Contribution and development guidance |
 
-## 📊 Supported Data Types
+## Supported Data Types
 
 | Data Type | Module | Use Cases | Status |
 |-----------|--------|-----------|--------|
-| **Tabular** | `AutoPrepML` | Classification, Regression, General ML | ✅ Ready |
-| **Text/NLP** | `TextPrepML` | Sentiment Analysis, Topic Modeling, Classification | ✅ Ready |
-| **Time Series** | `TimeSeriesPrepML` | Forecasting, Trend Analysis, Anomaly Detection | ✅ Ready |
-| **Graph** | `GraphPrepML` | Social Networks, Recommendation Systems, Link Prediction | ✅ Ready |
-| **Image** | `ImagePrepML` | Computer Vision, Image Classification, Object Detection | ✅ Ready |
+| **Tabular** | `AutoPrepML` | Classification, regression, and general machine learning | Ready |
+| **Text and NLP** | `TextPrepML` | Sentiment analysis, topic modeling, and classification | Ready |
+| **Time series** | `TimeSeriesPrepML` | Forecasting, trend analysis, and anomaly detection | Ready |
+| **Graph** | `GraphPrepML` | Social networks, recommendation systems, and link prediction | Ready |
+| **Image** | `ImagePrepML` | Computer vision, image classification, and object detection | Ready |
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 - Python 3.10 or higher
@@ -136,7 +135,7 @@ autoprepml-config --set openai
 autoprepml-config --set anthropic
 autoprepml-config --set google
 
-# Use Ollama for local LLM (no API key needed!)
+# Use Ollama for a local model; no API key is needed
 # Just install Ollama from https://ollama.ai
 ```
 
@@ -145,13 +144,13 @@ See [LLM Configuration Guide](docs/LLM_CONFIGURATION.md) for detailed instructio
 ### Verify Installation
 
 ```bash
-python -c "from autoprepml import AutoPrepML; print('✓ Installation successful!')"
+python -c "from autoprepml import AutoPrepML; print('Installation successful')"
 autoprepml --help
 ```
 
-## 🆕 v1.3.0 New Features
+## v1.3.0 New Features
 
-### 📊 AutoEDA - Automated Exploratory Data Analysis
+### AutoEDA: Automated Exploratory Data Analysis
 
 Comprehensive automated EDA with insights generation:
 
@@ -192,7 +191,7 @@ print(results['outliers']['iqr_outliers'])
 - Interactive HTML reports with visualizations
 - JSON export for programmatic access
 
-### ⚙️ AutoFeatureEngine - Intelligent Feature Engineering
+### AutoFeatureEngine: Intelligent Feature Engineering
 
 Create powerful features automatically with 8 different methods:
 
@@ -237,16 +236,16 @@ df_enhanced = auto_feature_engineering(
 ```
 
 **Methods:**
-- `create_polynomial_features()` - Polynomial & interaction terms
-- `create_interactions()` - Pairwise multiplications
-- `create_ratio_features()` - Division-based features
-- `create_binned_features()` - Discretization (uniform, quantile, kmeans)
-- `create_aggregation_features()` - Row-wise aggregations
-- `create_datetime_features()` - Extract temporal components
-- `select_features()` - Mutual info or F-test selection
-- `get_feature_importance()` - Rank features by importance
+- `create_polynomial_features()`: Polynomial & interaction terms
+- `create_interactions()`: Pairwise multiplications
+- `create_ratio_features()`: Division-based features
+- `create_binned_features()`: Discretization (uniform, quantile, kmeans)
+- `create_aggregation_features()`: Row-wise aggregations
+- `create_datetime_features()`: Extract temporal components
+- `select_features()`: Mutual info or F-test selection
+- `get_feature_importance()`: Rank features by importance
 
-### 📈 Interactive Dashboards - Visualization & Streamlit
+### Interactive Dashboards: Visualization & Streamlit
 
 Create interactive dashboards with Plotly and generate full Streamlit apps:
 
@@ -290,7 +289,7 @@ generate_streamlit_app(df, output_path="my_app.py")
   - Preprocessing tab (missing value handling, encoding)
   - Feature engineering tab (interactions, polynomial, binning)
 
-### 🤖 Enhanced LLM Assistant - Intelligent Data Cleaning
+### Enhanced LLM Assistant: Intelligent Data Cleaning
 
 Advanced AI-powered assistance for data preprocessing:
 
@@ -327,14 +326,14 @@ print(fix)
 ```
 
 **New LLM Capabilities:**
-- `suggest_column_rename()` - AI-powered intelligent column naming
-- `suggest_all_column_renames()` - Batch rename all columns
-- `explain_data_quality_issues()` - Natural language quality explanations
-- `generate_data_documentation()` - Auto-generate Markdown documentation
-- `suggest_preprocessing_pipeline()` - Complete pipeline recommendations
+- `suggest_column_rename()`: AI-powered intelligent column naming
+- `suggest_all_column_renames()`: Batch rename all columns
+- `explain_data_quality_issues()`: Natural language quality explanations
+- `generate_data_documentation()`: Auto-generate Markdown documentation
+- `suggest_preprocessing_pipeline()`: Complete pipeline recommendations
 - Works with OpenAI (GPT-4), Anthropic (Claude), Google (Gemini), and Ollama (local)
 
-### 📦 New Dependencies
+### New Dependencies
 
 v1.3.0 adds optional dependencies for visualization:
 
@@ -346,7 +345,7 @@ pip install autoprepml[viz]
 pip install plotly streamlit
 ```
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### Step 1: Import the Library
 
@@ -357,7 +356,7 @@ from autoprepml import AutoPrepML, TextPrepML, TimeSeriesPrepML, GraphPrepML
 
 ### Step 2: Choose Your Data Type
 
-#### 📊 **Tabular Data** (CSV, Excel, JSON)
+#### **Tabular Data** (CSV, Excel, JSON)
 
 ```python
 # Load your data
@@ -371,7 +370,7 @@ clean_df, target = prep.clean(task='classification', target_col='label')
 prep.save_report('report.html')
 ```
 
-#### 🤖 **With AI-Powered Suggestions** (v1.2.0+)
+#### **With AI-Powered Suggestions** (v1.2.0+)
 
 ```python
 # Enable LLM support for AI suggestions
@@ -388,7 +387,7 @@ print(suggestions)
 # Get feature engineering ideas
 features = prep.get_feature_suggestions(task='classification', target_col='label')
 for feature in features:
-    print(f"  • {feature}")
+    print(f"  {feature}")
 
 # Clean with advanced methods
 clean_df, report = prep.clean(
@@ -400,7 +399,7 @@ clean_df, report = prep.clean(
 )
 ```
 
-#### 📝 **Text/NLP Data** (Reviews, Documents, Tweets)
+#### **Text/NLP Data** (Reviews, Documents, Tweets)
 
 ```python
 # Load text data
@@ -418,7 +417,7 @@ prep.extract_features()
 cleaned_df = prep.df
 ```
 
-#### ⏰ **Time Series Data** (Sales, Sensor Data, Logs)
+#### **Time Series Data** (Sales, Sensor Data, Logs)
 
 ```python
 # Load time series
@@ -437,7 +436,7 @@ prep.add_lag_features(lags=[1, 7, 30])
 enhanced_df = prep.df
 ```
 
-#### 🕸️ **Graph Data** (Social Networks, Relationships)
+#### **Graph Data** (Social Networks, Relationships)
 
 ```python
 # Load nodes and edges
@@ -458,7 +457,7 @@ clean_nodes = prep.nodes_df
 clean_edges = prep.edges_df
 ```
 
-#### 🖼️ **Image Data** (Computer Vision, ML Models)
+#### **Image Data** (Computer Vision, ML Models)
 
 ```python
 from autoprepml import ImagePrepML
@@ -496,7 +495,7 @@ prep.save_report('image_report.html')
 ```
 ```
 
-## 💻 Command Line Usage
+## Command Line Usage
 
 ### Quick Reference
 
@@ -531,22 +530,22 @@ autoprepml -i train.csv -o train_clean.csv -t classification --target Survived
 autoprepml -i housing.csv -o housing_clean.csv -t regression --target price -v
 ```
 
-## � Complete Feature Reference
+## Complete Feature Reference
 
-### 1️⃣ Tabular Data (AutoPrepML)
+### 1 Tabular Data (AutoPrepML)
 
 **Detection Capabilities:**
-- ✅ Missing values (count, percentage by column)
-- ✅ Outliers (Isolation Forest, Z-score methods)
-- ✅ Class imbalance (for classification tasks)
-- ✅ Data type validation
+- Missing values (count, percentage by column)
+- Outliers (Isolation Forest, Z-score methods)
+- Class imbalance (for classification tasks)
+- Data type validation
 
 **Cleaning Operations:**
-- ✅ Imputation (mean, median, mode, auto)
-- ✅ Scaling (StandardScaler, MinMaxScaler)
-- ✅ Encoding (Label, One-Hot)
-- ✅ Class balancing (Oversampling, Undersampling)
-- ✅ Outlier removal
+- Imputation (mean, median, mode, auto)
+- Scaling (StandardScaler, MinMaxScaler)
+- Encoding (Label, One-Hot)
+- Class balancing (Oversampling, Undersampling)
+- Outlier removal
 
 **Example:**
 ```python
@@ -567,24 +566,24 @@ clean_df, target = prep.clean(task='classification', target_col='Survived', auto
 prep.save_report('titanic_report.html')
 ```
 
-### 2️⃣ Text/NLP Data (TextPrepML)
+### 2 Text/NLP Data (TextPrepML)
 
 **Detection Capabilities:**
-- ✅ Missing/empty text
-- ✅ Very short/long texts
-- ✅ URLs, emails, HTML tags
-- ✅ Average text length
-- ✅ Duplicates
+- Missing/empty text
+- Very short/long texts
+- URLs, emails, HTML tags
+- Average text length
+- Duplicates
 
 **Cleaning Operations:**
-- ✅ Text cleaning (lowercase, remove URLs/HTML/emails)
-- ✅ Special character & number removal
-- ✅ Stopword removal (English + custom)
-- ✅ Tokenization (word/sentence)
-- ✅ Feature extraction (length, word count, etc.)
-- ✅ Language detection (heuristic)
-- ✅ Duplicate removal
-- ✅ Length filtering
+- Text cleaning (lowercase, remove URLs/HTML/emails)
+- Special character & number removal
+- Stopword removal (English + custom)
+- Tokenization (word/sentence)
+- Feature extraction (length, word count, etc.)
+- Language detection (heuristic)
+- Duplicate removal
+- Length filtering
 
 **Example:**
 ```python
@@ -615,25 +614,25 @@ cleaned_df = prep.df
 cleaned_df.to_csv('reviews_cleaned.csv', index=False)
 ```
 
-### 3️⃣ Time Series Data (TimeSeriesPrepML)
+### 3 Time Series Data (TimeSeriesPrepML)
 
 **Detection Capabilities:**
-- ✅ Duplicate timestamps
-- ✅ Missing dates/gaps
-- ✅ Chronological order validation
-- ✅ Missing values in series
-- ✅ Negative/zero values
+- Duplicate timestamps
+- Missing dates/gaps
+- Chronological order validation
+- Missing values in series
+- Negative/zero values
 
 **Cleaning Operations:**
-- ✅ Sort by timestamp
-- ✅ Remove/aggregate duplicate timestamps
-- ✅ Fill missing timestamps (any frequency)
-- ✅ Interpolation (linear, forward-fill, back-fill)
-- ✅ Outlier detection (Z-score, IQR)
-- ✅ Time feature extraction (year, month, day, hour, day of week, quarter, weekend)
-- ✅ Lag features (1-day, 7-day, 30-day, custom)
-- ✅ Rolling window statistics (mean, std, min, max)
-- ✅ Resampling to different frequencies
+- Sort by timestamp
+- Remove/aggregate duplicate timestamps
+- Fill missing timestamps (any frequency)
+- Interpolation (linear, forward-fill, back-fill)
+- Outlier detection (Z-score, IQR)
+- Time feature extraction (year, month, day, hour, day of week, quarter, weekend)
+- Lag features (1-day, 7-day, 30-day, custom)
+- Rolling window statistics (mean, std, min, max)
+- Resampling to different frequencies
 
 **Example:**
 ```python
@@ -666,26 +665,26 @@ enhanced_df = prep.df
 enhanced_df.to_csv('sales_enhanced.csv', index=False)
 ```
 
-### 4️⃣ Graph Data (GraphPrepML)
+### 4 Graph Data (GraphPrepML)
 
 **Detection Capabilities:**
-- ✅ Duplicate node IDs
-- ✅ Missing node IDs
-- ✅ Duplicate edges
-- ✅ Self-loops
-- ✅ Dangling edges (edges to non-existent nodes)
-- ✅ Isolated nodes
+- Duplicate node IDs
+- Missing node IDs
+- Duplicate edges
+- Self-loops
+- Dangling edges (edges to non-existent nodes)
+- Isolated nodes
 
 **Cleaning Operations:**
-- ✅ Node ID validation
-- ✅ Edge validation (remove self-loops, dangling edges)
-- ✅ Duplicate removal (nodes and edges)
-- ✅ Node feature extraction (in/out/total degree)
-- ✅ Edge feature extraction
-- ✅ Connected component identification (BFS algorithm)
-- ✅ Isolated node filtering
-- ✅ Graph statistics (density, average degree)
-- ✅ Format conversion (edge list, adjacency dict)
+- Node ID validation
+- Edge validation (remove self-loops, dangling edges)
+- Duplicate removal (nodes and edges)
+- Node feature extraction (in/out/total degree)
+- Edge feature extraction
+- Connected component identification (BFS algorithm)
+- Isolated node filtering
+- Graph statistics (density, average degree)
+- Format conversion (edge list, adjacency dict)
 
 **Example:**
 ```python
@@ -723,7 +722,7 @@ prep.nodes_df.to_csv('users_cleaned.csv', index=False)
 prep.edges_df.to_csv('friendships_cleaned.csv', index=False)
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 AutoPrepML supports YAML/JSON configuration files for reproducible workflows.
 
@@ -772,7 +771,7 @@ config = {
 prep = AutoPrepML(df, config=config)
 ```
 
-## � Examples Directory
+## Examples Directory
 
 The `examples/` directory contains working demo scripts for all data types.
 
@@ -810,103 +809,36 @@ After running demos, you'll find these files in your directory:
 - `sales_cleaned.csv`
 - `social_network_nodes_cleaned.csv`, `social_network_edges_cleaned.csv`
 
-## 🧪 Testing
+## Testing
 
-AutoPrepML has comprehensive test coverage with 103 tests.
+The repository currently passes 323 tests locally. The latest local run reports 88.04 percent line coverage. Continuous integration enforces a 75 percent minimum and also runs linting, security checks, packaging checks, and the strict documentation build.
 
-### Run All Tests
+### Run the test suite
 
 ```bash
-# Run all tests
 pytest tests/ -v
-
-# Run with coverage report
-pytest tests/ --cov=autoprepml --cov-report=html
-
-# Run specific test file
-pytest tests/test_text.py -v
-
-# Run tests for specific module
-pytest tests/test_timeseries.py -v
 ```
 
-### Test Coverage
-
-| Module | Tests | Coverage |
-|--------|-------|----------|
-| `core.py` | 6 tests | 95% |
-| `detection.py` | 8 tests | 98% |
-| `cleaning.py` | 11 tests | 96% |
-| `visualization.py` | 7 tests | 92% |
-| `reports.py` | 3 tests | 90% |
-| `text.py` | 18 tests | 95% |
-| `timeseries.py` | 18 tests | 95% |
-| `graph.py` | 26 tests | 97% |
-| **Total** | **103 tests** | **95%** |
-
-### Quick Test Command
+### Generate a coverage report
 
 ```bash
-# Just see if everything passes
-pytest tests/ -q
-
-# Output: 103 passed, 7 warnings in 5.01s
+pytest tests/ --cov=autoprepml --cov-report=term-missing --cov-report=html
 ```
 
-## 🏗️ Project Structure
+Open `htmlcov/index.html` to inspect uncovered lines. Optional provider tests remain skipped when their external services are not configured.
 
-```
-autoprepml/
-├── autoprepml/              # Core library
-│   ├── __init__.py         # Package initialization
-│   ├── core.py             # AutoPrepML class (tabular data)
-│   ├── text.py             # TextPrepML class (text/NLP)
-│   ├── timeseries.py       # TimeSeriesPrepML class (time series)
-│   ├── graph.py            # GraphPrepML class (graph data)
-│   ├── detection.py        # Issue detection functions
-│   ├── cleaning.py         # Data cleaning transformations
-│   ├── visualization.py    # Plot generation
-│   ├── reports.py          # JSON/HTML report generators
-│   ├── config.py           # Configuration management
-│   ├── llm_suggest.py      # AI suggestions (placeholder)
-│   ├── cli.py              # Command-line interface
-│   └── utils.py            # Helper utilities
-├── tests/                   # Test suite (103 tests)
-│   ├── test_core.py        # Tabular data tests (6)
-│   ├── test_text.py        # Text preprocessing tests (18)
-│   ├── test_timeseries.py  # Time series tests (18)
-│   ├── test_graph.py       # Graph data tests (26)
-│   ├── test_detection.py   # Detection tests (8)
-│   ├── test_cleaning.py    # Cleaning tests (11)
-│   ├── test_visualization.py # Visualization tests (7)
-│   ├── test_reports.py     # Reporting tests (3)
-│   └── test_llm_suggest.py # LLM tests (6)
-├── examples/                # Demo scripts
-│   ├── demo_script.py      # Tabular data demo
-│   ├── demo_text.py        # Text/NLP demo
-│   ├── demo_timeseries.py  # Time series demo
-│   ├── demo_graph.py       # Graph data demo
-│   ├── demo_all.py         # Multi-modal demo
-│   └── demo_notebook.ipynb # Jupyter notebook demo
-├── docs/                    # Documentation
-│   ├── index.md            # Documentation home
-│   ├── usage.md            # Usage guide
-│   ├── api_reference.md    # API documentation
-│   └── tutorials.md        # Detailed tutorials
-├── scripts/                 # Utility scripts
-│   ├── run_tests.sh        # Test runner
-│   ├── build_docs.sh       # Documentation builder
-│   └── release.sh          # Release automation
-├── setup.py                # Package setup
-├── pyproject.toml          # Modern Python packaging
-├── requirements.txt        # Dependencies
-├── README.md               # This file
-├── LICENSE                 # MIT License
-├── .gitignore              # Git ignore rules
-└── autoprepml.yaml         # Sample configuration
-```
+## Project Structure
 
-## 🛠️ Development Setup
+The repository is organised around a small public package and a set of focused modules:
+
+* `autoprepml/` contains the library implementation, including modality specific processors, detection, cleaning, reporting, configuration, the command line interface, and optional LLM integrations.
+* `tests/` contains unit and integration coverage for the public API.
+* `examples/` contains runnable demonstrations for each supported data type.
+* `docs/` contains the user guide, API reference, tutorials, feature guides, and release notes.
+* `scripts/` contains test, documentation, release, and OpenML smoke test helpers.
+* `pyproject.toml` defines package metadata, dependencies, optional extras, and tool configuration.
+
+## Development Setup
 
 ### For Contributors
 
@@ -947,36 +879,35 @@ pytest tests/test_text.py -v
 black autoprepml/ tests/
 ruff check autoprepml/
 
-# Build documentation
-cd docs
-mkdocs serve  # View at http://localhost:8000
+# Build the documentation site
+mkdocs build --strict
 
 # Create distribution packages
 python -m build
 ```
 
-## 📚 Documentation
+## Documentation
 
 Comprehensive documentation is available in the `docs/` directory:
 
-- **[Usage Guide](docs/usage.md)** - Step-by-step tutorials for each data type
-- **[API Reference](docs/api_reference.md)** - Complete function and class documentation
-- **[Tutorials](docs/tutorials.md)** - Real-world examples and best practices
-- **[Multi-Modal Summary](MULTI_MODAL_SUMMARY.md)** - Overview of all data type features
+- **[Usage Guide](docs/usage.md)**: Step by step guidance for each data type
+- **[API Reference](docs/api_reference.md)**: Public classes and functions
+- **[Tutorials](docs/tutorials.md)**: End to end examples and practices
+- **[Advanced Features](docs/ADVANCED_FEATURES.md)**: Imputation and class balancing
+- **[LLM Configuration](docs/LLM_CONFIGURATION.md)**: Provider setup and credential handling
 
 ### Build Documentation Locally
 
 ```bash
-pip install mkdocs mkdocs-material
-cd docs
-mkdocs serve  # View at http://localhost:8000
+pip install -e ".[docs]"
+mkdocs build --strict
 ```
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-**Quick Start:**
+Quick start:
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make changes and add tests
@@ -984,7 +915,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 5. Commit: `git commit -m "Add amazing feature"`
 6. Push and open a Pull Request
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -996,21 +927,11 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 For more help, see [GitHub Issues](https://github.com/mdshoaibuddinchanda/autoprepml/issues) or [Discussions](https://github.com/mdshoaibuddinchanda/autoprepml/discussions).
 
-## 📊 Performance
+## Performance
 
-### Benchmarks
+### Performance guidance
 
-| Dataset Size | Data Type | Processing Time | Memory Usage |
-|--------------|-----------|----------------|--------------|
-| 1K rows | Tabular | <0.5s | <50MB |
-| 10K rows | Tabular | <2s | <100MB |
-| 100K rows | Tabular | <10s | <500MB |
-| 1K texts | Text/NLP | <1s | <100MB |
-| 10K texts | Text/NLP | <5s | <300MB |
-| 1K timestamps | Time Series | <1s | <80MB |
-| 10K nodes/edges | Graph | <2s | <150MB |
-
-*Benchmarks run on: Intel Core i5, 16GB RAM, Python 3.10*
+Processing time and memory use depend on the modality, schema, optional transformations, and report settings. Treat any benchmark as workload specific and measure representative data before setting service limits.
 
 ### Optimization Tips
 
@@ -1027,60 +948,39 @@ for chunk in pd.read_csv('big.csv', chunksize=10000):
     # Process
 ```
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with [pandas](https://pandas.pydata.org/), [scikit-learn](https://scikit-learn.org/), and [matplotlib](https://matplotlib.org/)
 - Inspired by the need for faster data preprocessing in ML workflows
 - Thanks to all [contributors](https://github.com/mdshoaibuddinchanda/autoprepml/graphs/contributors)
 
-## 📧 Contact
+## Contact
 
-- **Issues**: [GitHub Issues](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/mdshoaibuddinchanda/autoprepml/discussions)
-- **Email**: mdshoaibuddinchanda@gmail.com
+For support, use the [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues) or [GitHub Discussions](https://github.com/mdshoaibuddinchanda/autoprepml/discussions). The project is maintained by [MD Shoaibuddin Chanda](https://github.com/mdshoaibuddinchanda).
 
-## 🗺️ Roadmap
+## Roadmap
 
-### ✅ Version 1.0.0 (Released)
-- [x] Tabular data preprocessing (AutoPrepML)
-- [x] Text/NLP preprocessing (TextPrepML)
-- [x] Time series preprocessing (TimeSeriesPrepML)
-- [x] Graph data preprocessing (GraphPrepML)
-- [x] JSON/HTML reports with visualizations
-- [x] CLI support with comprehensive options
-- [x] 103 unit tests with 95%+ coverage
-- [x] YAML/JSON configuration system
+### Delivered
 
-### ✅ Version 1.1.0 (Released - Q1 2025)
-- [x] Advanced imputation (KNN, iterative) 
-- [x] SMOTE for class balancing 
-- [x] Enhanced documentation website 
-- [x] PyPI package publication (In Progress)
+- [x] Preprocessing for tabular, text, time series, graph, and image data.
+- [x] Detection, cleaning, feature engineering, visualisation, and HTML or JSON reporting.
+- [x] YAML and JSON configuration and command line workflows.
+- [x] Advanced imputation, SMOTE balancing, AutoEDA, dashboards, and optional LLM assistance.
+- [x] Blocking CI checks for tests, linting, security, packaging, and documentation.
 
-### ✅ Version 1.2.0 (Released - Q1 2025)
-- [x] LLM integration for smart suggestions (OpenAI, Anthropic, Google, Ollama)
-- [x] Configuration manager for API keys
-- [x] CLI configuration tool (autoprepml-config)
-- [x] Complete LLM documentation and examples
-- [ ] Image data preprocessing module
+### Planned
 
-### 📋 Version 1.3.0 (Q2 2025)
-- [ ] Audio/video metadata extraction
-- [ ] Distributed processing (Dask support)
-- [ ] Cloud storage integration (S3, GCS, Azure)
+- [ ] Publish reproducible performance benchmarks for representative workloads.
+- [ ] Add chunked and parallel processing for large datasets.
+- [ ] Expand storage adapters and streaming integrations.
+- [ ] Add experiment tracking and model pipeline integrations.
+- [ ] Continue raising coverage and strengthening contract, integration, and smoke tests.
 
-### 🌟 Version 2.0.0 (Q3-Q4 2025)
-- [ ] Real-time streaming support
-- [ ] MLOps integration (MLflow, W&B)
-- [ ] Docker containers and Kubernetes
-- [ ] Web UI for interactive preprocessing
-- [ ] Community plugin system
-
-## 💡 Use Cases
+## Use Cases
 
 ### By Industry
 
@@ -1097,26 +997,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Data Science**: EDA, data cleaning for visualization, statistical analysis
 - **Research**: Dataset preparation, reproducible workflows, benchmark creation
 
-## 📄 License
+## Additional resources
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-Built with [pandas](https://pandas.pydata.org/), [scikit-learn](https://scikit-learn.org/), [matplotlib](https://matplotlib.org/), and [seaborn](https://seaborn.pydata.org/).
-
-## 📧 Contact
-
-- **Author**: MD Shoaibuddin Chanda
-- **GitHub**: [@mdshoaibuddinchanda](https://github.com/mdshoaibuddinchanda)
-- **Issues**: [Report bugs or request features](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
-
----
-
-<div align="center">
-
-**⭐ Star this repo if AutoPrepML helped you!**
-
-[Documentation](docs/) • [Examples](examples/) • [Changelog](CHANGELOG.md) • [Contributing](CONTRIBUTING.md)
-
-</div>
+Read the [documentation](docs/), browse the [examples](examples/), review the [changelog](CHANGELOG.md), or see the [contribution guide](CONTRIBUTING.md).

@@ -1,25 +1,22 @@
 # Dynamic LLM Configuration Guide
 
-## 🎯 Overview
+## Overview
 
-AutoPrepML's LLM integration is **fully dynamic** - no hardcoded values! You can customize every aspect through:
-1. **Direct parameters** (in code)
-2. **Environment variables** (for flexibility)
-3. **Config file** (for persistence)
+AutoPrepML's LLM integration is configurable at runtime. Settings can be supplied through:
+1. **Direct parameters** in code.
+2. **Environment variables** for deployment specific values.
+3. **The configuration file** for persistent local settings.
 
-## 🔧 Configuration Priority
+## Configuration Priority
 
-```
-1. Direct Parameter (highest priority)
-   ↓
-2. Environment Variable
-   ↓
-3. Config File (~/.autoprepml/config.json)
-   ↓
-4. Default Value (lowest priority)
-```
+Settings are resolved in this order, from highest to lowest priority:
 
-## 📋 Available Configuration Options
+1. Direct parameter.
+2. Environment variable.
+3. Configuration file at `~/.autoprepml/config.json`.
+4. Provider default.
+
+## Available Configuration Options
 
 ### 1. API Keys
 
@@ -38,17 +35,16 @@ LLMSuggestor(provider='google', api_key='your-key-here')
 ```
 
 **Environment Variables:**
-- `OPENAI_API_KEY` - OpenAI API key
-- `ANTHROPIC_API_KEY` - Anthropic API key  
-- `GOOGLE_API_KEY` - Google Gemini API key
-- `GEMINI_API_KEY` - Google Gemini API key alias
-- `OLLAMA_API_KEY` - Not needed (local)
+- `OPENAI_API_KEY`: OpenAI API key
+- `ANTHROPIC_API_KEY`: Anthropic API key
+- `GOOGLE_API_KEY`: Google Gemini API key
+- `GEMINI_API_KEY`: Google Gemini API key alias
+- `OLLAMA_API_KEY`: Not needed (local)
 
----
 
-### 2. Model Selection (Fully Dynamic!)
+### 2. Model selection
 
-**Any valid model for each provider is supported!**
+Any model identifier accepted by the selected provider can be supplied.
 
 #### OpenAI Models
 ```python
@@ -87,7 +83,7 @@ export ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
 
 #### Google Gemini Models
 ```python
-# Use ANY Gemini model (automatically detects available models)
+# Supply any Gemini model identifier available to your account
 LLMSuggestor(provider='google', model='gemini-2.5-pro')
 LLMSuggestor(provider='google', model='gemini-2.5-flash')
 LLMSuggestor(provider='google', model='gemini-2.5-flash-lite')
@@ -108,12 +104,12 @@ from autoprepml.config_manager import AutoPrepMLConfig
 
 client = genai.Client(api_key=AutoPrepMLConfig.get_api_key('google'))
 for model in client.models.list():
-    print(f"✅ {model.name}")
+    print(model.name)
 ```
 
 #### Ollama Models (Local)
 ```python
-# Use ANY model you've pulled with Ollama
+# Supply any model pulled into Ollama
 LLMSuggestor(provider='ollama', model='llama3.2')
 LLMSuggestor(provider='ollama', model='llama3.2:70b')
 LLMSuggestor(provider='ollama', model='mistral')
@@ -133,7 +129,6 @@ export OLLAMA_MODEL="mixtral"
 ollama list
 ```
 
----
 
 ### 3. Temperature (Creativity Control)
 
@@ -154,7 +149,6 @@ export ANTHROPIC_TEMPERATURE="0.7"
 export OLLAMA_TEMPERATURE="0.6"
 ```
 
----
 
 ### 4. Max Tokens (Response Length)
 
@@ -174,7 +168,6 @@ export ANTHROPIC_MAX_TOKENS="2000"
 export OLLAMA_MAX_TOKENS="800"
 ```
 
----
 
 ### 5. Base URL (Custom Endpoints)
 
@@ -201,7 +194,6 @@ export OLLAMA_BASE_URL="http://remote-server:11434"
 export ANTHROPIC_BASE_URL="https://custom-endpoint.com"
 ```
 
----
 
 ### 6. Google Safety Settings
 
@@ -209,7 +201,7 @@ export ANTHROPIC_BASE_URL="https://custom-endpoint.com"
 
 ```python
 # Safety settings are read from environment
-# No need to modify code!
+# No code changes are required
 ```
 
 **Via Environment Variable:**
@@ -218,9 +210,8 @@ export ANTHROPIC_BASE_URL="https://custom-endpoint.com"
 export GOOGLE_SAFETY_LEVEL="BLOCK_ONLY_HIGH"
 ```
 
----
 
-## 🚀 Complete Examples
+## Complete Examples
 
 ### Example 1: Use Latest Gemini Pro with Custom Settings
 
@@ -252,7 +243,7 @@ export GOOGLE_SAFETY_LEVEL="BLOCK_MEDIUM_AND_ABOVE"
 ```
 
 ```python
-# Code stays clean - all config from environment!
+# Configuration is loaded from the environment
 suggestor = LLMSuggestor(provider='google')
 # Uses: gemini-2.5-flash, temp=0.6, max_tokens=800
 ```
@@ -298,7 +289,7 @@ ollama_suggestor = LLMSuggestor(
 ```python
 from autoprepml import AutoPrepML
 
-# All LLM settings work in AutoPrepML too!
+# The same settings are available through AutoPrepML
 prep = AutoPrepML(
     df,
     enable_llm=True,
@@ -312,9 +303,8 @@ prep = AutoPrepML(
 suggestions = prep.get_llm_suggestions(column='age', issue_type='missing')
 ```
 
----
 
-## 🔍 Checking Current Configuration
+## Checking Current Configuration
 
 ### View All Settings
 
@@ -328,7 +318,7 @@ print(f"Model: {suggestor.model}")
 print(f"Temperature: {suggestor.temperature}")
 print(f"Max Tokens: {suggestor.max_tokens}")
 print(f"Base URL: {suggestor.base_url}")
-print(f"API Key: {'✅ Set' if suggestor.api_key else '❌ Not set'}")
+print(f"API Key: {'Set' if suggestor.api_key else 'Not set'}")
 ```
 
 ### Check API Keys
@@ -341,9 +331,8 @@ autoprepml-config --list
 autoprepml-config --check google
 ```
 
----
 
-## 💡 Best Practices
+## Best Practices
 
 ### 1. Development vs Production
 
@@ -399,12 +388,11 @@ export OLLAMA_TEMPERATURE="0.7"
 
 ```python
 suggestor = LLMSuggestor(provider='ollama')
-# No API costs, fully offline!
+# No provider charges and no network request
 ```
 
----
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Issue: Model not found
 
@@ -451,9 +439,8 @@ Remove-Item Env:\GOOGLE_MODEL
 Remove-Item Env:\GOOGLE_TEMPERATURE
 ```
 
----
 
-## 📊 Summary Table
+## Summary Table
 
 | Configuration | Parameter | Environment Variable | Config File | Default |
 |---------------|-----------|---------------------|-------------|---------|
@@ -466,9 +453,8 @@ Remove-Item Env:\GOOGLE_TEMPERATURE
 | **Raw Samples** | `include_samples` | `AUTOPREPML_LLM_INCLUDE_SAMPLES` | No | Disabled |
 | **Default Model** | N/A | `<PROVIDER>_DEFAULT_MODEL` | No | Hardcoded |
 
----
 
-## 🎯 Quick Reference
+## Quick Reference
 
 ```bash
 # Set API key (persistent)
@@ -487,9 +473,8 @@ export GOOGLE_MAX_TOKENS="1000"
 autoprepml-config --list
 
 # Use in code
-python your_script.py  # Uses all env vars automatically!
+python your_script.py  # Uses the configured environment values
 ```
 
----
 
-**🚀 No Hardcoded Values - Full Control - Maximum Flexibility!**
+Use explicit settings for each deployment and keep credentials outside source control.
