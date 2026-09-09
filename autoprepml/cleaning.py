@@ -2,7 +2,13 @@
 
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
+from sklearn.preprocessing import (
+    MaxAbsScaler,
+    MinMaxScaler,
+    RobustScaler,
+    StandardScaler,
+    LabelEncoder,
+)
 from sklearn.impute import KNNImputer
 from sklearn.experimental import enable_iterative_imputer  # noqa
 from sklearn.impute import IterativeImputer
@@ -157,7 +163,10 @@ def scale_features(
 
     Args:
         df: Input DataFrame
-        method: 'standard' (z-score normalization) or 'minmax' (0-1 scaling)
+        method: 'standard' (z-score), 'minmax' (0-1), 'robust' (median/IQR),
+            or 'maxabs' scaling. For model workflows, prefer
+            :class:`autoprepml.TabularNormalizer` so statistics are fit on
+            training rows and reused for later data.
         exclude_cols: List of column names to exclude from scaling
 
     Returns:
@@ -176,6 +185,10 @@ def scale_features(
         scaler = StandardScaler()
     elif method == "minmax":
         scaler = MinMaxScaler()
+    elif method == "robust":
+        scaler = RobustScaler()
+    elif method == "maxabs":
+        scaler = MaxAbsScaler()
     else:
         raise ValueError(f"Unknown scaling method: {method}")
 

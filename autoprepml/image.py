@@ -5,6 +5,8 @@ import numpy as np
 from pathlib import Path
 import json
 
+from .normalization import denormalize_image_array, normalize_image_array
+
 
 class ImagePrepML:
     """Image data preprocessing class.
@@ -31,6 +33,9 @@ class ImagePrepML:
         target_size: Tuple[int, int] = (224, 224),
         color_mode: str = "rgb",
         normalize: bool = True,
+        normalization_mode: str = "zero_one",
+        normalization_mean: Optional[Any] = None,
+        normalization_std: Optional[Any] = None,
     ):
         """Initialize ImagePrepML.
 
@@ -39,13 +44,25 @@ class ImagePrepML:
             image_paths: List of specific image paths
             target_size: Target image dimensions (height, width)
             color_mode: Color mode ('rgb', 'grayscale', 'rgba')
-            normalize: Whether to normalize pixel values to [0, 1]
+            normalize: Whether to normalize pixel values
+            normalization_mode: ``zero_one``, ``minus_one_one``, ``standard``, or ``none``
+            normalization_mean: Training-set channel mean for ``standard`` mode
+            normalization_std: Training-set channel standard deviation for ``standard`` mode
         """
         self.image_dir = Path(image_dir) if image_dir else None
         self.image_paths = image_paths or []
         self.target_size = target_size
         self.color_mode = color_mode.lower()
         self.normalize = normalize
+        if not isinstance(normalization_mode, str):
+            raise TypeError("normalization_mode must be a string")
+        self.normalization_mode = normalization_mode.lower().strip()
+        if self.normalization_mode not in {"none", "zero_one", "minus_one_one", "standard"}:
+            raise ValueError(
+                "normalization_mode must be one of: minus_one_one, none, standard, zero_one"
+            )
+        self.normalization_mean = normalization_mean
+        self.normalization_std = normalization_std
 
         self.log = []
         self.issues = {}
@@ -89,6 +106,7 @@ class ImagePrepML:
                 "image_count": len(self.image_paths),
                 "target_size": self.target_size,
                 "color_mode": self.color_mode,
+                "normalization_mode": self.normalization_mode if self.normalize else "none",
             }
         )
 
@@ -271,9 +289,17 @@ class ImagePrepML:
                 # Convert to numpy array
                 img_array = np.array(img)
 
-                # Normalize if requested
+                # Normalize after conversion and resizing. Standard mode uses
+                # statistics supplied from the training set, never this batch.
                 if self.normalize:
-                    img_array = img_array.astype(np.float32) / 255.0
+                    channel_axis = None if self.color_mode in {"gray", "grayscale"} else -1
+                    img_array = normalize_image_array(
+                        img_array,
+                        mode=self.normalization_mode,
+                        mean=self.normalization_mean,
+                        std=self.normalization_std,
+                        channel_axis=channel_axis,
+                    )
 
                 processed.append(img_array)
                 img.close()
@@ -302,6 +328,7 @@ class ImagePrepML:
                 "processed_count": len(processed),
                 "output_shape": processed_array.shape,
                 "normalized": self.normalize,
+                "normalization_mode": self.normalization_mode if self.normalize else "none",
                 "augmented": len(processed_array) != len(processed),
             }
         )
@@ -394,9 +421,16 @@ class ImagePrepML:
         output_path.mkdir(parents=True, exist_ok=True)
 
         for i, img_array in enumerate(self.images):
-            # Denormalize if needed
+            # Denormalize if needed so persisted files are valid image pixels.
             if self.normalize:
-                img_array = (img_array * 255).astype(np.uint8)
+                channel_axis = None if self.color_mode in {"gray", "grayscale"} else -1
+                img_array = denormalize_image_array(
+                    img_array,
+                    mode=self.normalization_mode,
+                    mean=self.normalization_mean,
+                    std=self.normalization_std,
+                    channel_axis=channel_axis,
+                )
 
             # Convert to PIL Image
             img = Image.fromarray(img_array)
@@ -583,6 +617,9 @@ def preprocess_images(
     color_mode: str = "rgb",
     normalize: bool = True,
     output_dir: Optional[str] = None,
+    normalization_mode: str = "zero_one",
+    normalization_mean: Optional[Any] = None,
+    normalization_std: Optional[Any] = None,
 ) -> np.ndarray:
     """Quick image preprocessing function.
 
@@ -592,12 +629,21 @@ def preprocess_images(
         color_mode: Color mode
         normalize: Normalize pixels
         output_dir: Save processed images here
+        normalization_mode: Pixel scaling convention
+        normalization_mean: Training-set channel mean for ``standard`` mode
+        normalization_std: Training-set channel standard deviation for ``standard`` mode
 
     Returns:
         Processed image array
     """
     prep = ImagePrepML(
-        image_dir=image_dir, target_size=target_size, color_mode=color_mode, normalize=normalize
+        image_dir=image_dir,
+        target_size=target_size,
+        color_mode=color_mode,
+        normalize=normalize,
+        normalization_mode=normalization_mode,
+        normalization_mean=normalization_mean,
+        normalization_std=normalization_std,
     )
     prep.detect()
     images = prep.clean()

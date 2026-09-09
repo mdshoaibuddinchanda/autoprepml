@@ -96,6 +96,20 @@ available when MLflow is installed. `make_preprocessing_pipeline` and
 `make_model_pipeline` build scikit-learn pipelines that fit preprocessing
 state on training data only.
 
+### Normalization
+
+`TabularNormalizer(method='standard', columns=None)` is a fitted sklearn
+transformer for numeric DataFrame columns. Supported methods are `standard`,
+`minmax`, `robust`, and `maxabs`. Call `fit_transform` on training rows and
+`transform` on later rows. Missing and non-finite values are rejected so that
+imputation and schema validation cannot be skipped accidentally.
+
+`fit_image_statistics(images)` computes training-only per-channel statistics.
+`normalize_image_array(images, mode='zero_one', mean=None, std=None)` supports
+`zero_one`, `minus_one_one`, `standard`, and `none`. Standard image mode uses
+explicit per-channel training statistics. `denormalize_image_array` converts
+normalized arrays back to uint8 pixels for image persistence.
+
 See the [advanced features guide](ADVANCED_FEATURES.md), [usage guide](usage.md), and [tutorials](tutorials.md) for examples.
 
 ### Time series feature safety
@@ -109,6 +123,9 @@ See the [advanced features guide](ADVANCED_FEATURES.md), [usage guide](usage.md)
 ### Image augmentation
 
 `ImagePrepML.clean(augment=True, augmentation_config=...)` supports deterministic NumPy transforms without an additional augmentation dependency. Configuration keys are `horizontal_flip`, `vertical_flip`, `rotations` (90-degree increments), and `include_original`.
+
+`ImagePrepML` also accepts `normalization_mode`, `normalization_mean`, and
+`normalization_std`. The default remains `zero_one` for compatibility.
 
 
 ## Detection Module
@@ -165,7 +182,7 @@ Impute missing values.
 Scale numeric features.
 
 **Parameters:**
-- `method`: 'standard' or 'minmax'
+- `method`: 'standard', 'minmax', 'robust', or 'maxabs'
 - `exclude_cols`: Columns to exclude from scaling
 
 **Returns:** DataFrame with scaled features

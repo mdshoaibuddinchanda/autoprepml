@@ -2,6 +2,7 @@
 
 import pandas as pd
 import numpy as np
+import pytest
 from autoprepml import cleaning
 
 
@@ -37,6 +38,13 @@ def test_scale_features_minmax():
     result = cleaning.scale_features(df, method="minmax")
     assert result["a"].min() == 0.0
     assert result["a"].max() == 1.0
+
+
+@pytest.mark.parametrize("method", ["robust", "maxabs"])
+def test_scale_features_additional_methods(method):
+    df = pd.DataFrame({"a": [1.0, 2.0, 3.0, 100.0]})
+    result = cleaning.scale_features(df, method=method)
+    assert np.isfinite(result["a"]).all()
 
 
 def test_scale_features_exclude():

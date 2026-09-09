@@ -40,6 +40,13 @@ from .storage import (
 from .streaming import stream_process, write_stream
 from .pipeline import make_model_pipeline, make_preprocessing_pipeline
 from .experiments import ExperimentRun, LocalExperimentTracker, MLflowExperimentTracker
+from .normalization import (
+    TabularNormalizer,
+    denormalize_image_array,
+    fit_image_statistics,
+    fit_tabular_normalizer,
+    normalize_image_array,
+)
 
 __all__ = [
     # Core preprocessing
@@ -77,6 +84,11 @@ __all__ = [
     "ExperimentRun",
     "LocalExperimentTracker",
     "MLflowExperimentTracker",
+    "TabularNormalizer",
+    "fit_tabular_normalizer",
+    "fit_image_statistics",
+    "normalize_image_array",
+    "denormalize_image_array",
     # Modules
     "detection",
     "cleaning",

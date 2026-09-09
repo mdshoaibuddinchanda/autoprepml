@@ -91,6 +91,20 @@ def test_clean_text_numbers():
     assert "456" not in result["text"].iloc[0]
 
 
+def test_clean_text_applies_unicode_normalization_and_handles_non_strings():
+    df = pd.DataFrame({"text": ["Ｆｒｅｓｈ", 123, None]})
+    prep = TextPrepML(df, text_column="text")
+    result = prep.clean_text()
+
+    assert result["text"].tolist() == ["fresh", "123", ""]
+
+
+def test_clean_text_rejects_unknown_unicode_normalization_form():
+    prep = TextPrepML(pd.DataFrame({"text": ["value"]}), text_column="text")
+    with pytest.raises(ValueError, match="unicode_normalization"):
+        prep.clean_text(unicode_normalization="UNKNOWN")
+
+
 def test_remove_stopwords():
     """Test stopword removal"""
     df = pd.DataFrame({"text": ["this is a test of the system"]})

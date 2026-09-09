@@ -3,6 +3,7 @@
 import pytest
 from pathlib import Path
 import tempfile
+import numpy as np
 
 
 def test_image_prep_ml_import():
@@ -173,6 +174,33 @@ def test_save_processed_images():
         assert len(output_files) == 3
 
 
+def test_standard_image_normalization_round_trips_when_saved():
+    """Per-channel standard normalization can be persisted as valid pixels."""
+    pytest.importorskip("PIL")
+    from autoprepml.image import ImagePrepML
+    from PIL import Image
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_dir = Path(tmpdir) / "input"
+        output_dir = Path(tmpdir) / "output"
+        input_dir.mkdir()
+        source = np.array([[[0, 64, 128], [32, 96, 160]]], dtype=np.uint8)
+        Image.fromarray(source, mode="RGB").save(input_dir / "source.png")
+
+        prep = ImagePrepML(
+            image_dir=str(input_dir),
+            target_size=(2, 1),
+            normalization_mode="standard",
+            normalization_mean=[0.25, 0.5, 0.75],
+            normalization_std=[0.25, 0.25, 0.25],
+        )
+        prep.detect(verbose=False)
+        processed = prep.clean()
+        assert np.isfinite(processed).all()
+        prep.save_processed(str(output_dir))
+        assert (output_dir / "processed_0000.png").exists()
+
+
 def test_convenience_function():
     """Test the convenience preprocess_images function"""
     pytest.importorskip("PIL")
@@ -234,6 +262,14 @@ def test_invalid_image_directory():
 
     with pytest.raises(ValueError, match="does not exist"):
         ImagePrepML(image_dir="/nonexistent/directory")
+
+
+def test_invalid_image_normalization_mode():
+    from autoprepml.image import ImagePrepML
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with pytest.raises(ValueError, match="normalization_mode"):
+            ImagePrepML(image_dir=tmpdir, normalization_mode="unknown")
 
 
 def test_no_images_found():

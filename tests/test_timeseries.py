@@ -310,3 +310,27 @@ def test_multiple_value_columns():
 
     assert "sales_lag_1" in result.columns
     assert "profit" in result.columns  # Other column preserved
+
+
+def test_time_series_normalizer_uses_historical_rows_only():
+    df = pd.DataFrame(
+        {
+            "date": pd.date_range("2024-01-01", periods=4, freq="D"),
+            "value": [10.0, 20.0, 30.0, 1000.0],
+        }
+    )
+    prep = TimeSeriesPrepML(df, timestamp_column="date", value_column="value")
+    normalized = prep.fit_transform_normalized(fit_end=3)
+
+    assert np.isclose(normalized.loc[0, "value"], -1.224744871, atol=1e-6)
+    assert normalized.loc[3, "value"] > 100.0
+    assert prep.log[-1]["action"] == "fit_normalizer"
+
+
+def test_time_series_normalizer_requires_fit():
+    df = pd.DataFrame(
+        {"date": pd.date_range("2024-01-01", periods=2, freq="D"), "value": [1.0, 2.0]}
+    )
+    prep = TimeSeriesPrepML(df, timestamp_column="date", value_column="value")
+    with pytest.raises(ValueError, match="fit_normalizer"):
+        prep.transform_normalized()

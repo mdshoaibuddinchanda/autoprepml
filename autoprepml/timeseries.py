@@ -27,6 +27,7 @@ class TimeSeriesPrepML:
         self.value_column = value_column
         self.original_df = df.copy()
         self.log = []
+        self.normalizer_ = None
 
         if timestamp_column not in df.columns:
             raise ValueError(f"Column '{timestamp_column}' not found in DataFrame")
@@ -320,6 +321,62 @@ class TimeSeriesPrepML:
             }
         )
         return self.df
+
+    def fit_normalizer(
+        self,
+        method: str = "standard",
+        columns: Optional[list] = None,
+        fit_end: Optional[int] = None,
+    ) -> "TimeSeriesPrepML":
+        """Fit feature scaling on historical rows only.
+
+        ``fit_end`` is an exclusive row boundary after chronological sorting.
+        Keeping the fit window separate prevents future observations from
+        influencing training statistics. Call :meth:`transform_normalized`
+        after fitting to apply the same statistics to all rows or a new frame.
+        """
+        from .normalization import TabularNormalizer
+
+        if fit_end is not None:
+            if not isinstance(fit_end, int) or isinstance(fit_end, bool):
+                raise TypeError("fit_end must be an integer row boundary")
+            if fit_end < 1 or fit_end > len(self.df):
+                raise ValueError("fit_end must be between 1 and the number of rows")
+        fit_frame = self.df.iloc[:fit_end] if fit_end is not None else self.df
+        if columns is None:
+            if not self.value_column:
+                raise ValueError("columns or value_column must be specified")
+            columns = [self.value_column]
+        self.normalizer_ = TabularNormalizer(method=method, columns=columns).fit(fit_frame)
+        self.log.append(
+            {
+                "action": "fit_normalizer",
+                "method": method,
+                "columns": list(self.normalizer_.columns_),
+                "fit_rows": len(fit_frame),
+            }
+        )
+        return self
+
+    def transform_normalized(self, frame: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+        """Apply a previously fitted historical normalizer."""
+        if self.normalizer_ is None:
+            raise ValueError("Call fit_normalizer before transform_normalized")
+        source = self.df if frame is None else frame
+        transformed = self.normalizer_.transform(source)
+        if frame is None:
+            self.df = transformed
+        return transformed
+
+    def fit_transform_normalized(
+        self,
+        method: str = "standard",
+        columns: Optional[list] = None,
+        fit_end: Optional[int] = None,
+    ) -> pd.DataFrame:
+        """Fit on historical rows and transform the current time series."""
+        self.fit_normalizer(method=method, columns=columns, fit_end=fit_end)
+        return self.transform_normalized()
 
     def resample(self, freq: str, agg_func: str = "sum") -> pd.DataFrame:
         """Resample time series to different frequency.

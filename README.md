@@ -27,6 +27,7 @@ The processing flow is straightforward:
 - **Visual Reports**: HTML reports with embedded plots and statistics
 - **Highly Configurable**: YAML/JSON configuration for reproducibility
 - **CLI + Python API**: Use from command line or Python scripts
+- **Train-only normalization**: Fitted tabular scalers and explicit image pixel conventions prevent data leakage
 - **Production readiness baseline**: Automated tests, coverage, linting, security, packaging, and documentation gates
 
 ### Advanced Features (v1.4.0)
@@ -34,6 +35,7 @@ The processing flow is straightforward:
 - **AutoFeatureEngine**: Intelligent feature engineering with 8 creation methods
 - **Interactive Dashboards**: Plotly visualizations and Streamlit app generation
 - **Enhanced LLM Assistant**: Column renaming, documentation, quality analysis
+- **Normalization utilities**: Train-only tabular scalers, image statistics, and explicit pixel conventions
 
 ### Previous Releases
 - **LLM Integration**: AI-powered suggestions with GPT-4, Claude, Gemini, Ollama (v1.2.0)
@@ -55,7 +57,8 @@ The processing flow is straightforward:
 | [Dynamic LLM Configuration](docs/DYNAMIC_LLM_CONFIGURATION.md) | Configure supported models at runtime |
 | [CLI Configuration](docs/QUICK_START_CLI.md) | Manage provider credentials with autoprepml-config |
 | [CLI Reference](#command-line-usage) | Command line options and examples |
-| [Examples](#examples-directory) | Working demo scripts with outputs |
+| [Examples](#examples-directory) | Working notebooks with reproducible outputs |
+| [Normalization standards](docs/normalization.md) | Production rules for CSV, image, text, time-series, and graph processing |
 | [Full API](#complete-feature-reference) | Function and class reference |
 | [Configuration](#configuration) | YAML and JSON configuration for reproducibility |
 | [Testing](#testing) | Run tests and inspect coverage |

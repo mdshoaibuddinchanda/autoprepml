@@ -14,6 +14,7 @@ are designed to be read from top to bottom and run without private data.
 | `05_image_data.ipynb` | Temporary synthetic image creation, validation, resizing, normalization, and augmentation |
 | `06_scalable_pipeline.ipynb` | Chunked processing, bounded parallelism, streaming, storage, and experiment tracking |
 | `07_llm_integration.ipynb` | Provider selection, safe configuration, and an explicitly opt-in request |
+| `08_normalization_standards.ipynb` | Train-only normalization for tabular, image, text, and time-series data |
 
 The notebooks live in `examples/notebooks/` in the source repository. Install
 the notebook extra before running them:

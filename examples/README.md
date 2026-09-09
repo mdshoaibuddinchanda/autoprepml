@@ -16,6 +16,7 @@ dataset.
 | `notebooks/05_image_data.ipynb` | Synthetic image creation, validation, resizing, normalization, and augmentation | Pillow only |
 | `notebooks/06_scalable_pipeline.ipynb` | Chunking, bounded parallel processing, streaming, storage adapters, and experiment tracking | None |
 | `notebooks/07_llm_integration.ipynb` | Provider configuration and safe optional LLM execution | Optional provider and credentials |
+| `notebooks/08_normalization_standards.ipynb` | Train-only normalization across tabular, image, text, and time-series data | None |
 
 The notebook cells display bounded tabular or textual outputs. They do not
 embed images or commit generated data. The image example writes files only

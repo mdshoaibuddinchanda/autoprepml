@@ -1,6 +1,7 @@
 """Text/NLP preprocessing module for AutoPrepML"""
 
 from typing import Dict, Any, List, Optional
+import unicodedata
 import pandas as pd
 import numpy as np
 from collections import Counter
@@ -66,6 +67,7 @@ class TextPrepML:
         remove_special_chars: bool = False,
         remove_numbers: bool = False,
         remove_extra_spaces: bool = True,
+        unicode_normalization: Optional[str] = "NFKC",
     ) -> pd.DataFrame:
         """Clean text data.
 
@@ -77,11 +79,22 @@ class TextPrepML:
             remove_special_chars: Remove special characters
             remove_numbers: Remove numbers
             remove_extra_spaces: Remove extra whitespace
+            unicode_normalization: Unicode normalization form, such as
+                ``NFKC``. Set to ``None`` to preserve source code points.
 
         Returns:
             DataFrame with cleaned text
         """
-        text_col = self.df[self.text_column].fillna("")
+        text_col = self.df[self.text_column].fillna("").astype(str)
+
+        if unicode_normalization is not None:
+            valid_forms = {"NFC", "NFKC", "NFD", "NFKD"}
+            if unicode_normalization not in valid_forms:
+                choices = ", ".join(sorted(valid_forms))
+                raise ValueError(f"unicode_normalization must be one of: {choices}")
+            text_col = text_col.map(
+                lambda value: unicodedata.normalize(unicode_normalization, value)
+            )
 
         # Remove HTML tags
         if remove_html:
@@ -105,7 +118,7 @@ class TextPrepML:
 
         # Convert to lowercase
         if lowercase:
-            text_col = text_col.str.lower()
+            text_col = text_col.str.casefold()
 
         # Remove extra spaces
         if remove_extra_spaces:
@@ -119,6 +132,7 @@ class TextPrepML:
                     "lowercase": lowercase,
                     "remove_urls": remove_urls,
                     "remove_html": remove_html,
+                    "unicode_normalization": unicode_normalization,
                 },
             }
         )
