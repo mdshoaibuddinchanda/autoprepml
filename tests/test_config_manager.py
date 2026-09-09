@@ -6,7 +6,7 @@ import json
 import stat
 from pathlib import Path
 from autoprepml.config_manager import AutoPrepMLConfig
-from autoprepml.config import DEFAULT_CONFIG, get_default_config, load_config
+from autoprepml.config import DEFAULT_CONFIG, get_default_config, load_config, save_config
 
 
 def test_default_config_isolation():
@@ -29,6 +29,63 @@ def test_file_config_merge_does_not_mutate_defaults(tmp_path):
 
     assert loaded["cleaning"]["scale_method"] == "minmax"
     assert DEFAULT_CONFIG["cleaning"]["scale_method"] == "standard"
+
+
+def test_config_merge_preserves_nested_defaults(tmp_path):
+    """A partial section override must retain unrelated default options."""
+    config_path = tmp_path / "partial.JSON"
+    config_path.write_text(
+        json.dumps({"cleaning": {"scale_method": "minmax"}}),
+        encoding="utf-8",
+    )
+
+    loaded = load_config(config_path)
+
+    assert loaded["cleaning"]["scale_method"] == "minmax"
+    assert loaded["cleaning"]["numeric_strategy"] == "median"
+
+
+def test_config_load_rejects_invalid_content(tmp_path):
+    """Invalid syntax and invalid known-section shapes fail clearly."""
+    malformed_path = tmp_path / "broken.yaml"
+    malformed_path.write_text("cleaning: [", encoding="utf-8")
+    with pytest.raises(ValueError, match="Invalid configuration"):
+        load_config(malformed_path)
+
+    wrong_shape_path = tmp_path / "wrong.json"
+    wrong_shape_path.write_text(json.dumps({"cleaning": "fast"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="section 'cleaning'"):
+        load_config(wrong_shape_path)
+
+
+def test_config_load_rejects_unknown_extension(tmp_path):
+    """Configuration format is explicit instead of silently assuming YAML."""
+    config_path = tmp_path / "config.toml"
+    config_path.write_text("[cleaning]", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="YAML or JSON"):
+        load_config(config_path)
+
+
+@pytest.mark.parametrize("suffix", [".json", ".YAML", ".yml"])
+def test_save_config_creates_parent_and_round_trips(tmp_path, suffix):
+    """Saving supports all documented formats and nested output paths."""
+    output_path = tmp_path / "nested" / f"config{suffix}"
+    expected = {"cleaning": {"scale_method": "minmax"}, "custom": {"enabled": True}}
+
+    save_config(expected, output_path)
+
+    assert output_path.exists()
+    assert load_config(output_path)["cleaning"]["scale_method"] == "minmax"
+    assert load_config(output_path)["custom"] == {"enabled": True}
+
+
+def test_save_config_rejects_invalid_input(tmp_path):
+    """Save validates both the object shape and file format."""
+    with pytest.raises(TypeError, match="dictionary"):
+        save_config([], tmp_path / "config.json")
+    with pytest.raises(ValueError, match="YAML or JSON"):
+        save_config({}, tmp_path / "config.toml")
 
 
 class TestAutoPrepMLConfig:

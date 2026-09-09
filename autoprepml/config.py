@@ -1,10 +1,13 @@
 """Configuration management for AutoPrepML"""
 
-import os
-import json
 import copy
+import json
+import os
+import tempfile
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 import yaml
-from typing import Dict, Any, Optional
 
 
 DEFAULT_CONFIG = {
@@ -47,25 +50,38 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     if config_path is None:
         return copy.deepcopy(DEFAULT_CONFIG)
 
-    if not os.path.exists(config_path):
+    config_path = Path(config_path)
+    if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
-    with open(config_path, "r", encoding="utf-8") as f:
-        if config_path.endswith(".yaml") or config_path.endswith(".yml"):
-            user_config = yaml.safe_load(f)
-        elif config_path.endswith(".json"):
-            user_config = json.load(f)
-        else:
-            raise ValueError("Config file must be YAML or JSON")
+    suffix = config_path.suffix.lower()
+    if suffix not in {".yaml", ".yml", ".json"}:
+        raise ValueError("Config file must be YAML or JSON")
 
-    # Merge with defaults (user config overrides defaults)
+    try:
+        with config_path.open("r", encoding="utf-8") as config_file:
+            user_config = (
+                yaml.safe_load(config_file)
+                if suffix in {".yaml", ".yml"}
+                else json.load(config_file)
+            )
+    except (json.JSONDecodeError, yaml.YAMLError) as exc:
+        raise ValueError(f"Invalid configuration file: {config_path}") from exc
+
+    if user_config is None:
+        return copy.deepcopy(DEFAULT_CONFIG)
+    if not isinstance(user_config, dict):
+        raise ValueError("Configuration root must be an object")
+
+    # Merge with defaults (user config overrides defaults) without sharing nested state.
     config = copy.deepcopy(DEFAULT_CONFIG)
-    if user_config:
-        for section, values in user_config.items():
-            if section in config and isinstance(config[section], dict):
-                config[section].update(values)
-            else:
-                config[section] = values
+    for section, values in user_config.items():
+        if section in config and not isinstance(values, dict):
+            raise ValueError(f"Configuration section '{section}' must be an object")
+        if section in config and isinstance(config[section], dict):
+            config[section].update(copy.deepcopy(values))
+        else:
+            config[section] = copy.deepcopy(values)
 
     return config
 
@@ -77,11 +93,35 @@ def save_config(config: Dict[str, Any], output_path: str) -> None:
         config: Configuration dictionary
         output_path: Path to save config file
     """
-    with open(output_path, "w", encoding="utf-8") as f:
-        if output_path.endswith(".json"):
-            json.dump(config, f, indent=2)
-        else:
-            yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+    if not isinstance(config, dict):
+        raise TypeError("Configuration must be a dictionary")
+
+    output_path = Path(output_path)
+    suffix = output_path.suffix.lower()
+    if suffix not in {".yaml", ".yml", ".json"}:
+        raise ValueError("Config file must be YAML or JSON")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = None
+    try:
+        file_descriptor, temporary_name = tempfile.mkstemp(
+            prefix=f".{output_path.stem}-",
+            suffix=f"{output_path.suffix}.tmp",
+            dir=output_path.parent,
+        )
+        temporary_path = Path(temporary_name)
+        with os.fdopen(file_descriptor, "w", encoding="utf-8") as config_file:
+            if suffix == ".json":
+                json.dump(config, config_file, indent=2)
+            else:
+                yaml.safe_dump(config, config_file, default_flow_style=False, sort_keys=False)
+            config_file.write("\n")
+            config_file.flush()
+            os.fsync(config_file.fileno())
+        os.replace(temporary_path, output_path)
+    finally:
+        if temporary_path is not None and temporary_path.exists():
+            temporary_path.unlink()
 
 
 def get_default_config() -> Dict[str, Any]:
