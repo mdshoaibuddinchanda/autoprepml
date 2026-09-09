@@ -7,7 +7,7 @@ from pathlib import Path
 from .core import AutoPrepML
 
 
-def main():
+def main(argv=None):
     """Main CLI entrypoint."""
     parser = argparse.ArgumentParser(
         description="AutoPrepML - Automated Data Preprocessing Pipeline",
@@ -30,7 +30,7 @@ Examples:
 
     parser.add_argument("--input", "-i", required=True, help="Input CSV file path")
 
-    parser.add_argument("--output", "-o", required=True, help="Output cleaned CSV file path")
+    parser.add_argument("--output", "-o", help="Output cleaned CSV file path")
 
     parser.add_argument("--report", "-r", help="Output report file path (.html or .json)")
 
@@ -56,24 +56,27 @@ Examples:
 
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+
+    if not args.detect_only and not args.output:
+        parser.error("--output is required unless --detect-only is used")
 
     # Validate inputs
     input_path = Path(args.input)
     if not input_path.exists():
         print(f"❌ Error: Input file not found: {args.input}", file=sys.stderr)
-        sys.exit(1)
+        return 2
 
     if input_path.suffix.lower() != ".csv":
         print("❌ Error: Input file must be a CSV file", file=sys.stderr)
-        sys.exit(1)
+        return 2
 
     # Validate report format
     if args.report:
         report_path = Path(args.report)
         if report_path.suffix.lower() not in [".html", ".json"]:
             print("❌ Error: Report file must be .html or .json", file=sys.stderr)
-            sys.exit(1)
+            return 2
 
     # Load data
     try:
@@ -82,7 +85,7 @@ Examples:
         print(f"✅ Loaded {len(df)} rows, {len(df.columns)} columns")
     except Exception as e:
         print(f"❌ Error loading CSV: {e}", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     # Initialize AutoPrepML
     try:
@@ -112,7 +115,7 @@ Examples:
             if args.report:
                 prep.save_report(args.report)
                 print(f"📄 Report saved to {args.report}")
-            sys.exit(0)
+            return 0
 
         # Cleaning phase
         print("\n🧹 Cleaning data...")
@@ -131,6 +134,7 @@ Examples:
             print(f"📄 Report saved to {args.report}")
 
         print("\n🎉 AutoPrepML completed successfully!")
+        return 0
 
     except Exception as e:
         print(f"❌ Error during preprocessing: {e}", file=sys.stderr)
@@ -138,8 +142,8 @@ Examples:
             import traceback
 
             traceback.print_exc()
-        sys.exit(1)
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
