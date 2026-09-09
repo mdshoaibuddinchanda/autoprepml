@@ -89,6 +89,8 @@ class LLMSuggestor:
         elif HAS_CONFIG_MANAGER:
             # Try config manager first
             self.api_key = AutoPrepMLConfig.get_api_key(provider.lower())
+            if provider.lower() == "google" and not self.api_key:
+                self.api_key = os.getenv("GEMINI_API_KEY")
         else:
             # Fallback to environment variable
             self.api_key = os.getenv(f"{provider.upper()}_API_KEY")
@@ -127,6 +129,7 @@ class LLMSuggestor:
         self.include_samples = include_samples
 
         # Initialize client
+        self._google_legacy = False
         self.client = self._initialize_client()
 
     def _get_default_base_url(self) -> Optional[str]:
@@ -180,11 +183,17 @@ class LLMSuggestor:
                 return Anthropic(**client_kwargs)
 
             elif self.provider == LLMProvider.GOOGLE:
-                import google.generativeai as genai
+                try:
+                    from google import genai
 
-                genai.configure(api_key=self.api_key)
-                # Model is set dynamically, can be any valid Gemini model
-                return genai.GenerativeModel(self.model)
+                    return genai.Client(api_key=self.api_key)
+                except ImportError:
+                    # Keep compatibility for users who have not migrated yet.
+                    import google.generativeai as genai
+
+                    self._google_legacy = True
+                    genai.configure(api_key=self.api_key)
+                    return genai.GenerativeModel(self.model)
 
             elif self.provider == LLMProvider.OLLAMA:
                 try:
@@ -234,8 +243,21 @@ class LLMSuggestor:
             elif self.provider == LLMProvider.GOOGLE:
                 full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
 
+                if not self._google_legacy:
+                    from google.genai import types
+
+                    response = self.client.models.generate_content(
+                        model=self.model,
+                        contents=full_prompt,
+                        config=types.GenerateContentConfig(
+                            temperature=self.temperature,
+                            max_output_tokens=self.max_tokens,
+                        ),
+                    )
+                    return response.text
+
                 # Allow custom safety settings via environment variable
-                safety_level = os.getenv("GOOGLE_SAFETY_LEVEL", "BLOCK_NONE")
+                safety_level = os.getenv("GOOGLE_SAFETY_LEVEL", "BLOCK_MEDIUM_AND_ABOVE")
 
                 response = self.client.generate_content(
                     full_prompt,

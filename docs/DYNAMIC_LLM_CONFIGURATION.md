@@ -30,6 +30,8 @@ autoprepml-config --set google
 
 # Method 2: Environment variable (session)
 export GOOGLE_API_KEY="your-key-here"
+# The current Google SDK also accepts this alias
+export GEMINI_API_KEY="your-key-here"
 
 # Method 3: Direct in code (temporary)
 LLMSuggestor(provider='google', api_key='your-key-here')
@@ -39,6 +41,7 @@ LLMSuggestor(provider='google', api_key='your-key-here')
 - `OPENAI_API_KEY` - OpenAI API key
 - `ANTHROPIC_API_KEY` - Anthropic API key  
 - `GOOGLE_API_KEY` - Google Gemini API key
+- `GEMINI_API_KEY` - Google Gemini API key alias
 - `OLLAMA_API_KEY` - Not needed (local)
 
 ---
@@ -100,13 +103,12 @@ export GOOGLE_MODEL="gemini-2.5-pro"
 
 **List Available Models:**
 ```python
-import google.generativeai as genai
+from google import genai
 from autoprepml.config_manager import AutoPrepMLConfig
 
-genai.configure(api_key=AutoPrepMLConfig.get_api_key('google'))
-for model in genai.list_models():
-    if 'generateContent' in model.supported_generation_methods:
-        print(f"✅ {model.name}")
+client = genai.Client(api_key=AutoPrepMLConfig.get_api_key('google'))
+for model in client.models.list():
+    print(f"✅ {model.name}")
 ```
 
 #### Ollama Models (Local)
@@ -246,7 +248,7 @@ export GOOGLE_API_KEY="your-key"
 export GOOGLE_MODEL="gemini-2.5-flash"
 export GOOGLE_TEMPERATURE="0.6"
 export GOOGLE_MAX_TOKENS="800"
-export GOOGLE_SAFETY_LEVEL="BLOCK_NONE"
+export GOOGLE_SAFETY_LEVEL="BLOCK_MEDIUM_AND_ABOVE"
 ```
 
 ```python
@@ -409,11 +411,11 @@ suggestor = LLMSuggestor(provider='ollama')
 **Solution:** Check available models for your provider
 
 ```python
-# For Google
-import google.generativeai as genai
-genai.configure(api_key="your-key")
-for m in genai.list_models():
-    print(m.name)
+# For Google (current SDK)
+from google import genai
+client = genai.Client(api_key="your-key")
+for model in client.models.list():
+    print(model.name)
 
 # For Ollama
 # Run: ollama list
@@ -460,7 +462,8 @@ Remove-Item Env:\GOOGLE_TEMPERATURE
 | **Temperature** | `temperature` | `<PROVIDER>_TEMPERATURE` | No | 0.7 |
 | **Max Tokens** | `max_tokens` | `<PROVIDER>_MAX_TOKENS` | No | 500 |
 | **Base URL** | `base_url` | `<PROVIDER>_BASE_URL` | No | Provider default |
-| **Safety Level** | N/A | `GOOGLE_SAFETY_LEVEL` | No | BLOCK_NONE |
+| **Safety Level** | N/A | `GOOGLE_SAFETY_LEVEL` (legacy fallback) | No | BLOCK_MEDIUM_AND_ABOVE |
+| **Raw Samples** | `include_samples` | `AUTOPREPML_LLM_INCLUDE_SAMPLES` | No | Disabled |
 | **Default Model** | N/A | `<PROVIDER>_DEFAULT_MODEL` | No | Hardcoded |
 
 ---

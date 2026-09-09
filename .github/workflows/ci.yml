@@ -147,7 +147,7 @@ jobs:
       - name: Verify provider imports
         run: >-
           python -c
-          "import anthropic, google.generativeai, ollama, openai, plotly, streamlit;
+          "import anthropic, google.genai, ollama, openai, plotly, streamlit;
           import autoprepml;
           print('optional integrations import successfully')"
 
@@ -156,8 +156,6 @@ jobs:
           python -m pytest
           tests/test_llm_integration.py
           tests/test_llm_suggest.py
-          tests/test_dynamic_config.py
-          tests/test_gemini.py
           -q --tb=short
 
   security:

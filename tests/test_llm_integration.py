@@ -37,6 +37,15 @@ class TestLLMSuggestor:
         assert suggestor.provider == LLMProvider.GOOGLE
         assert suggestor.model == "gemini-2.5-flash"  # Updated default model
 
+    def test_google_api_key_alias(self, monkeypatch):
+        """The current Google SDK's GEMINI_API_KEY alias is supported."""
+        monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+        monkeypatch.setenv("GEMINI_API_KEY", "gemini-test-key")
+
+        suggestor = LLMSuggestor(provider="google")
+
+        assert suggestor.api_key == "gemini-test-key"
+
     def test_initialization_ollama(self):
         """Test initialization with Ollama provider"""
         suggestor = LLMSuggestor(provider="ollama")
