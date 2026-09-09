@@ -13,7 +13,7 @@ AutoPrepML automatically detects, cleans, and reports common data issues with mi
 - 📊 **Visual reports** - HTML reports with embedded plots and statistics
 - ⚙️ **Configurable** - YAML/JSON configuration for reproducible pipelines
 - 🚀 **CLI support** - Command-line interface for batch processing
-- 🧪 **Well-tested** - Comprehensive unit tests with 90%+ coverage
+- 🧪 **Well-tested** - Comprehensive unit tests with coverage enforced in CI
 
 ## Quick Start
 
@@ -75,6 +75,6 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 
 ## Links
 
-- [GitHub Repository](https://github.com/yourusername/autoprepml)
-- [Issue Tracker](https://github.com/yourusername/autoprepml/issues)
+- [GitHub Repository](https://github.com/mdshoaibuddinchanda/autoprepml)
+- [Issue Tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
 - [PyPI Package](https://pypi.org/project/autoprepml/)

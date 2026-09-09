@@ -11,7 +11,7 @@ pip install autoprepml
 For development installation:
 
 ```bash
-git clone https://github.com/yourusername/autoprepml.git
+git clone https://github.com/mdshoaibuddinchanda/autoprepml.git
 cd autoprepml
 pip install -e ".[dev]"
 ```
@@ -84,8 +84,20 @@ autoprepml \
 #### Detection Only
 
 ```bash
-autoprepml --input data.csv --output temp.csv --detect-only --report analysis.html
+autoprepml --input data.csv --detect-only --report analysis.html
 ```
+
+### Reproducible OpenML smoke test
+
+Run the complete detection and classification-cleaning flow against a
+deterministic sample of OpenML Adult v2. Only aggregate metrics are printed:
+
+```bash
+python scripts/smoke_openml_adult.py --rows 10000 --seed 42 --output reports/openml-smoke.json
+```
+
+The script downloads data through scikit-learn, so it is intentionally kept
+out of the offline unit-test and CI matrix.
 
 ## Configuration Files
 
