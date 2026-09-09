@@ -1,5 +1,9 @@
 """Tests for reporting module"""
-from autoprepml.reports import generate_json_report, generate_html_report
+from autoprepml.reports import (
+    generate_json_report,
+    generate_html_report,
+    generate_universal_html_report,
+)
 
 
 def test_generate_json_report():
@@ -50,3 +54,18 @@ def test_generate_html_with_plots():
     assert 'data:image/png;base64' in html_str
     assert 'base64string' in html_str
 
+
+def test_universal_report_does_not_mutate_input():
+    report = {'issues': {'missing': 2}}
+
+    generate_universal_html_report(report)
+
+    assert 'timestamp' not in report
+
+
+def test_json_report_does_not_replace_original_plots():
+    report = {'plots': {'missing_plot': 'secret-base64'}}
+
+    generate_json_report(report)
+
+    assert report['plots']['missing_plot'] == 'secret-base64'

@@ -1,6 +1,5 @@
 """Tests for core AutoPrepML class"""
 import pandas as pd
-import numpy as np
 import pytest
 from autoprepml.core import AutoPrepML
 
@@ -110,3 +109,12 @@ def test_report():
     assert 'timestamp' in report
     assert 'original_shape' in report
     assert 'logs' in report
+
+
+def test_save_report_creates_nested_parent_and_accepts_path(tmp_path):
+    prep = AutoPrepML(pd.DataFrame({'value': [1, 2, 3]}))
+    output_path = tmp_path / 'nested' / 'report.JSON'
+
+    prep.save_report(output_path)
+
+    assert output_path.exists()

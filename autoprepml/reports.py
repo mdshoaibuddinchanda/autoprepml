@@ -375,7 +375,11 @@ def generate_universal_html_report(report: Dict[str, Any]) -> str:
 </html>
     """
     
-    report['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Render from a copy so serialization never mutates the caller's report.
+    render_context = report.copy()
+    render_context.setdefault(
+        'timestamp',
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    )
     tpl = Template(UNIVERSAL_TEMPLATE)
-    return tpl.render(**report)
-
+    return tpl.render(**render_context)

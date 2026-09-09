@@ -4,6 +4,7 @@ import pandas as pd
 import logging
 import copy
 from datetime import datetime
+from pathlib import Path
 
 from . import detection
 from . import cleaning
@@ -253,7 +254,7 @@ class AutoPrepML:
         }
         
         # Generate plots if requested
-        if include_plots and self.config['reporting']['include_plots']:
+        if include_plots and self.config.get('reporting', {}).get('include_plots', True):
             outlier_indices = self.detection_results.get('outliers', {}).get('outlier_indices', [])
             self.plots = visualization.generate_all_plots(self.original_df, outlier_indices)
             report['plots'] = self.plots
@@ -269,12 +270,14 @@ class AutoPrepML:
         from .reports import generate_json_report, generate_html_report
         
         report = self.report(include_plots=True)
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
         
-        if output_path.endswith('.json'):
-            with open(output_path, 'w', encoding='utf-8') as f:
+        if output_file.suffix.lower() == '.json':
+            with output_file.open('w', encoding='utf-8') as f:
                 f.write(generate_json_report(report))
-        elif output_path.endswith('.html'):
-            with open(output_path, 'w', encoding='utf-8') as f:
+        elif output_file.suffix.lower() == '.html':
+            with output_file.open('w', encoding='utf-8') as f:
                 f.write(generate_html_report(report))
         else:
             raise ValueError("Output path must end with .json or .html")
