@@ -257,6 +257,19 @@ class TestStreamlitAppGeneration:
         except SyntaxError:
             pytest.fail("Generated Streamlit app has syntax errors")
 
+    def test_generated_streamlit_app_uses_supported_cleaning_api(self, dashboard, tmp_path):
+        """Generated preprocessing code must invoke the public cleaning signatures."""
+        output_path = tmp_path / "app.py"
+        dashboard.generate_streamlit_app(output_path=str(output_path))
+        content = output_path.read_text(encoding='utf-8')
+
+        assert "impute_missing(df_clean, strategy=method)" in content
+        assert "remove_duplicates" in content
+        assert "handle_outliers" in content
+        assert "encode_categorical" in content
+        assert "scale_numeric_features" in content
+        assert "impute_missing(prep.df, method=method)" not in content
+
     def test_generate_streamlit_app_function(self, sample_df, tmp_path):
         """Test Streamlit app generation convenience function."""
         output_path = tmp_path / "app_func.py"

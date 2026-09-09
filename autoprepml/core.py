@@ -18,9 +18,9 @@ except ImportError:
     HAS_LLM_SUPPORT = False
 
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger('autoprepml')
+# Libraries must not configure the host application's logging globally.
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class AutoPrepML:
@@ -50,11 +50,17 @@ class AutoPrepML:
             llm_provider: LLM provider ('openai', 'anthropic', 'google', 'ollama')
             llm_api_key: API key for LLM provider (optional, can use config)
         """
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError("Input must be a pandas DataFrame")
+        if df.empty:
+            raise ValueError("DataFrame cannot be empty")
+
         self.original_df = df.copy()
         self.df = df.copy()
         self.cleaned_df = None
         self.log = []
         self.detection_results = {}
+        self._detection_target_col = None
         self.plots = {}
         
         # Load configuration
@@ -104,13 +110,29 @@ class AutoPrepML:
         Returns:
             Dictionary containing all detection results
         """
-        self.detection_results = detection.detect_all(self.df, target_col)
-        self._log_action('detection_complete', self.detection_results)
+        detection_config = self.config.get('detection', {})
+        self.detection_results = detection.detect_all(
+            self.df,
+            target_col,
+            outlier_method=detection_config.get('outlier_method', 'iforest'),
+            contamination=detection_config.get('contamination', 0.05),
+            zscore_threshold=detection_config.get('zscore_threshold', 3.0),
+            imbalance_threshold=detection_config.get('imbalance_threshold', 0.3),
+        )
+        self._detection_target_col = target_col
+        self._log_action(
+            'detection_complete',
+            {
+                'sections': list(self.detection_results),
+                'missing_columns': len(self.detection_results.get('missing_values', {})),
+                'outlier_count': self.detection_results.get('outliers', {}).get('outlier_count', 0),
+            },
+        )
         return self.detection_results
     
     def clean(self, task: Optional[str] = None, target_col: Optional[str] = None,
               auto: bool = True, use_advanced: bool = False,
-              imputation_method: str = 'simple', balance_method: str = 'oversample') -> Tuple[pd.DataFrame, Dict[str, Any]]:
+              imputation_method: str = 'simple', balance_method: Optional[str] = None) -> Tuple[pd.DataFrame, Dict[str, Any]]:
         """Clean the dataset automatically.
         
         Args:
@@ -124,11 +146,20 @@ class AutoPrepML:
         Returns:
             Tuple of (cleaned_df, report_dict)
         """
+        if task not in (None, 'classification', 'regression'):
+            raise ValueError("task must be 'classification', 'regression', or None")
+        if target_col is not None and target_col not in self.df.columns:
+            raise ValueError(f"Target column '{target_col}' not found in DataFrame")
+
         df_clean = self.df.copy()
         
         # Run detection first
-        if not self.detection_results:
+        if not self.detection_results or self._detection_target_col != target_col:
             self.detect(target_col)
+
+        if not auto:
+            self.cleaned_df = df_clean
+            return df_clean, self.report()
         
         # Step 1: Handle missing values with advanced options
         if self.detection_results.get('missing_values'):
@@ -139,39 +170,47 @@ class AutoPrepML:
                 df_clean = cleaning.impute_iterative(df_clean)
                 self._log_action('imputed_missing', {'strategy': 'iterative'})
             else:
-                strategy = self.config['cleaning']['missing_strategy']
-                df_clean = cleaning.impute_missing(df_clean, strategy=strategy)
+                cleaning_config = self.config.get('cleaning', {})
+                strategy = cleaning_config.get('missing_strategy', 'auto')
+                df_clean = cleaning.impute_missing(
+                    df_clean,
+                    strategy=strategy,
+                    numeric_strategy=cleaning_config.get('numeric_strategy', 'median'),
+                    categorical_strategy=cleaning_config.get('categorical_strategy', 'mode'),
+                )
                 self._log_action('imputed_missing', {'strategy': strategy})
         
         # Step 2: Handle outliers (optional)
         outliers = self.detection_results.get('outliers', {})
-        if outliers.get('outlier_count', 0) > 0 and self.config['cleaning']['remove_outliers']:
+        if outliers.get('outlier_count', 0) > 0 and self.config.get('cleaning', {}).get('remove_outliers', False):
             df_clean = cleaning.remove_outliers(df_clean, outliers['outlier_indices'])
             self._log_action('removed_outliers', {'count': outliers['outlier_count']})
         
         # Step 3: Encode categorical variables
-        df_clean = cleaning.encode_categorical(df_clean, 
-                                               method=self.config['cleaning']['encode_method'],
+        cleaning_config = self.config.get('cleaning', {})
+        df_clean = cleaning.encode_categorical(df_clean,
+                                               method=cleaning_config.get('encode_method', 'label'),
                                                exclude_cols=[target_col] if target_col else None)
-        self._log_action('encoded_categorical', {'method': self.config['cleaning']['encode_method']})
+        self._log_action('encoded_categorical', {'method': cleaning_config.get('encode_method', 'label')})
         
         # Step 4: Scale features
-        df_clean = cleaning.scale_features(df_clean, 
-                                           method=self.config['cleaning']['scale_method'],
+        df_clean = cleaning.scale_features(df_clean,
+                                           method=cleaning_config.get('scale_method', 'standard'),
                                            exclude_cols=[target_col] if target_col else None)
-        self._log_action('scaled_features', {'method': self.config['cleaning']['scale_method']})
+        self._log_action('scaled_features', {'method': cleaning_config.get('scale_method', 'standard')})
         
         # Step 5: Balance classes (if classification task and imbalanced)
         if task == 'classification' and target_col:
             imbalance = self.detection_results.get('class_imbalance', {})
             if imbalance.get('is_imbalanced'):
-                if balance_method == 'smote':
+                selected_balance_method = balance_method or cleaning_config.get('balance_method', 'oversample')
+                if selected_balance_method == 'smote':
                     df_clean = cleaning.balance_classes_smote(df_clean, target_col)
                     self._log_action('balanced_classes', {'method': 'smote'})
                 else:
                     df_clean = cleaning.balance_classes(df_clean, target_col,
-                                                        method=self.config['cleaning']['balance_method'])
-                    self._log_action('balanced_classes', {'method': self.config['cleaning']['balance_method']})
+                                                        method=selected_balance_method)
+                    self._log_action('balanced_classes', {'method': selected_balance_method})
         
         self.cleaned_df = df_clean
         

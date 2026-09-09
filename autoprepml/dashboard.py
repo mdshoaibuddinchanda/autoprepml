@@ -352,15 +352,37 @@ if uploaded_file is not None:
                 prep = AutoPrepML(df)
                 
                 # Apply selected operations
+                df_clean = prep.df.copy()
                 if handle_missing != "None":
                     if handle_missing == "Drop Rows":
-                        df_clean = prep.df.dropna()
+                        df_clean = df_clean.dropna()
                     else:
                         method = 'mean' if handle_missing == "Mean Imputation" else 'median'
                         from autoprepml.cleaning import impute_missing
-                        df_clean = impute_missing(prep.df, method=method)
-                else:
-                    df_clean = prep.df
+                        df_clean = impute_missing(df_clean, strategy=method)
+
+                if remove_duplicates:
+                    df_clean = df_clean.drop_duplicates().reset_index(drop=True)
+
+                if handle_outliers:
+                    numeric_cols = df_clean.select_dtypes(include=[np.number]).columns
+                    if len(numeric_cols) > 0:
+                        q1 = df_clean[numeric_cols].quantile(0.25)
+                        q3 = df_clean[numeric_cols].quantile(0.75)
+                        iqr = q3 - q1
+                        outlier_mask = ((df_clean[numeric_cols] < (q1 - 1.5 * iqr)) |
+                                        (df_clean[numeric_cols] > (q3 + 1.5 * iqr))).any(axis=1)
+                        df_clean = df_clean.loc[~outlier_mask].reset_index(drop=True)
+
+                if encode_categorical:
+                    from autoprepml.cleaning import encode_categorical
+                    encoding = 'label' if encoding_method == "Label Encoding" else 'onehot'
+                    df_clean = encode_categorical(df_clean, method=encoding)
+
+                if scale_features:
+                    from autoprepml.cleaning import scale_features as scale_numeric_features
+                    scaler = 'standard' if scaler_type == "Standard" else 'minmax'
+                    df_clean = scale_numeric_features(df_clean, method=scaler)
                 
                 st.success("✅ Preprocessing complete!")
                 st.dataframe(df_clean.head(), use_container_width=True)

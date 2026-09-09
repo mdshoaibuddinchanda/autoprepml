@@ -105,7 +105,15 @@ def detect_imbalance(df: pd.DataFrame, target_col: str, threshold: float = 0.3) 
     }
 
 
-def detect_all(df: pd.DataFrame, target_col: str = None) -> Dict[str, Any]:
+def detect_all(
+    df: pd.DataFrame,
+    target_col: str = None,
+    *,
+    outlier_method: str = 'iforest',
+    contamination: float = 0.05,
+    zscore_threshold: float = 3.0,
+    imbalance_threshold: float = 0.3,
+) -> Dict[str, Any]:
     """Run all detection functions and return comprehensive report.
     
     Args:
@@ -117,10 +125,19 @@ def detect_all(df: pd.DataFrame, target_col: str = None) -> Dict[str, Any]:
     """
     results = {
         'missing_values': detect_missing(df),
-        'outliers': detect_outliers(df),
+        'outliers': detect_outliers(
+            df,
+            method=outlier_method,
+            contamination=contamination,
+            threshold=zscore_threshold,
+        ),
     }
     
     if target_col:
-        results['class_imbalance'] = detect_imbalance(df, target_col)
+        results['class_imbalance'] = detect_imbalance(
+            df,
+            target_col,
+            threshold=imbalance_threshold,
+        )
     
     return results
