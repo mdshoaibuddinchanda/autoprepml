@@ -2,7 +2,7 @@
 
 import pandas as pd
 import pytest
-from autoprepml.core import AutoPrepML
+from autoprepml.core import AutoPrepML, _data_fingerprint
 
 
 def test_autoprepml_init():
@@ -98,6 +98,16 @@ def test_detect_can_bypass_cache(monkeypatch):
     assert len(calls) == 2
 
 
+def test_data_fingerprint_bypasses_unhashable_frames(monkeypatch):
+    """Unsupported extension values disable caching without breaking detection."""
+    monkeypatch.setattr(
+        "autoprepml.core.pd.util.hash_pandas_object",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(TypeError("unhashable")),
+    )
+
+    assert _data_fingerprint(pd.DataFrame({"value": [1, 2]})) is None
+
+
 def test_summary():
     df = pd.DataFrame({"a": [1, 2, 3], "b": ["x", "y", "z"]})
     prep = AutoPrepML(df)
@@ -155,6 +165,78 @@ def test_clean_classification():
     clean_df, report = prep.clean(task="classification", target_col="target")
     # Check that balancing was applied
     assert len(clean_df) >= len(df)
+
+
+@pytest.mark.parametrize("method", ["knn", "iterative"])
+def test_clean_supports_advanced_imputation(method):
+    """Advanced imputation methods are wired through the high-level API."""
+    df = pd.DataFrame(
+        {
+            "a": [1.0, 2.0, None, 4.0, 5.0, 6.0],
+            "b": [5.0, None, 7.0, 8.0, 9.0, 10.0],
+        }
+    )
+
+    cleaned, _ = AutoPrepML(df).clean(use_advanced=True, imputation_method=method)
+
+    assert cleaned.isna().sum().sum() == 0
+
+
+def test_clean_honors_configured_outlier_encoding_and_scaling():
+    """Configured cleaning steps are applied without mutating the source frame."""
+    df = pd.DataFrame(
+        {
+            "value": [1.0, 2.0, 3.0, 100.0],
+            "category": ["a", "b", "a", "b"],
+        }
+    )
+    prep = AutoPrepML(
+        df,
+        config={
+            "cleaning": {
+                "remove_outliers": True,
+                "encode_method": "onehot",
+                "scale_method": "minmax",
+            }
+        },
+    )
+
+    cleaned, _ = prep.clean()
+
+    assert len(cleaned) < len(df)
+    assert any(column.startswith("category_") for column in cleaned.columns)
+    assert df.equals(prep.original_df)
+
+
+def test_disabled_and_enabled_llm_helpers():
+    """LLM convenience methods have stable behavior in both modes."""
+    prep = AutoPrepML(pd.DataFrame({"value": [1, 2, 3]}))
+    message = "LLM support not enabled. Initialize with enable_llm=True"
+    assert prep.get_llm_suggestions() == message
+    assert prep.analyze_with_llm() == message
+    assert prep.get_feature_suggestions() == [message]
+    assert prep.explain_step("scaled", {}) == message
+
+    class FakeSuggestor:
+        def suggest_fix(self, *_args, **_kwargs):
+            return "fix"
+
+        def analyze_dataframe(self, *_args, **_kwargs):
+            return "analysis"
+
+        def suggest_features(self, *_args, **_kwargs):
+            return ["feature"]
+
+        def explain_cleaning_step(self, *_args, **_kwargs):
+            return "explanation"
+
+    prep.llm_enabled = True
+    prep.llm_suggestor = FakeSuggestor()
+    assert prep.get_llm_suggestions(column="value") == "fix"
+    assert prep.get_llm_suggestions() == "analysis"
+    assert prep.analyze_with_llm(task="regression") == "analysis"
+    assert prep.get_feature_suggestions() == ["feature"]
+    assert prep.explain_step("scaled", {}) == "explanation"
 
 
 def test_report():
