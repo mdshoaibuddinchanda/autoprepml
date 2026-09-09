@@ -521,4 +521,4 @@ pytest tests/test_advanced_features.py::TestSMOTE::test_smote_basic -v
 
 - **GitHub Issues**: [Report bugs or ask questions](https://github.com/mdshoaibuddinchanda/autoprepml/issues)
 - **Discussions**: [Community forum](https://github.com/mdshoaibuddinchanda/autoprepml/discussions)
-- **Documentation**: [Full docs](../README.md)
+- **Documentation**: [Full docs](https://github.com/mdshoaibuddinchanda/autoprepml#readme)

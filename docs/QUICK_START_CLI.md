@@ -258,8 +258,8 @@ chmod 600 ~/.autoprepml/config.json
 
 - 📖 Read the [Full LLM Configuration Guide](./LLM_CONFIGURATION.md)
 - 🚀 Explore [Advanced Features](./ADVANCED_FEATURES.md)
-- 💻 Check out [Code Examples](../examples/)
-- 📚 Review the [API Reference](./API_REFERENCE.md)
+- 💻 Check out the [code examples](https://github.com/mdshoaibuddinchanda/autoprepml/tree/main/examples)
+- 📚 Review the [API Reference](api_reference.md)
 
 ## Get API Keys
 

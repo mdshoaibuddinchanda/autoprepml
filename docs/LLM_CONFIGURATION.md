@@ -273,9 +273,9 @@ except Exception as e:
 
 ## Next Steps
 
-- Read the [Advanced Features Guide](../docs/ADVANCED_FEATURES.md)
-- Explore [LLM Integration Examples](../examples/llm_examples.py)
-- Check the [API Reference](../docs/API_REFERENCE.md)
+- Read the [Advanced Features Guide](ADVANCED_FEATURES.md)
+- Explore the [LLM integration example](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/examples/demo_llm_assistant.py)
+- Check the [API Reference](api_reference.md)
 
 ## Support
 
