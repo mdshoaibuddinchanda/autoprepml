@@ -1,9 +1,10 @@
-"""Configuration management for AutoPrepML API keys and settings"""
+"""Configuration management for AutoPrepML API keys and settings."""
 
-import os
 import json
+import os
+import tempfile
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 
 class AutoPrepMLConfig:
@@ -39,62 +40,112 @@ class AutoPrepMLConfig:
     def ensure_config_dir(cls):
         """Create config directory if it doesn't exist"""
         cls.CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        if os.name != "nt":
+            cls.CONFIG_DIR.chmod(0o700)
+
+    @classmethod
+    def _validate_provider(cls, provider: str) -> Dict:
+        """Return provider metadata or raise a consistent validation error."""
+        if provider not in cls.PROVIDERS:
+            raise ValueError(
+                f"Unknown provider: {provider}. Valid providers: {', '.join(cls.PROVIDERS)}"
+            )
+        return cls.PROVIDERS[provider]
+
+    @staticmethod
+    def _saved_api_keys(config: Dict) -> Dict[str, str]:
+        """Return saved keys while rejecting malformed configuration data."""
+        api_keys = config.get("api_keys", {})
+        if not isinstance(api_keys, dict):
+            raise ValueError("Configuration field 'api_keys' must be an object")
+        return api_keys
 
     @classmethod
     def load_config(cls) -> Dict:
         """Load configuration from file"""
         if cls.CONFIG_FILE.exists():
-            with open(cls.CONFIG_FILE, "r") as f:
-                return json.load(f)
+            try:
+                with cls.CONFIG_FILE.open("r", encoding="utf-8") as config_file:
+                    config = json.load(config_file)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Invalid JSON in configuration file: {cls.CONFIG_FILE}") from exc
+            if not isinstance(config, dict):
+                raise ValueError(
+                    f"Configuration file must contain a JSON object: {cls.CONFIG_FILE}"
+                )
+            return config
         return {}
 
     @classmethod
     def save_config(cls, config: Dict):
         """Save configuration to file"""
+        if not isinstance(config, dict):
+            raise TypeError("Configuration must be a dictionary")
+
         cls.ensure_config_dir()
-        with open(cls.CONFIG_FILE, "w") as f:
-            json.dump(config, indent=2, fp=f)
+        temporary_path = None
+        try:
+            file_descriptor, temporary_name = tempfile.mkstemp(
+                prefix=".config-",
+                suffix=".tmp",
+                dir=cls.CONFIG_DIR,
+            )
+            temporary_path = Path(temporary_name)
+            with os.fdopen(file_descriptor, "w", encoding="utf-8") as config_file:
+                json.dump(config, config_file, indent=2, sort_keys=True)
+                config_file.write("\n")
+                config_file.flush()
+                os.fsync(config_file.fileno())
+            if os.name != "nt":
+                temporary_path.chmod(0o600)
+            os.replace(temporary_path, cls.CONFIG_FILE)
+            if os.name != "nt":
+                cls.CONFIG_FILE.chmod(0o600)
+        finally:
+            if temporary_path is not None and temporary_path.exists():
+                temporary_path.unlink()
 
     @classmethod
     def set_api_key(cls, provider: str, api_key: str):
         """Set API key for a provider"""
-        if provider not in cls.PROVIDERS:
-            raise ValueError(
-                f"Unknown provider: {provider}. Valid providers: {', '.join(cls.PROVIDERS.keys())}"
-            )
+        provider_info = cls._validate_provider(provider)
+        if not isinstance(api_key, str) or not api_key.strip():
+            raise ValueError("API key must be a non-empty string")
 
         config = cls.load_config()
-        if "api_keys" not in config:
-            config["api_keys"] = {}
+        api_keys = cls._saved_api_keys(config)
+        config["api_keys"] = api_keys
 
-        config["api_keys"][provider] = api_key
+        api_keys[provider] = api_key
         cls.save_config(config)
 
-        print(f"✅ API key for {cls.PROVIDERS[provider]['name']} saved successfully!")
+        print(f"✅ API key for {provider_info['name']} saved successfully!")
 
     @classmethod
     def get_api_key(cls, provider: str) -> Optional[str]:
         """Get API key for a provider (from config or environment)"""
+        provider_info = cls._validate_provider(provider)
+
         # First check environment variable
-        if (env_var := cls.PROVIDERS.get(provider, {}).get("env_var")) and (
-            env_key := os.getenv(env_var)
-        ):
+        if (env_var := provider_info.get("env_var")) and (env_key := os.getenv(env_var)):
             return env_key
 
         # Then check config file
         config = cls.load_config()
-        return config.get("api_keys", {}).get(provider)
+        return cls._saved_api_keys(config).get(provider)
 
     @classmethod
     def remove_api_key(cls, provider: str):
         """Remove API key for a provider"""
+        provider_info = cls._validate_provider(provider)
         config = cls.load_config()
-        if "api_keys" in config and provider in config["api_keys"]:
-            del config["api_keys"][provider]
+        api_keys = cls._saved_api_keys(config)
+        if provider in api_keys:
+            del api_keys[provider]
             cls.save_config(config)
-            print(f"✅ API key for {cls.PROVIDERS[provider]['name']} removed!")
+            print(f"✅ API key for {provider_info['name']} removed!")
         else:
-            print(f"ℹ️  No API key found for {cls.PROVIDERS[provider]['name']}")
+            print(f"ℹ️  No API key found for {provider_info['name']}")
 
     @classmethod
     def list_api_keys(cls):
@@ -103,7 +154,7 @@ class AutoPrepMLConfig:
         print("=" * 60)
 
         config = cls.load_config()
-        saved_keys = config.get("api_keys", {})
+        saved_keys = cls._saved_api_keys(config)
 
         for provider, info in cls.PROVIDERS.items():
             provider_name = info["name"]

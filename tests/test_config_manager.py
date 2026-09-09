@@ -3,6 +3,7 @@
 import pytest
 import os
 import json
+import stat
 from pathlib import Path
 from autoprepml.config_manager import AutoPrepMLConfig
 from autoprepml.config import DEFAULT_CONFIG, get_default_config, load_config
@@ -129,6 +130,54 @@ class TestAutoPrepMLConfig:
         """Test setting API key for invalid provider"""
         with pytest.raises(ValueError, match="Unknown provider"):
             AutoPrepMLConfig.set_api_key("invalid_provider", "test-key")
+
+    @pytest.mark.parametrize("provider", ["invalid_provider", ""])
+    def test_invalid_provider_for_read_and_remove(self, provider):
+        """Read and delete operations validate provider names too."""
+        with pytest.raises(ValueError, match="Unknown provider"):
+            AutoPrepMLConfig.get_api_key(provider)
+        with pytest.raises(ValueError, match="Unknown provider"):
+            AutoPrepMLConfig.remove_api_key(provider)
+
+    @pytest.mark.parametrize("api_key", ["", "   ", None])
+    def test_empty_api_key_rejected(self, api_key):
+        """Blank credentials must not be persisted."""
+        with pytest.raises(ValueError, match="non-empty string"):
+            AutoPrepMLConfig.set_api_key("openai", api_key)
+
+    def test_malformed_json_is_reported(self):
+        """A corrupted local file produces an actionable error."""
+        self.test_config_dir.mkdir(parents=True)
+        self.test_config_file.write_text("{not-json", encoding="utf-8")
+
+        with pytest.raises(ValueError, match="Invalid JSON"):
+            AutoPrepMLConfig.load_config()
+
+    def test_config_root_must_be_an_object(self):
+        """Configuration JSON must have an object at its root."""
+        self.test_config_dir.mkdir(parents=True)
+        self.test_config_file.write_text("[]", encoding="utf-8")
+
+        with pytest.raises(ValueError, match="JSON object"):
+            AutoPrepMLConfig.load_config()
+
+    def test_api_keys_must_be_an_object(self):
+        """Malformed API-key data fails clearly instead of raising AttributeError."""
+        self.test_config_dir.mkdir(parents=True)
+        self.test_config_file.write_text(
+            json.dumps({"api_keys": []}),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(ValueError, match="api_keys.*object"):
+            AutoPrepMLConfig.get_api_key("openai")
+
+    @pytest.mark.skipif(os.name == "nt", reason="Windows ACLs do not map chmod modes")
+    def test_saved_config_is_private(self):
+        """Saved credentials are readable only by the current user on POSIX systems."""
+        AutoPrepMLConfig.set_api_key("openai", "private-key")
+
+        assert stat.S_IMODE(self.test_config_file.stat().st_mode) == 0o600
 
     def test_providers_list(self):
         """Test that all expected providers are supported"""
