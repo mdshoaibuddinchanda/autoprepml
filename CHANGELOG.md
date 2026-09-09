@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Expanded the CI coverage matrix to Python 3.9 through 3.14.
+- Added Python-version-specific dependency ranges so supported environments resolve compatible releases.
+
 ## [1.3.0]: 2025-10-24
 
 ### Added: AutoEDA Module

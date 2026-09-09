@@ -7,10 +7,10 @@
   
   [![PyPI version](https://img.shields.io/badge/pypi-v1.3.0-blue.svg)](https://pypi.org/project/autoprepml/)
   [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
-  [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+  [![Python 3.9 through 3.14](https://img.shields.io/badge/python-3.9--3.14-blue.svg)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Tests](https://img.shields.io/badge/tests-323%20passing-brightgreen.svg)](tests/)
-  [![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen.svg)](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml)
+  [![Tests](https://img.shields.io/badge/tests-332%20passing-brightgreen.svg)](tests/)
+  [![Coverage](https://img.shields.io/badge/coverage-89%25-brightgreen.svg)](https://codecov.io/gh/mdshoaibuddinchanda/autoprepml)
   
   <p align="center">
     <a href="#quick-start-guide">Quick Start</a> |
@@ -42,7 +42,7 @@ The processing flow is straightforward:
 - **Visual Reports**: HTML reports with embedded plots and statistics
 - **Highly Configurable**: YAML/JSON configuration for reproducibility
 - **CLI + Python API**: Use from command line or Python scripts
-- **Production readiness baseline**: 323 tests passing, 88% local line coverage, and blocking CI/CD gates
+- **Production readiness baseline**: 332 tests passing, 89% local line coverage, and blocking CI/CD gates
 
 ### Advanced Features (v1.3.0)
 - **AutoEDA**: Automated exploratory data analysis with insights generation
@@ -88,7 +88,7 @@ The processing flow is straightforward:
 ## Installation
 
 ### Prerequisites
-- Python 3.10 or higher
+- Python 3.9 or newer. Continuous integration covers Python 3.9 through 3.14.
 - pip (Python package manager)
 
 ### Option 1: Install from PyPI
@@ -811,7 +811,7 @@ After running demos, you'll find these files in your directory:
 
 ## Testing
 
-The repository currently passes 323 tests locally. The latest local run reports 88.04 percent line coverage. Continuous integration enforces a 75 percent minimum and also runs linting, security checks, packaging checks, and the strict documentation build.
+The repository currently passes 332 tests locally, with two tests skipped when their optional integrations are unavailable. The latest local run reports 88.96 percent line coverage. Continuous integration runs the coverage suite on Python 3.9 through 3.14, enforces a 75 percent minimum, and also runs linting, security checks, packaging checks, and the strict documentation build.
 
 ### Run the test suite
 

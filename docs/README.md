@@ -54,8 +54,9 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 
 ## Testing & CI/CD
 
-- **323 tests** passing locally
-- **88 percent local line coverage**, with a 75 percent CI threshold
+- **332 tests** passing locally, with two optional integration tests skipped when unavailable
+- **89 percent local line coverage**, with a 75 percent CI threshold
+- **Python 3.9 through 3.14 coverage matrix** on every supported runtime
 - **Blocking CI checks** for linting, tests, security, packaging, and documentation
 - **Cross platform** validation on Ubuntu, Windows, and macOS
 

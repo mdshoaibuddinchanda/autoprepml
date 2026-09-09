@@ -143,7 +143,7 @@ black --check autoprepml tests
 mkdocs build --strict
 ```
 
-Run these checks before opening a pull request. The CI workflow runs the same quality gates together with security and package build checks.
+Run these checks before opening a pull request. The CI workflow runs the same quality gates together with security and package build checks. The coverage suite is exercised on Python 3.9 through 3.14, with additional Windows and macOS checks on Python 3.12.
 
 ## Adding New Features
 

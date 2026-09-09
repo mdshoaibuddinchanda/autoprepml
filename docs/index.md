@@ -13,7 +13,7 @@ AutoPrepML detects, cleans, and reports common data issues with minimal code. It
 - **Reports**: Export HTML or JSON reports with statistics and visualizations.
 - **Configuration**: Use YAML or JSON files to make runs reproducible.
 - **Command line interface**: Run repeatable batch jobs from a shell or CI system.
-- **Quality gates**: The repository currently passes 323 tests with 88 percent local line coverage; CI enforces lint, test, security, package, and documentation checks.
+- **Quality gates**: The repository currently passes 332 tests with 89 percent local line coverage. CI runs the coverage suite on Python 3.9 through 3.14 and enforces lint, test, security, package, and documentation checks.
 
 ## Quick Start
 
