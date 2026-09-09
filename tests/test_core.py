@@ -41,6 +41,63 @@ def test_detect_uses_configured_detection_options():
     assert results["outliers"]["outlier_count"] > 0
 
 
+def test_detect_reuses_cache_and_returns_isolated_results(monkeypatch):
+    """Repeated detection avoids recomputation without sharing mutable results."""
+    calls = []
+
+    def fake_detect_all(*_args, **_kwargs):
+        calls.append(True)
+        return {"missing_values": {}, "outliers": {"outlier_count": 0}}
+
+    monkeypatch.setattr("autoprepml.core.detection.detect_all", fake_detect_all)
+    prep = AutoPrepML(pd.DataFrame({"value": [1, 2, 3]}))
+
+    first = prep.detect()
+    first["outliers"]["outlier_count"] = 99
+    second = prep.detect()
+
+    assert len(calls) == 1
+    assert second["outliers"]["outlier_count"] == 0
+    assert any(entry["action"] == "detection_cache_hit" for entry in prep.log)
+
+
+def test_detect_cache_invalidates_when_data_or_options_change(monkeypatch):
+    """Data and detector configuration changes never reuse stale results."""
+    calls = []
+
+    def fake_detect_all(*_args, **_kwargs):
+        calls.append(True)
+        return {"missing_values": {}, "outliers": {"outlier_count": len(calls)}}
+
+    monkeypatch.setattr("autoprepml.core.detection.detect_all", fake_detect_all)
+    prep = AutoPrepML(pd.DataFrame({"value": [1, 2, 3]}))
+
+    prep.detect()
+    prep.df.loc[0, "value"] = 10
+    prep.detect()
+    prep.config["detection"]["zscore_threshold"] = 2.0
+    prep.detect()
+
+    assert len(calls) == 3
+
+
+def test_detect_can_bypass_cache(monkeypatch):
+    """Callers can force a fresh detection pass when needed."""
+    calls = []
+
+    def fake_detect_all(*_args, **_kwargs):
+        calls.append(True)
+        return {"missing_values": {}, "outliers": {"outlier_count": 0}}
+
+    monkeypatch.setattr("autoprepml.core.detection.detect_all", fake_detect_all)
+    prep = AutoPrepML(pd.DataFrame({"value": [1, 2, 3]}))
+
+    prep.detect()
+    prep.detect(use_cache=False)
+
+    assert len(calls) == 2
+
+
 def test_summary():
     df = pd.DataFrame({"a": [1, 2, 3], "b": ["x", "y", "z"]})
     prep = AutoPrepML(df)

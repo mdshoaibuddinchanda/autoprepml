@@ -1,11 +1,13 @@
 """Core high-level interface for AutoPrepML"""
 
-from typing import Optional, Dict, Any, Tuple
-import pandas as pd
-import logging
 import copy
+import hashlib
+import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
+
+import pandas as pd
 
 from . import detection
 from . import cleaning
@@ -24,6 +26,20 @@ except ImportError:
 # Libraries must not configure the host application's logging globally.
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+
+def _data_fingerprint(df: pd.DataFrame) -> Optional[str]:
+    """Return a process-local fingerprint for safe detection-cache reuse."""
+    try:
+        digest = hashlib.blake2b(digest_size=16)
+        digest.update(pd.util.hash_pandas_object(df, index=True).to_numpy().tobytes())
+        digest.update(repr(tuple(df.columns)).encode("utf-8"))
+        digest.update(repr(tuple(str(dtype) for dtype in df.dtypes)).encode("utf-8"))
+        return digest.hexdigest()
+    except (TypeError, ValueError):
+        # Extension objects that cannot be hashed remain fully supported; they
+        # simply bypass the optional cache.
+        return None
 
 
 class AutoPrepML:
@@ -70,6 +86,8 @@ class AutoPrepML:
         self.log = []
         self.detection_results = {}
         self._detection_target_col = None
+        self._detection_cache_key = None
+        self._detection_cache = None
         self.plots = {}
 
         # Load configuration
@@ -105,16 +123,34 @@ class AutoPrepML:
         self.log.append(entry)
         logger.info(f"{action}: {details}")
 
-    def detect(self, target_col: Optional[str] = None) -> Dict[str, Any]:
+    def detect(
+        self,
+        target_col: Optional[str] = None,
+        *,
+        use_cache: bool = True,
+    ) -> Dict[str, Any]:
         """Run all detection functions.
 
         Args:
             target_col: Optional target column for imbalance detection
+            use_cache: Reuse results when the DataFrame, target, and detection
+                configuration are unchanged.
 
         Returns:
             Dictionary containing all detection results
         """
         detection_config = self.config.get("detection", {})
+        cache_key = None
+        if use_cache:
+            fingerprint = _data_fingerprint(self.df)
+            if fingerprint is not None:
+                cache_key = (fingerprint, target_col, repr(detection_config))
+                if cache_key == self._detection_cache_key and self._detection_cache is not None:
+                    self.detection_results = copy.deepcopy(self._detection_cache)
+                    self._detection_target_col = target_col
+                    self._log_action("detection_cache_hit", {"target_col": target_col})
+                    return copy.deepcopy(self.detection_results)
+
         self.detection_results = detection.detect_all(
             self.df,
             target_col,
@@ -124,6 +160,9 @@ class AutoPrepML:
             imbalance_threshold=detection_config.get("imbalance_threshold", 0.3),
         )
         self._detection_target_col = target_col
+        if cache_key is not None:
+            self._detection_cache_key = cache_key
+            self._detection_cache = copy.deepcopy(self.detection_results)
         self._log_action(
             "detection_complete",
             {
