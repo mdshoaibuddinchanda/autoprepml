@@ -1,6 +1,6 @@
 """
-Comprehensive Test Script - AutoPrepML v1.2.0
-Tests all functionality including LLM integration with Ollama
+Comprehensive smoke script for AutoPrepML.
+Tests the public functionality, including optional LLM integration with Ollama.
 """
 
 import pandas as pd
@@ -8,7 +8,7 @@ import numpy as np
 import sys
 
 print("=" * 80)
-print("AutoPrepML v1.2.0 - Comprehensive Functionality Test")
+print("AutoPrepML v1.4.0 - Comprehensive Functionality Test")
 print("=" * 80)
 
 # Test 1: Package Import
@@ -24,9 +24,9 @@ try:
         AutoPrepMLConfig,
     )
 
-    print("✅ All main classes imported successfully")
+    print("All main classes imported successfully")
 except Exception as e:
-    print(f"❌ Import failed: {e}")
+    print(f"Import failed: {e}")
     sys.exit(1)
 
 # Test 2: Version Check
@@ -35,9 +35,9 @@ print("-" * 80)
 try:
     from autoprepml import __version__
 
-    print(f"✅ Version: {__version__}")
+    print(f"Version: {__version__}")
 except Exception as e:
-    print(f"❌ Version check failed: {e}")
+    print(f"Version check failed: {e}")
 
 # Test 3: Basic AutoPrepML
 print("\n[TEST 3] Basic AutoPrepML Functionality")
@@ -56,11 +56,11 @@ try:
     prep.detect(target_col="label")
     clean_df, report = prep.clean(task="classification", target_col="label")
 
-    print(f"✅ Original shape: {df.shape}")
-    print(f"✅ Cleaned shape: {clean_df.shape}")
-    print(f"✅ Missing values handled: {df.isnull().sum().sum()} → {clean_df.isnull().sum().sum()}")
+    print(f"Original shape: {df.shape}")
+    print(f"Cleaned shape: {clean_df.shape}")
+    print(f"Missing values handled: {df.isnull().sum().sum()} to {clean_df.isnull().sum().sum()}")
 except Exception as e:
-    print(f"❌ Basic functionality failed: {e}")
+    print(f"Basic functionality failed: {e}")
     import traceback
 
     traceback.print_exc()
@@ -78,13 +78,13 @@ try:
     # Test KNN imputation
     df_knn = impute_knn(df_test.copy())
     print(
-        f"✅ KNN Imputation: {df_test.isnull().sum().sum()} → {df_knn.isnull().sum().sum()} missing values"
+        f"KNN Imputation: {df_test.isnull().sum().sum()} to {df_knn.isnull().sum().sum()} missing values"
     )
 
     # Test Iterative imputation
     df_iter = impute_iterative(df_test.copy())
     print(
-        f"✅ Iterative Imputation: {df_test.isnull().sum().sum()} → {df_iter.isnull().sum().sum()} missing values"
+        f"Iterative Imputation: {df_test.isnull().sum().sum()} to {df_iter.isnull().sum().sum()} missing values"
     )
 
     # Test SMOTE
@@ -96,10 +96,10 @@ try:
         }
     )
     df_balanced = balance_classes_smote(df_imbalanced, "target")
-    print(f"✅ SMOTE: {len(df_imbalanced)} → {len(df_balanced)} samples")
+    print(f"SMOTE: {len(df_imbalanced)} to {len(df_balanced)} samples")
 
 except Exception as e:
-    print(f"❌ Advanced features failed: {e}")
+    print(f"Advanced features failed: {e}")
     import traceback
 
     traceback.print_exc()
@@ -125,12 +125,12 @@ try:
         balance_method="smote",
     )
 
-    print("✅ Used KNN imputation in core workflow")
-    print("✅ Used SMOTE in core workflow")
-    print(f"✅ Final shape: {clean_df.shape}")
+    print("Used KNN imputation in core workflow")
+    print("Used SMOTE in core workflow")
+    print(f"Final shape: {clean_df.shape}")
 
 except Exception as e:
-    print(f"❌ Core integration failed: {e}")
+    print(f"Core integration failed: {e}")
     import traceback
 
     traceback.print_exc()
@@ -141,14 +141,14 @@ print("-" * 80)
 try:
     # Test config manager
     providers = AutoPrepMLConfig.PROVIDERS
-    print(f"✅ Supported providers: {', '.join(providers.keys())}")
+    print(f"Supported providers: {', '.join(providers.keys())}")
 
     # Test API key retrieval (should return None if not set)
     key = AutoPrepMLConfig.get_api_key("ollama")
-    print(f"✅ API key retrieval working (Ollama doesn't need key: {key is None})")
+    print(f"API key retrieval working (Ollama doesn't need key: {key is None})")
 
 except Exception as e:
-    print(f"❌ Configuration manager failed: {e}")
+    print(f"Configuration manager failed: {e}")
     import traceback
 
     traceback.print_exc()
@@ -168,12 +168,12 @@ try:
     for provider, info in providers_to_test.items():
         try:
             suggestor = LLMSuggestor(provider=provider, model=info["model"])
-            print(f"✅ {info['name']}: Initialized successfully (model: {info['model']})")
+            print(f"{info['name']}: Initialized successfully (model: {info['model']})")
         except Exception as e:
-            print(f"⚠️  {info['name']}: {str(e)[:60]}...")
+            print(f"Warning: {info['name']}: {str(e)[:60]}...")
 
 except Exception as e:
-    print(f"❌ LLM initialization failed: {e}")
+    print(f"LLM initialization failed: {e}")
     import traceback
 
     traceback.print_exc()
@@ -193,63 +193,63 @@ try:
     print("(This may take a moment on first run)")
 
     # Test 1: Suggest fix
-    print("\n  → Testing suggest_fix()...")
+    print("\n  Testing suggest_fix()...")
     try:
         result = suggestor.suggest_fix(df, column="age", issue_type="missing")
         if "Error" not in result and "not found" not in result:
-            print("  ✅ suggest_fix() working")
+            print("  suggest_fix() working")
             print(f"     Response preview: {result[:100]}...")
         else:
-            print(f"  ⚠️  suggest_fix() returned error: {result[:100]}")
+            print(f"  Warning: suggest_fix() returned error: {result[:100]}")
     except Exception as e:
-        print(f"  ⚠️  suggest_fix() failed: {str(e)[:60]}")
+        print(f"  Warning: suggest_fix() failed: {str(e)[:60]}")
 
     # Test 2: Analyze dataframe
-    print("\n  → Testing analyze_dataframe()...")
+    print("\n  Testing analyze_dataframe()...")
     try:
         result = suggestor.analyze_dataframe(df, task="regression", target_col="salary")
         if "Error" not in str(result) and "not found" not in str(result):
-            print("  ✅ analyze_dataframe() working")
+            print("  analyze_dataframe() working")
             print(f"     Response preview: {str(result)[:100]}...")
         else:
-            print(f"  ⚠️  analyze_dataframe() returned error: {str(result)[:100]}")
+            print(f"  Warning: analyze_dataframe() returned error: {str(result)[:100]}")
     except Exception as e:
-        print(f"  ⚠️  analyze_dataframe() failed: {str(e)[:60]}")
+        print(f"  Warning: analyze_dataframe() failed: {str(e)[:60]}")
 
     # Test 3: Explain step
-    print("\n  → Testing explain_cleaning_step()...")
+    print("\n  Testing explain_cleaning_step()...")
     try:
         result = suggestor.explain_cleaning_step("imputed_missing", {"strategy": "median"})
         if "Error" not in result and "not found" not in result:
-            print("  ✅ explain_cleaning_step() working")
+            print("  explain_cleaning_step() working")
             print(f"     Response preview: {result[:100]}...")
         else:
-            print(f"  ⚠️  explain_cleaning_step() returned error: {result[:100]}")
+            print(f"  Warning: explain_cleaning_step() returned error: {result[:100]}")
     except Exception as e:
-        print(f"  ⚠️  explain_cleaning_step() failed: {str(e)[:60]}")
+        print(f"  Warning: explain_cleaning_step() failed: {str(e)[:60]}")
 
     # Test 4: Feature suggestions
-    print("\n  → Testing suggest_features()...")
+    print("\n  Testing suggest_features()...")
     try:
         result = suggestor.suggest_features(df, task="regression", target_col="salary")
         if isinstance(result, list) and len(result) > 0:
-            print("  ✅ suggest_features() working")
+            print("  suggest_features() working")
             print(f"     Returned {len(result)} suggestions")
         else:
-            print(f"  ⚠️  suggest_features() returned: {result}")
+            print(f"  Warning: suggest_features() returned: {result}")
     except Exception as e:
-        print(f"  ⚠️  suggest_features() failed: {str(e)[:60]}")
+        print(f"  Warning: suggest_features() failed: {str(e)[:60]}")
 
 except Exception as e:
     error_msg = str(e)
     if "model" in error_msg and "not found" in error_msg:
-        print(f"⚠️  Ollama model not available: {error_msg}")
+        print(f"Warning: Ollama model not available: {error_msg}")
         print("   Run: ollama pull llama2")
     elif "Failed to connect" in error_msg or "Connection refused" in error_msg:
-        print(f"⚠️  Ollama not running: {error_msg}")
+        print(f"Warning: Ollama not running: {error_msg}")
         print("   Run: ollama serve")
     else:
-        print(f"❌ Ollama test failed: {error_msg}")
+        print(f"Ollama test failed: {error_msg}")
         import traceback
 
         traceback.print_exc()
@@ -269,18 +269,18 @@ try:
     prep = AutoPrepML(df, enable_llm=True, llm_provider="ollama")
 
     if prep.llm_enabled and prep.llm_suggestor:
-        print("✅ LLM enabled in AutoPrepML")
+        print("LLM enabled in AutoPrepML")
 
         # Test method availability
-        print("✅ get_llm_suggestions() method available")
-        print("✅ analyze_with_llm() method available")
-        print("✅ get_feature_suggestions() method available")
-        print("✅ explain_step() method available")
+        print("get_llm_suggestions() method available")
+        print("analyze_with_llm() method available")
+        print("get_feature_suggestions() method available")
+        print("explain_step() method available")
     else:
-        print("⚠️  LLM not enabled (check Ollama availability)")
+        print("Warning: LLM not enabled (check Ollama availability)")
 
 except Exception as e:
-    print(f"⚠️  Core LLM integration: {str(e)[:60]}")
+    print(f"Warning: Core LLM integration: {str(e)[:60]}")
 
 # Test 10: Other Data Types
 print("\n[TEST 10] Multi-Modal Support")
@@ -291,14 +291,14 @@ try:
         {"text": ["Hello world", "Test message", "Sample text"], "label": [0, 1, 0]}
     )
     text_prep = TextPrepML(df_text, text_column="text")
-    print("✅ TextPrepML initialized")
+    print("TextPrepML initialized")
 
     # Time Series
     df_ts = pd.DataFrame(
         {"timestamp": pd.date_range("2024-01-01", periods=10), "value": np.random.randn(10)}
     )
     ts_prep = TimeSeriesPrepML(df_ts, timestamp_column="timestamp", value_column="value")
-    print("✅ TimeSeriesPrepML initialized")
+    print("TimeSeriesPrepML initialized")
 
     # Graph
     edges_df = pd.DataFrame({"source": [1, 2, 3], "target": [2, 3, 4]})
@@ -306,10 +306,10 @@ try:
     graph_prep = GraphPrepML(
         nodes_df=nodes_df, edges_df=edges_df, source_col="source", target_col="target"
     )
-    print("✅ GraphPrepML initialized")
+    print("GraphPrepML initialized")
 
 except Exception as e:
-    print(f"❌ Multi-modal support failed: {e}")
+    print(f"Multi-modal support failed: {e}")
     import traceback
 
     traceback.print_exc()
@@ -318,7 +318,7 @@ except Exception as e:
 print("\n" + "=" * 80)
 print("TEST SUMMARY")
 print("=" * 80)
-print("\n✅ All critical components verified!")
+print("\nAll critical components verified.")
 print("\nComponents Tested:")
 print("  • Package imports and version")
 print("  • Basic preprocessing (v1.0)")
@@ -330,7 +330,7 @@ print("  • LLM functionality with Ollama")
 print("  • LLM integration in core AutoPrepML")
 print("  • Multi-modal support (Text, TimeSeries, Graph)")
 
-print("\n💡 Tips:")
+print("\nTips:")
 print("  • If Ollama tests show warnings, ensure:")
 print("    1. Ollama is running: ollama serve")
 print("    2. Model is pulled: ollama pull llama2")
@@ -338,5 +338,5 @@ print("  • For cloud LLMs, configure API keys:")
 print("    autoprepml-config --set openai")
 
 print("\n" + "=" * 80)
-print("✨ AutoPrepML v1.2.0 - All Systems Operational!")
+print("AutoPrepML v1.4.0 - All systems operational.")
 print("=" * 80)

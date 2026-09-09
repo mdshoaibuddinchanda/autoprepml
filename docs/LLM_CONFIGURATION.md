@@ -276,7 +276,7 @@ For development and testing, Ollama can keep data on the local machine and avoid
 ## Next Steps
 
 - Read the [Advanced Features Guide](ADVANCED_FEATURES.md)
-- Explore the [LLM integration example](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/examples/demo_llm_assistant.py)
+- Explore the [LLM integration notebook](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/examples/notebooks/07_llm_integration.ipynb)
 - Check the [API Reference](api_reference.md)
 
 ## Support

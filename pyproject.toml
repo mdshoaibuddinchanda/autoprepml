@@ -73,6 +73,12 @@ storage = [
 tracking = [
     "mlflow>=2.10.0",
 ]
+notebooks = [
+    "jupyterlab>=4.0",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+    "ipykernel>=6.29",
+]
 all = [
     "pytest==8.4.2",
     "pytest-cov==7.0.0",
@@ -85,6 +91,10 @@ all = [
     "ollama>=0.1.0",
     "plotly>=5.0.0",
     "streamlit>=1.0.0",
+    "jupyterlab>=4.0",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+    "ipykernel>=6.29",
 ]
 
 [project.urls]

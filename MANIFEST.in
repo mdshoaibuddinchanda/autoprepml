@@ -8,8 +8,8 @@ include pyproject.toml
 # Include documentation directory
 recursive-include docs *.md *.rst *.txt
 
-# Include examples
-recursive-include examples *.py *.csv *.json *.yaml *.yml
+# Include maintained examples without generated data or artifacts
+recursive-include examples *.ipynb *.md
 recursive-include creator_examples *.py *.ipynb *.md
 
 # Include tests

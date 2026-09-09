@@ -28,6 +28,7 @@ nav:
   - Home: index.md
   - Getting started: usage.md
   - Tutorials: tutorials.md
+  - Examples: examples.md
   - Creator examples: creator_examples.md
   - Advanced features: ADVANCED_FEATURES.md
   - CLI quick start: QUICK_START_CLI.md

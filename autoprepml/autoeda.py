@@ -262,46 +262,44 @@ class AutoEDA:
 
         # Data size insights
         n_rows, n_cols = self.df.shape
-        insights.append(f"📊 Dataset contains {n_rows:,} rows and {n_cols} columns")
+        insights.append(f"Dataset contains {n_rows:,} rows and {n_cols} columns")
 
         # Memory usage
         mem_mb = self.df.memory_usage(deep=True).sum() / 1024**2
-        insights.append(f"💾 Memory usage: {mem_mb:.2f} MB")
+        insights.append(f"Memory usage: {mem_mb:.2f} MB")
 
         # Duplicates
         dup_count = self.df.duplicated().sum()
         if dup_count > 0:
-            insights.append(
-                f"⚠️  Found {dup_count:,} duplicate rows ({(dup_count/n_rows)*100:.1f}%)"
-            )
+            insights.append(f"Found {dup_count:,} duplicate rows ({(dup_count/n_rows)*100:.1f}%)")
 
         # Missing values
         missing_info = self.analysis_results.get("missing_values", {})
         if missing_info.get("total_missing", 0) > 0:
-            insights.append(f"⚠️  Missing values in {missing_info['columns_with_missing']} columns")
+            insights.append(f"Missing values in {missing_info['columns_with_missing']} columns")
 
         # High correlations
         corr_info = self.analysis_results.get("correlations", {})
         high_corr = corr_info.get("high_correlations", [])
         if high_corr:
-            insights.append(f"🔗 Found {len(high_corr)} pairs of highly correlated features")
+            insights.append(f"Found {len(high_corr)} pairs of highly correlated features")
 
         # Outliers
         outlier_info = self.analysis_results.get("outliers", {})
         if outlier_info:
-            insights.append(f"📈 Detected outliers in {len(outlier_info)} numeric columns")
+            insights.append(f"Detected outliers in {len(outlier_info)} numeric columns")
 
         # Categorical cardinality
         cat_info = self.analysis_results.get("categorical", {})
         high_card_cols = [col for col, info in cat_info.items() if info["cardinality"] == "high"]
         if high_card_cols:
-            insights.append(f"🏷️  {len(high_card_cols)} categorical columns with high cardinality")
+            insights.append(f"{len(high_card_cols)} categorical columns with high cardinality")
 
         # Data type distribution
         data_info = self.analysis_results.get("data_info", {})
         n_numeric = len(data_info.get("numeric_columns", []))
         n_cat = len(data_info.get("categorical_columns", []))
-        insights.append(f"📋 Data types: {n_numeric} numeric, {n_cat} categorical")
+        insights.append(f"Data types: {n_numeric} numeric, {n_cat} categorical")
 
         return insights
 
@@ -352,7 +350,7 @@ class AutoEDA:
         html = self._create_html_report(title)
 
         Path(output_path).write_text(html, encoding="utf-8")
-        print(f"✅ EDA report saved to: {output_path}")
+        print(f"EDA report saved to: {output_path}")
 
     def _create_html_report(self, title: str) -> str:
         """Create HTML report content."""
@@ -519,6 +517,6 @@ class AutoEDA:
 
         if output_path:
             Path(output_path).write_text(json.dumps(results, indent=2), encoding="utf-8")
-            print(f"✅ Analysis results saved to: {output_path}")
+            print(f"Analysis results saved to: {output_path}")
 
         return results

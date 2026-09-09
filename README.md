@@ -1,25 +1,12 @@
-<div align="center">
-  <img src="assets/logo.png" alt="AutoPrepML Logo" width="180"/>
-  
-  # AutoPrepML
-  
-  **Multi-Modal Data Preprocessing Pipeline**
-  
-  [![PyPI version](https://img.shields.io/badge/pypi-v1.4.0-blue.svg)](https://pypi.org/project/autoprepml/)
-  [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
-  [![Python 3.9 through 3.14](https://img.shields.io/badge/python-3.9--3.14-blue.svg)](https://www.python.org/downloads/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  
-  <p align="center">
-    <a href="#quick-start-guide">Quick Start</a> |
-    <a href="#installation">Installation</a> |
-    <a href="#examples-directory">Examples</a> |
-    <a href="#documentation">Documentation</a> |
-    <a href="#contributing">Contributing</a>
-  </p>
-</div>
+# AutoPrepML
 
-<br>
+Multi-modal Python preprocessing and exploratory data analysis for tabular,
+text, time-series, graph, and image data.
+
+Project links: [PyPI](https://pypi.org/project/autoprepml/),
+[documentation](https://autoprepml.readthedocs.io/),
+[source repository](https://github.com/mdshoaibuddinchanda/autoprepml), and
+[issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
 
 > **A practical preprocessing library for tabular, text, time series, graph, and image data.**
 
@@ -788,43 +775,35 @@ config = {
 prep = AutoPrepML(df, config=config)
 ```
 
-## Examples Directory
+## Examples
 
-The `examples/` directory contains working demo scripts for all data types.
+The maintained examples are executable Jupyter notebooks in
+[`examples/notebooks/`](examples/notebooks/). They use deterministic synthetic
+data and bounded outputs, so a reader can run them without downloading private
+files or creating repository artifacts.
 
-### Available Demos
+| Notebook | Demonstrates |
+| --- | --- |
+| `01_tabular_quality.ipynb` | Quality detection, cleaning, EDA, feature engineering, and model pipelines |
+| `02_text_nlp.ipynb` | Text validation, normalization, tokenization, and feature extraction |
+| `03_time_series.ipynb` | Timestamp repair, interpolation, lags, and forecast-safe rolling features |
+| `04_graph_data.ipynb` | Node and edge integrity, graph features, and connected components |
+| `05_image_data.ipynb` | Temporary synthetic images, validation, normalization, and augmentation |
+| `06_scalable_pipeline.ipynb` | Chunking, parallel processing, streaming, storage, and experiment tracking |
+| `07_llm_integration.ipynb` | Provider configuration and opt-in LLM requests without exposing credentials |
 
-| Demo Script | Input Data | Generated Output | Features Shown |
-|-------------|------------|------------------|----------------|
-| **demo_script.py** | Iris dataset (150 rows) | `iris_cleaned.csv`<br>`iris_report.html` | Tabular preprocessing, scaling, encoding, HTML reports |
-| **demo_text.py** | Customer reviews (100 texts) | `reviews_cleaned.csv` | Text cleaning, stopword removal, tokenization, feature extraction |
-| **demo_timeseries.py** | Sales data with gaps (365 days) | `sales_cleaned.csv` | Gap filling, interpolation, lag features, rolling statistics |
-| **demo_graph.py** | Social network (50 nodes, 100 edges) | `social_network_nodes_cleaned.csv`<br>`social_network_edges_cleaned.csv` | Graph validation, component detection, degree centrality |
-| **demo_all.py** | All 4 data types | Console output | Multi-modal preprocessing in one script |
-
-### Run Demos
+Install the notebook extra and run the full suite from the repository root:
 
 ```bash
-# Navigate to project directory
-cd autoprepml
-
-# Run individual demos
-python examples/demo_script.py        # Tabular data (Iris)
-python examples/demo_text.py          # Text/NLP (reviews)
-python examples/demo_timeseries.py    # Time series (sales)
-python examples/demo_graph.py         # Graph data (social network)
-python examples/demo_all.py           # All data types
-
-# Check generated files
-ls *.csv *.html
+python -m pip install -e ".[dev,notebooks]"
+python scripts/validate_notebooks.py
 ```
 
-### Expected Output Files
-After running demos, you'll find these files in your directory:
-- `iris_cleaned.csv`, `iris_report.html`
-- `reviews_cleaned.csv`
-- `sales_cleaned.csv`
-- `social_network_nodes_cleaned.csv`, `social_network_edges_cleaned.csv`
+The validator executes notebooks in temporary working directories. It does not
+leave datasets, generated images, reports, model files, or experiment runs in
+the repository. The separate [`creator_examples/`](creator_examples/) workflow
+shows how to use a versioned public OpenML dataset while applying the same
+cleanup rules.
 
 ## Testing
 
@@ -850,7 +829,7 @@ The repository is organised around a small public package and a set of focused m
 
 * `autoprepml/` contains the library implementation, including modality specific processors, detection, cleaning, reporting, configuration, the command line interface, and optional LLM integrations.
 * `tests/` contains unit and integration coverage for the public API.
-* `examples/` contains runnable demonstrations for each supported data type.
+* `examples/` contains the maintained deterministic Jupyter notebooks.
 * `creator_examples/` contains notebook and Python workflows that download public data only into temporary directories.
 * `docs/` contains the user guide, API reference, tutorials, feature guides, and release notes.
 * `scripts/` contains test, documentation, release, and OpenML smoke test helpers.

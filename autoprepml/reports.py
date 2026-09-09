@@ -87,7 +87,7 @@ HTML_TEMPLATE = """
     </style>
 </head>
 <body>
-    <h1>🔬 AutoPrepML Report</h1>
+    <h1>AutoPrepML Report</h1>
     
     <div class="info-box">
         <p><strong>Generated:</strong> {{ timestamp }}</p>
@@ -103,7 +103,7 @@ HTML_TEMPLATE = """
         {% endif %}
     </div>
     
-    <h2>📊 Detection Results</h2>
+    <h2>Detection Results</h2>
     <div class="info-box">
         <h3>Missing Values</h3>
         {% if detection_results.missing_values %}
@@ -115,7 +115,7 @@ HTML_TEMPLATE = """
             {% endfor %}
             </ul>
         {% else %}
-            <p class="badge badge-success">✓ No missing values detected</p>
+            <p class="badge badge-success">No missing values detected</p>
         {% endif %}
         
         <h3>Outliers</h3>
@@ -123,24 +123,24 @@ HTML_TEMPLATE = """
             <p><span class="badge badge-danger">{{ detection_results.outliers.outlier_count }} outliers detected</span></p>
             <p>Method: {{ detection_results.outliers.method }}</p>
         {% else %}
-            <p class="badge badge-success">✓ No significant outliers detected</p>
+            <p class="badge badge-success">No significant outliers detected</p>
         {% endif %}
         
         {% if detection_results.class_imbalance %}
         <h3>Class Imbalance</h3>
         {% if detection_results.class_imbalance.is_imbalanced %}
-            <p><span class="badge badge-warning">⚠ Dataset is imbalanced</span></p>
+            <p><span class="badge badge-warning">Dataset is imbalanced</span></p>
             <p><strong>Minority class:</strong> {{ detection_results.class_imbalance.minority_class }} 
                ({{ (detection_results.class_imbalance.minority_proportion * 100) | round(2) }}%)</p>
             <p><strong>Imbalance ratio:</strong> {{ detection_results.class_imbalance.imbalance_ratio | round(2) }}:1</p>
         {% else %}
-            <p class="badge badge-success">✓ Classes are balanced</p>
+            <p class="badge badge-success">Classes are balanced</p>
         {% endif %}
         {% endif %}
     </div>
     
     {% if plots %}
-    <h2>📈 Visualizations</h2>
+    <h2>Visualizations</h2>
     
     <div class="plot-container">
         <h3>Missing Values</h3>
@@ -163,7 +163,7 @@ HTML_TEMPLATE = """
     </div>
     {% endif %}
     
-    <h2>📝 Processing Log</h2>
+    <h2>Processing Log</h2>
     <div class="info-box">
         <pre>{{ logs | tojson(indent=2) }}</pre>
     </div>
@@ -288,7 +288,7 @@ def generate_universal_html_report(report: Dict[str, Any]) -> str:
     </style>
 </head>
 <body>
-    <h1>🔬 AutoPrepML Report</h1>
+    <h1>AutoPrepML Report</h1>
     
     <div class="info-box">
         <p><strong>Generated:</strong> {{ timestamp }}</p>
@@ -331,7 +331,7 @@ def generate_universal_html_report(report: Dict[str, Any]) -> str:
     </div>
     
     {% if issues %}
-    <h2>📊 Detected Issues</h2>
+    <h2>Detected Issues</h2>
     <div class="info-box">
         <table>
             <tr>
@@ -349,7 +349,7 @@ def generate_universal_html_report(report: Dict[str, Any]) -> str:
     {% endif %}
     
     {% if graph_stats %}
-    <h2>📈 Graph Statistics</h2>
+    <h2>Graph Statistics</h2>
     <div class="info-box">
         <table>
             <tr>
@@ -367,7 +367,7 @@ def generate_universal_html_report(report: Dict[str, Any]) -> str:
     {% endif %}
     
     {% if logs %}
-    <h2>📝 Processing Log</h2>
+    <h2>Processing Log</h2>
     <div class="info-box">
         <pre>{{ logs | tojson(indent=2) }}</pre>
     </div>

@@ -209,16 +209,16 @@ class ImagePrepML:
         print("\n" + "=" * 80)
         print("IMAGE PREPROCESSING - DETECTION SUMMARY")
         print("=" * 80)
-        print(f"\n📁 Total Images: {len(self.image_paths)}")
-        print(f"✅ Valid Images: {len(self.image_info)}")
-        print(f"⚠️  Issues Found: {len(self.issues)}")
+        print(f"\nTotal images: {len(self.image_paths)}")
+        print(f"Valid images: {len(self.image_info)}")
+        print(f"Issue categories: {len(self.issues)}")
 
         if self.issues:
-            print("\n📋 Issue Breakdown:")
+            print("\nIssue breakdown:")
             for issue_type, items in self.issues.items():
                 print(f"   • {issue_type}: {len(items)}")
         else:
-            print("\n✨ No issues detected!")
+            print("\nNo issues detected.")
 
     def clean(
         self,
@@ -479,9 +479,9 @@ class ImagePrepML:
 </head>
 <body>
     <div class="container">
-        <h1>🖼️ Image Preprocessing Report</h1>
+        <h1>Image Preprocessing Report</h1>
         
-        <h2>📊 Dataset Statistics</h2>
+        <h2>Dataset Statistics</h2>
         <div class="stat-grid">
             <div class="stat-card">
                 <h3>Total Images</h3>
@@ -501,16 +501,16 @@ class ImagePrepML:
             </div>
         </div>
         
-        <h2>🎨 Color Mode Distribution</h2>
+        <h2>Color Mode Distribution</h2>
         <table>
             <tr><th>Mode</th><th>Count</th></tr>
             {''.join(f'<tr><td>{mode}</td><td>{count}</td></tr>' for mode, count in stats.get('color_mode_distribution', {}).items())}
         </table>
         
-        <h2>⚠️ Issues Detected</h2>
+        <h2>Issues Detected</h2>
         {self._generate_issues_html()}
         
-        <h2>📝 Processing Log</h2>
+        <h2>Processing Log</h2>
         {''.join(f'<div class="log-entry">{json.dumps(entry, indent=2)}</div>' for entry in self.log)}
     </div>
 </body>
@@ -520,14 +520,12 @@ class ImagePrepML:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
-        print(f"\n✅ Report saved to: {output_path}")
+        print(f"\nReport saved to: {output_path}")
 
     def _generate_issues_html(self) -> str:
         """Generate HTML for issues section"""
         if not self.issues:
-            return (
-                '<div class="issue-card success">✨ No issues detected! All images are valid.</div>'
-            )
+            return '<div class="issue-card success">No issues detected. All images are valid.</div>'
 
         return "".join(
             f'<div class="issue-card"><strong>{issue_type.upper()}</strong>: {len(items)} items</div>'

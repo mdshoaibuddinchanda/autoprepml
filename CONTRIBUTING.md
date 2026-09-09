@@ -153,9 +153,10 @@ If adding a new data type (e.g., `ImagePrepML`):
 1. Create `autoprepml/image.py` with the class
 2. Add comprehensive tests in `tests/test_image.py`
 3. Update `autoprepml/__init__.py` to export the class
-4. Create `examples/demo_image.py` demo script
-5. Update README with the new data type
-6. Add documentation to `docs/`
+4. Add or update the relevant notebook in `examples/notebooks/`
+5. Keep notebook data synthetic or temporary and avoid committing generated files
+6. Update README with the new data type
+7. Add documentation to `docs/`
 
 ### 2. New Cleaning Function
 If adding a new cleaning function:

@@ -64,27 +64,27 @@ Examples:
     # Validate inputs
     input_path = Path(args.input)
     if not input_path.exists():
-        print(f"❌ Error: Input file not found: {args.input}", file=sys.stderr)
+        print(f"Error: Input file not found: {args.input}", file=sys.stderr)
         return 2
 
     if input_path.suffix.lower() != ".csv":
-        print("❌ Error: Input file must be a CSV file", file=sys.stderr)
+        print("Error: Input file must be a CSV file", file=sys.stderr)
         return 2
 
     # Validate report format
     if args.report:
         report_path = Path(args.report)
         if report_path.suffix.lower() not in [".html", ".json"]:
-            print("❌ Error: Report file must be .html or .json", file=sys.stderr)
+            print("Error: Report file must be .html or .json", file=sys.stderr)
             return 2
 
     # Load data
     try:
-        print(f"📂 Loading data from {args.input}...")
+        print(f"Loading data from {args.input}...")
         df = pd.read_csv(args.input)
-        print(f"✅ Loaded {len(df)} rows, {len(df.columns)} columns")
+        print(f"Loaded {len(df)} rows, {len(df.columns)} columns")
     except Exception as e:
-        print(f"❌ Error loading CSV: {e}", file=sys.stderr)
+        print(f"Error loading CSV: {e}", file=sys.stderr)
         return 1
 
     # Initialize AutoPrepML
@@ -95,7 +95,7 @@ Examples:
             prep.config["reporting"]["include_plots"] = False
 
         # Detection phase
-        print("\n🔍 Running detection...")
+        print("\nRunning detection...")
         detection_results = prep.detect(target_col=args.target)
 
         # Print detection summary
@@ -107,37 +107,37 @@ Examples:
 
         if args.target and "class_imbalance" in detection_results:
             imbalance = detection_results["class_imbalance"]
-            status = "⚠ Imbalanced" if imbalance["is_imbalanced"] else "✓ Balanced"
+            status = "Imbalanced" if imbalance["is_imbalanced"] else "Balanced"
             print(f"   • Class distribution: {status}")
 
         if args.detect_only:
-            print("\n✅ Detection complete (--detect-only mode)")
+            print("\nDetection complete (--detect-only mode)")
             if args.report:
                 prep.save_report(args.report)
-                print(f"📄 Report saved to {args.report}")
+                print(f"Report saved to {args.report}")
             return 0
 
         # Cleaning phase
-        print("\n🧹 Cleaning data...")
+        print("\nCleaning data...")
         clean_df, report = prep.clean(task=args.task, target_col=args.target)
 
         # Save cleaned data
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         clean_df.to_csv(args.output, index=False)
-        print(f"✅ Cleaned data saved to {args.output}")
+        print(f"Cleaned data saved to {args.output}")
         print(f"   Shape: {clean_df.shape[0]} rows × {clean_df.shape[1]} columns")
 
         # Save report
         if args.report:
             prep.save_report(args.report)
-            print(f"📄 Report saved to {args.report}")
+            print(f"Report saved to {args.report}")
 
-        print("\n🎉 AutoPrepML completed successfully!")
+        print("\nAutoPrepML completed successfully!")
         return 0
 
     except Exception as e:
-        print(f"❌ Error during preprocessing: {e}", file=sys.stderr)
+        print(f"Error during preprocessing: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
 

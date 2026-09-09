@@ -133,7 +133,6 @@ Thumbs.db
 autoprepml.log
 reports/
 *.csv
-!examples/*.csv
 
 # Generated demo/example outputs
 examples/*_cleaned.csv

@@ -119,7 +119,7 @@ class AutoPrepMLConfig:
         api_keys[provider] = api_key
         cls.save_config(config)
 
-        print(f"✅ API key for {provider_info['name']} saved successfully!")
+        print(f"API key for {provider_info['name']} saved successfully.")
 
     @classmethod
     def get_api_key(cls, provider: str) -> Optional[str]:
@@ -143,14 +143,14 @@ class AutoPrepMLConfig:
         if provider in api_keys:
             del api_keys[provider]
             cls.save_config(config)
-            print(f"✅ API key for {provider_info['name']} removed!")
+            print(f"API key for {provider_info['name']} removed.")
         else:
-            print(f"ℹ️  No API key found for {provider_info['name']}")
+            print(f"No API key found for {provider_info['name']}.")
 
     @classmethod
     def list_api_keys(cls):
         """List all configured API keys (masked)"""
-        print("\n🔑 AutoPrepML API Key Configuration")
+        print("\nAutoPrepML API Key Configuration")
         print("=" * 60)
 
         config = cls.load_config()
@@ -167,14 +167,14 @@ class AutoPrepMLConfig:
 
             if env_key:
                 masked = f"{env_key[:8]}...{env_key[-4:]}" if len(env_key) > 12 else "***"
-                print(f"✅ {provider_name:20} (from env): {masked}")
+                print(f"{provider_name:20} (from env): {masked}")
             elif config_key:
                 masked = f"{config_key[:8]}...{config_key[-4:]}" if len(config_key) > 12 else "***"
-                print(f"✅ {provider_name:20} (saved):    {masked}")
+                print(f"{provider_name:20} (saved):    {masked}")
             elif provider == "ollama":
-                print(f"ℹ️  {provider_name:20} (local):    No API key needed")
+                print(f"{provider_name:20} (local):    No API key needed")
             else:
-                print(f"❌ {provider_name:20} Not configured")
+                print(f"{provider_name:20} Not configured")
 
-        print("\n💡 Tip: Use 'autoprepml-config --set <provider>' to configure API keys")
+        print("\nTip: Use 'autoprepml-config --set <provider>' to configure API keys")
         print("=" * 60 + "\n")

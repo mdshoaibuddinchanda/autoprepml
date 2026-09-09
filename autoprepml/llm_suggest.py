@@ -97,7 +97,7 @@ class LLMSuggestor:
 
         # Warn if API key is missing (except for Ollama)
         if not self.api_key and self.provider != LLMProvider.OLLAMA:
-            print(f"⚠️  Warning: No API key found for {self.provider.value}")
+            print(f"Warning: No API key found for {self.provider.value}")
             print(f"   Set it with: autoprepml-config --set {self.provider.value}")
             print(f"   Or set environment variable: {provider.upper()}_API_KEY")
 

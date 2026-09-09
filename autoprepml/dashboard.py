@@ -95,7 +95,7 @@ def create_plotly_dashboard(
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(html, encoding="utf-8")
-        print(f"✅ Plotly dashboard saved to: {output_path}")
+        print(f"Plotly dashboard saved to: {output_path}")
 
     return html
 
@@ -144,7 +144,7 @@ def create_correlation_heatmap(df: pd.DataFrame, output_path: Optional[str] = No
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(html, encoding="utf-8")
-        print(f"✅ Correlation heatmap saved to: {output_path}")
+        print(f"Correlation heatmap saved to: {output_path}")
 
     return html
 
@@ -208,7 +208,7 @@ def create_missing_data_plot(df: pd.DataFrame, output_path: Optional[str] = None
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(html, encoding="utf-8")
-        print(f"✅ Missing data plot saved to: {output_path}")
+        print(f"Missing data plot saved to: {output_path}")
 
     return html
 
@@ -233,7 +233,7 @@ from autoprepml.feature_engine import AutoFeatureEngine
 
 st.set_page_config(page_title="AutoPrepML Dashboard", layout="wide")
 
-st.title("🚀 AutoPrepML Interactive Dashboard")
+st.title("AutoPrepML Interactive Dashboard")
 st.markdown("Upload your data and explore preprocessing options interactively")
 
 # Sidebar
@@ -248,7 +248,7 @@ if uploaded_file is not None:
     st.sidebar.success(f"Loaded {len(df)} rows, {len(df.columns)} columns")
     
     # Main tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "🔍 EDA", "⚙️ Preprocessing", "🎯 Feature Engineering"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Overview", "EDA", "Preprocessing", "Feature Engineering"])
     
     with tab1:
         st.header("Dataset Overview")
@@ -281,7 +281,7 @@ if uploaded_file is not None:
                 eda = AutoEDA(df)
                 results = eda.analyze()
                 
-                st.subheader("📋 Automated Insights")
+                st.subheader("Automated Insights")
                 for insight in eda.get_insights():
                     st.info(insight)
                 
@@ -374,7 +374,7 @@ if uploaded_file is not None:
                     scaler = 'standard' if scaler_type == "Standard" else 'minmax'
                     df_clean = scale_numeric_features(df_clean, method=scaler)
                 
-                st.success("✅ Preprocessing complete!")
+                st.success("Preprocessing complete.")
                 st.dataframe(df_clean.head(), use_container_width=True)
                 
                 # Download button
@@ -431,7 +431,7 @@ if uploaded_file is not None:
                 df_engineered = fe.get_features()
                 summary = fe.get_summary()
                 
-                st.success(f"✅ Created {summary['features_created']} new features!")
+                st.success(f"Created {summary['features_created']} new features.")
                 
                 st.subheader("Feature Engineering Summary")
                 st.json(summary)
@@ -449,7 +449,7 @@ if uploaded_file is not None:
                 )
 
 else:
-    st.info("👈 Upload a CSV file to get started!")
+    st.info("Upload a CSV file to get started.")
     
     st.markdown("""
     ## Features
@@ -471,7 +471,7 @@ else:
     output_file = Path(output_path)
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(app_code, encoding="utf-8")
-    print(f"✅ Streamlit app generated: {output_path}")
+    print(f"Streamlit app generated: {output_path}")
     print(f"   Run with: streamlit run {output_path}")
 
 

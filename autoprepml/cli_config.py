@@ -7,7 +7,7 @@ from .config_manager import AutoPrepMLConfig
 
 def configure_interactive():
     """Interactive configuration wizard"""
-    print("\n🎯 AutoPrepML Configuration Wizard")
+    print("\nAutoPrepML Configuration Wizard")
     print("=" * 60)
     print("\nWhich LLM provider would you like to configure?\n")
 
@@ -23,17 +23,17 @@ def configure_interactive():
         choice_idx = int(choice) - 1
 
         if choice_idx < 0 or choice_idx >= len(providers_list):
-            print("\n✅ Configuration skipped. You can configure later using 'autoprepml-config'")
+            print("\nConfiguration skipped. You can configure later using 'autoprepml-config'")
             return 0
 
         provider = providers_list[choice_idx]
         info = AutoPrepMLConfig.PROVIDERS[provider]
 
-        print(f"\n📝 Configuring {info['name']}")
-        print(f"ℹ️  {info['instructions']}\n")
+        print(f"\nConfiguring {info['name']}")
+        print(f"{info['instructions']}\n")
 
         if provider == "ollama":
-            print("✅ Ollama is a local LLM - no API key needed!")
+            print("Ollama is a local LLM; no API key needed.")
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
             return 0
 
@@ -41,13 +41,13 @@ def configure_interactive():
             f"Enter your {info['name']} API key (or press Enter to skip): "
         ).strip():
             AutoPrepMLConfig.set_api_key(provider, api_key)
-            print(f"✅ {info['name']} API key saved securely!")
+            print(f"{info['name']} API key saved securely.")
         else:
-            print("\n✅ Configuration skipped for this provider.")
+            print("\nConfiguration skipped for this provider.")
         return 0
 
     except (ValueError, KeyboardInterrupt):
-        print("\n\n✅ Configuration cancelled.")
+        print("\n\nConfiguration cancelled.")
         return 2
 
 
@@ -96,30 +96,30 @@ Supported providers: openai, anthropic, google, ollama
     elif args.set:
         provider = args.set.lower()
         if provider not in AutoPrepMLConfig.PROVIDERS:
-            print(f"❌ Unknown provider: {provider}")
+            print(f"Unknown provider: {provider}")
             print(f"   Valid providers: {', '.join(AutoPrepMLConfig.PROVIDERS.keys())}")
             return 2
 
         info = AutoPrepMLConfig.PROVIDERS[provider]
-        print(f"\n📝 Configuring {info['name']}")
-        print(f"ℹ️  {info['instructions']}\n")
+        print(f"\nConfiguring {info['name']}")
+        print(f"{info['instructions']}\n")
 
         if provider == "ollama":
-            print("✅ Ollama is a local LLM - no API key needed!")
+            print("Ollama is a local LLM; no API key needed.")
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
             return 0
 
         if api_key := getpass.getpass(f"Enter your {info['name']} API key: ").strip():
             AutoPrepMLConfig.set_api_key(provider, api_key)
-            print(f"✅ {info['name']} API key saved securely!")
+            print(f"{info['name']} API key saved securely.")
         else:
-            print("❌ No API key entered. Configuration cancelled.")
+            print("No API key entered. Configuration cancelled.")
         return 0
 
     elif args.remove:
         provider = args.remove.lower()
         if provider not in AutoPrepMLConfig.PROVIDERS:
-            print(f"❌ Unknown provider: {provider}")
+            print(f"Unknown provider: {provider}")
             return 2
         AutoPrepMLConfig.remove_api_key(provider)
         return 0
@@ -127,7 +127,7 @@ Supported providers: openai, anthropic, google, ollama
     elif args.check:
         provider = args.check.lower()
         if provider not in AutoPrepMLConfig.PROVIDERS:
-            print(f"❌ Unknown provider: {provider}")
+            print(f"Unknown provider: {provider}")
             return 2
 
         api_key = AutoPrepMLConfig.get_api_key(provider)
@@ -135,11 +135,11 @@ Supported providers: openai, anthropic, google, ollama
 
         if api_key:
             masked = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***"
-            print(f"✅ {info['name']} API key is configured: {masked}")
+            print(f"{info['name']} API key is configured: {masked}")
         elif provider == "ollama":
             print(f"ℹ️  {info['name']} doesn't require an API key (local LLM)")
         else:
-            print(f"❌ {info['name']} API key is not configured")
+            print(f"{info['name']} API key is not configured")
             print(f"   Configure it with: autoprepml-config --set {provider}")
         return 0
 
@@ -150,7 +150,7 @@ Supported providers: openai, anthropic, google, ollama
             __version__ = "unknown"
 
         print("\n" + "=" * 60)
-        print("🤖 AutoPrepML - AI-Assisted Data Preprocessing")
+        print("AutoPrepML - AI-Assisted Data Preprocessing")
         print("=" * 60)
         print(f"Version: {__version__}")
         print(f"Config Directory: {AutoPrepMLConfig.CONFIG_DIR}")
