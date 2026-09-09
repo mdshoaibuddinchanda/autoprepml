@@ -1,6 +1,5 @@
 """CLI for managing AutoPrepML configuration and API keys"""
 
-import sys
 import argparse
 import getpass
 from .config_manager import AutoPrepMLConfig
@@ -25,7 +24,7 @@ def configure_interactive():
 
         if choice_idx < 0 or choice_idx >= len(providers_list):
             print("\n✅ Configuration skipped. You can configure later using 'autoprepml-config'")
-            return
+            return 0
 
         provider = providers_list[choice_idx]
         info = AutoPrepMLConfig.PROVIDERS[provider]
@@ -36,7 +35,7 @@ def configure_interactive():
         if provider == "ollama":
             print("✅ Ollama is a local LLM - no API key needed!")
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
-            return
+            return 0
 
         if api_key := getpass.getpass(
             f"Enter your {info['name']} API key (or press Enter to skip): "
@@ -45,12 +44,14 @@ def configure_interactive():
             print(f"✅ {info['name']} API key saved securely!")
         else:
             print("\n✅ Configuration skipped for this provider.")
+        return 0
 
     except (ValueError, KeyboardInterrupt):
         print("\n\n✅ Configuration cancelled.")
+        return 2
 
 
-def main():  # sourcery skip: low-code-quality
+def main(argv=None):  # sourcery skip: low-code-quality
     """Main CLI entry point for configuration management"""
     parser = argparse.ArgumentParser(
         description="AutoPrepML Configuration - Manage API keys for LLM providers",
@@ -82,22 +83,22 @@ Supported providers: openai, anthropic, google, ollama
         "--info", action="store_true", help="Show package and configuration information"
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     # If no arguments, run interactive mode
     if not any(vars(args).values()):
-        configure_interactive()
-        return
+        return configure_interactive()
 
     if args.list:
         AutoPrepMLConfig.list_api_keys()
+        return 0
 
     elif args.set:
         provider = args.set.lower()
         if provider not in AutoPrepMLConfig.PROVIDERS:
             print(f"❌ Unknown provider: {provider}")
             print(f"   Valid providers: {', '.join(AutoPrepMLConfig.PROVIDERS.keys())}")
-            sys.exit(1)
+            return 2
 
         info = AutoPrepMLConfig.PROVIDERS[provider]
         print(f"\n📝 Configuring {info['name']}")
@@ -106,26 +107,28 @@ Supported providers: openai, anthropic, google, ollama
         if provider == "ollama":
             print("✅ Ollama is a local LLM - no API key needed!")
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
-            return
+            return 0
 
         if api_key := getpass.getpass(f"Enter your {info['name']} API key: ").strip():
             AutoPrepMLConfig.set_api_key(provider, api_key)
             print(f"✅ {info['name']} API key saved securely!")
         else:
             print("❌ No API key entered. Configuration cancelled.")
+        return 0
 
     elif args.remove:
         provider = args.remove.lower()
         if provider not in AutoPrepMLConfig.PROVIDERS:
             print(f"❌ Unknown provider: {provider}")
-            sys.exit(1)
+            return 2
         AutoPrepMLConfig.remove_api_key(provider)
+        return 0
 
     elif args.check:
         provider = args.check.lower()
         if provider not in AutoPrepMLConfig.PROVIDERS:
             print(f"❌ Unknown provider: {provider}")
-            sys.exit(1)
+            return 2
 
         api_key = AutoPrepMLConfig.get_api_key(provider)
         info = AutoPrepMLConfig.PROVIDERS[provider]
@@ -138,6 +141,7 @@ Supported providers: openai, anthropic, google, ollama
         else:
             print(f"❌ {info['name']} API key is not configured")
             print(f"   Configure it with: autoprepml-config --set {provider}")
+        return 0
 
     elif args.info:
         try:
@@ -156,7 +160,8 @@ Supported providers: openai, anthropic, google, ollama
             print(f"  • {info['name']}")
         print("\nDocumentation: https://github.com/mdshoaibuddinchanda/autoprepml")
         print("=" * 60 + "\n")
+        return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
