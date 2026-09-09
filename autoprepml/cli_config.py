@@ -1,4 +1,5 @@
 """CLI for managing AutoPrepML configuration and API keys"""
+
 import sys
 import argparse
 import getpass
@@ -32,7 +33,7 @@ def configure_interactive():
         print(f"\n📝 Configuring {info['name']}")
         print(f"ℹ️  {info['instructions']}\n")
 
-        if provider == 'ollama':
+        if provider == "ollama":
             print("✅ Ollama is a local LLM - no API key needed!")
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
             return
@@ -49,7 +50,7 @@ def configure_interactive():
         print("\n\n✅ Configuration cancelled.")
 
 
-def main():    # sourcery skip: low-code-quality
+def main():  # sourcery skip: low-code-quality
     """Main CLI entry point for configuration management"""
     parser = argparse.ArgumentParser(
         description="AutoPrepML Configuration - Manage API keys for LLM providers",
@@ -64,19 +65,22 @@ Examples:
   autoprepml-config --info             # Show package information
 
 Supported providers: openai, anthropic, google, ollama
-        """
+        """,
     )
 
-    parser.add_argument('--list', action='store_true', 
-                       help='List all configured API keys')
-    parser.add_argument('--set', metavar='PROVIDER', 
-                       help='Set API key for a provider (openai, anthropic, google, ollama)')
-    parser.add_argument('--remove', metavar='PROVIDER', 
-                       help='Remove API key for a provider')
-    parser.add_argument('--check', metavar='PROVIDER', 
-                       help='Check if API key is configured for a provider')
-    parser.add_argument('--info', action='store_true',
-                       help='Show package and configuration information')
+    parser.add_argument("--list", action="store_true", help="List all configured API keys")
+    parser.add_argument(
+        "--set",
+        metavar="PROVIDER",
+        help="Set API key for a provider (openai, anthropic, google, ollama)",
+    )
+    parser.add_argument("--remove", metavar="PROVIDER", help="Remove API key for a provider")
+    parser.add_argument(
+        "--check", metavar="PROVIDER", help="Check if API key is configured for a provider"
+    )
+    parser.add_argument(
+        "--info", action="store_true", help="Show package and configuration information"
+    )
 
     args = parser.parse_args()
 
@@ -99,14 +103,12 @@ Supported providers: openai, anthropic, google, ollama
         print(f"\n📝 Configuring {info['name']}")
         print(f"ℹ️  {info['instructions']}\n")
 
-        if provider == 'ollama':
+        if provider == "ollama":
             print("✅ Ollama is a local LLM - no API key needed!")
             print("   Install it from https://ollama.ai/ and run: ollama pull llama2")
             return
 
-        if api_key := getpass.getpass(
-            f"Enter your {info['name']} API key: "
-        ).strip():
+        if api_key := getpass.getpass(f"Enter your {info['name']} API key: ").strip():
             AutoPrepMLConfig.set_api_key(provider, api_key)
             print(f"✅ {info['name']} API key saved securely!")
         else:
@@ -131,7 +133,7 @@ Supported providers: openai, anthropic, google, ollama
         if api_key:
             masked = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***"
             print(f"✅ {info['name']} API key is configured: {masked}")
-        elif provider == 'ollama':
+        elif provider == "ollama":
             print(f"ℹ️  {info['name']} doesn't require an API key (local LLM)")
         else:
             print(f"❌ {info['name']} API key is not configured")
@@ -156,5 +158,5 @@ Supported providers: openai, anthropic, google, ollama
         print("=" * 60 + "\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

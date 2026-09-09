@@ -1,4 +1,5 @@
 """Tests for Dashboard module."""
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -8,12 +9,12 @@ from pathlib import Path
 pytest.importorskip("plotly", reason="plotly not installed")
 pytest.importorskip("streamlit", reason="streamlit not installed")
 
-from autoprepml.dashboard import (
+from autoprepml.dashboard import (  # noqa: E402
     InteractiveDashboard,
     create_plotly_dashboard,
     create_correlation_heatmap,
     create_missing_data_plot,
-    generate_streamlit_app
+    generate_streamlit_app,
 )
 
 
@@ -24,19 +25,19 @@ def sample_df():
     n_samples = 100
 
     data = {
-        'age': np.random.randint(18, 80, n_samples),
-        'income': np.random.normal(50000, 20000, n_samples),
-        'credit_score': np.random.randint(300, 850, n_samples).astype(float),  # Float to allow NaN
-        'loan_amount': np.random.uniform(1000, 50000, n_samples),
-        'category': np.random.choice(['A', 'B', 'C', 'D'], n_samples),
-        'target': np.random.choice([0, 1], n_samples)
+        "age": np.random.randint(18, 80, n_samples),
+        "income": np.random.normal(50000, 20000, n_samples),
+        "credit_score": np.random.randint(300, 850, n_samples).astype(float),  # Float to allow NaN
+        "loan_amount": np.random.uniform(1000, 50000, n_samples),
+        "category": np.random.choice(["A", "B", "C", "D"], n_samples),
+        "target": np.random.choice([0, 1], n_samples),
     }
 
     df = pd.DataFrame(data)
 
     # Add missing values after DataFrame creation
-    df.loc[np.random.choice(n_samples, 10, replace=False), 'income'] = np.nan
-    df.loc[np.random.choice(n_samples, 5, replace=False), 'credit_score'] = np.nan
+    df.loc[np.random.choice(n_samples, 10, replace=False), "income"] = np.nan
+    df.loc[np.random.choice(n_samples, 5, replace=False), "credit_score"] = np.nan
 
     return df
 
@@ -73,13 +74,10 @@ class TestCreateDashboard:
         """Test basic dashboard creation."""
         output_path = tmp_path / "dashboard.html"
 
-        dashboard.create_dashboard(
-            title="Test Dashboard",
-            output_path=str(output_path)
-        )
+        dashboard.create_dashboard(title="Test Dashboard", output_path=str(output_path))
 
         assert output_path.exists()
-        assert output_path.suffix == '.html'
+        assert output_path.suffix == ".html"
 
     def test_create_dashboard_content(self, dashboard, tmp_path):
         """Test dashboard contains expected content."""
@@ -87,11 +85,11 @@ class TestCreateDashboard:
 
         dashboard.create_dashboard(output_path=str(output_path))
 
-        content = output_path.read_text(encoding='utf-8')
+        content = output_path.read_text(encoding="utf-8")
 
         # Should be valid HTML with Plotly
-        assert '<html>' in content.lower()
-        assert 'plotly' in content.lower()
+        assert "<html>" in content.lower()
+        assert "plotly" in content.lower()
 
     def test_create_dashboard_no_output(self, dashboard):
         """Test dashboard creation without output path."""
@@ -100,7 +98,7 @@ class TestCreateDashboard:
 
         assert isinstance(result, str)
         assert len(result) > 0
-        assert 'plotly' in result.lower()
+        assert "plotly" in result.lower()
 
 
 class TestPlotlyDashboard:
@@ -111,9 +109,7 @@ class TestPlotlyDashboard:
         output_path = tmp_path / "plotly_dashboard.html"
 
         create_plotly_dashboard(
-            sample_df,
-            title="Test Plotly Dashboard",
-            output_path=str(output_path)
+            sample_df, title="Test Plotly Dashboard", output_path=str(output_path)
         )
 
         assert output_path.exists()
@@ -123,13 +119,9 @@ class TestPlotlyDashboard:
         output_path = tmp_path / "custom_dashboard.html"
         title = "My Custom Dashboard"
 
-        create_plotly_dashboard(
-            sample_df,
-            title=title,
-            output_path=str(output_path)
-        )
+        create_plotly_dashboard(sample_df, title=title, output_path=str(output_path))
 
-        content = output_path.read_text(encoding='utf-8')
+        content = output_path.read_text(encoding="utf-8")
         assert title in content
 
 
@@ -143,7 +135,7 @@ class TestCorrelationHeatmap:
         dashboard.create_correlation_heatmap(output_path=str(output_path))
 
         assert output_path.exists()
-        assert output_path.suffix == '.html'
+        assert output_path.suffix == ".html"
 
     def test_create_correlation_heatmap_content(self, dashboard, tmp_path):
         """Test heatmap contains correlation data."""
@@ -151,18 +143,15 @@ class TestCorrelationHeatmap:
 
         dashboard.create_correlation_heatmap(output_path=str(output_path))
 
-        content = output_path.read_text(encoding='utf-8')
+        content = output_path.read_text(encoding="utf-8")
 
         # Should contain Plotly and heatmap elements
-        assert 'plotly' in content.lower()
-        assert '<html>' in content.lower()
+        assert "plotly" in content.lower()
+        assert "<html>" in content.lower()
 
     def test_create_correlation_heatmap_no_numeric(self):
         """Test heatmap with no numeric columns."""
-        df = pd.DataFrame({
-            'cat1': ['A', 'B', 'C'] * 10,
-            'cat2': ['X', 'Y', 'Z'] * 10
-        })
+        df = pd.DataFrame({"cat1": ["A", "B", "C"] * 10, "cat2": ["X", "Y", "Z"] * 10})
 
         dashboard = InteractiveDashboard(df)
 
@@ -189,7 +178,7 @@ class TestMissingDataPlot:
         dashboard.create_missing_data_plot(output_path=str(output_path))
 
         assert output_path.exists()
-        assert output_path.suffix == '.html'
+        assert output_path.suffix == ".html"
 
     def test_create_missing_data_plot_content(self, dashboard, tmp_path):
         """Test missing data plot contains data."""
@@ -197,17 +186,14 @@ class TestMissingDataPlot:
 
         dashboard.create_missing_data_plot(output_path=str(output_path))
 
-        content = output_path.read_text(encoding='utf-8')
+        content = output_path.read_text(encoding="utf-8")
 
         # Should contain Plotly visualization
-        assert 'plotly' in content.lower()
+        assert "plotly" in content.lower()
 
     def test_create_missing_data_plot_no_missing(self):
         """Test missing data plot with no missing values."""
-        df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5],
-            'b': [10, 20, 30, 40, 50]
-        })
+        df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [10, 20, 30, 40, 50]})
 
         dashboard = InteractiveDashboard(df)
         result = dashboard.create_missing_data_plot()
@@ -234,7 +220,7 @@ class TestStreamlitAppGeneration:
         dashboard.generate_streamlit_app(output_path=str(output_path))
 
         assert output_path.exists()
-        assert output_path.suffix == '.py'
+        assert output_path.suffix == ".py"
 
     def test_generate_streamlit_app_content(self, dashboard, tmp_path):
         """Test Streamlit app contains expected code."""
@@ -251,9 +237,9 @@ class TestStreamlitAppGeneration:
         dashboard.generate_streamlit_app(output_path=str(output_path))
 
         # Try to compile the generated code
-        content = output_path.read_text(encoding='utf-8')
+        content = output_path.read_text(encoding="utf-8")
         try:
-            compile(content, str(output_path), 'exec')
+            compile(content, str(output_path), "exec")
         except SyntaxError:
             pytest.fail("Generated Streamlit app has syntax errors")
 
@@ -261,7 +247,7 @@ class TestStreamlitAppGeneration:
         """Generated preprocessing code must invoke the public cleaning signatures."""
         output_path = tmp_path / "app.py"
         dashboard.generate_streamlit_app(output_path=str(output_path))
-        content = output_path.read_text(encoding='utf-8')
+        content = output_path.read_text(encoding="utf-8")
 
         assert "impute_missing(df_clean, strategy=method)" in content
         assert "remove_duplicates" in content
@@ -283,195 +269,194 @@ class TestStreamlitAppGeneration:
 
     def _extracted_from_test_generate_streamlit_app_function_7(self, output_path):
         """Validate generated Streamlit app contains expected imports and usage."""
-        content = output_path.read_text(encoding='utf-8')
+        content = output_path.read_text(encoding="utf-8")
         # Check for Streamlit imports and usage (standard Streamlit app structure)
-        assert 'import streamlit' in content
-        assert 'st.' in content
+        assert "import streamlit" in content
+        assert "st." in content
         # Verify it's using Streamlit components (not checking for functions, which aren't required)
-        assert any(component in content for component in ['st.title', 'st.header', 'st.dataframe', 'st.plotly_chart'])
+        assert any(
+            component in content
+            for component in ["st.title", "st.header", "st.dataframe", "st.plotly_chart"]
+        )
 
 
 class TestDashboardWithDifferentDataTypes:
     """Test dashboard with different data types."""
-    
+
     def test_dashboard_numeric_only(self, tmp_path):
         """Test dashboard with only numeric columns."""
-        df = pd.DataFrame({
-            'col1': np.random.randn(50),
-            'col2': np.random.randn(50),
-            'col3': np.random.randn(50)
-        })
-        
+        df = pd.DataFrame(
+            {"col1": np.random.randn(50), "col2": np.random.randn(50), "col3": np.random.randn(50)}
+        )
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "numeric_dashboard.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         assert output_path.exists()
-    
+
     def test_dashboard_categorical_only(self, tmp_path):
         """Test dashboard with only categorical columns."""
-        df = pd.DataFrame({
-            'cat1': ['A', 'B', 'C'] * 20,
-            'cat2': ['X', 'Y', 'Z'] * 20,
-            'cat3': ['P', 'Q', 'R'] * 20
-        })
-        
+        df = pd.DataFrame(
+            {
+                "cat1": ["A", "B", "C"] * 20,
+                "cat2": ["X", "Y", "Z"] * 20,
+                "cat3": ["P", "Q", "R"] * 20,
+            }
+        )
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "categorical_dashboard.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         assert output_path.exists()
-    
+
     def test_dashboard_mixed_types(self, tmp_path):
         """Test dashboard with mixed data types."""
-        df = pd.DataFrame({
-            'numeric': np.random.randn(50),
-            'categorical': ['A', 'B', 'C'] * 16 + ['A', 'B'],
-            'integer': np.random.randint(0, 100, 50),
-            'boolean': np.random.choice([True, False], 50)
-        })
-        
+        df = pd.DataFrame(
+            {
+                "numeric": np.random.randn(50),
+                "categorical": ["A", "B", "C"] * 16 + ["A", "B"],
+                "integer": np.random.randint(0, 100, 50),
+                "boolean": np.random.choice([True, False], 50),
+            }
+        )
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "mixed_dashboard.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         assert output_path.exists()
 
 
 class TestEdgeCases:
     """Test edge cases."""
-    
+
     def test_single_column_dataframe(self, tmp_path):
         """Test dashboard with single column."""
-        df = pd.DataFrame({'col': [1, 2, 3, 4, 5]})
+        df = pd.DataFrame({"col": [1, 2, 3, 4, 5]})
         dashboard = InteractiveDashboard(df)
-        
+
         output_path = tmp_path / "single_col.html"
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         assert output_path.exists()
-    
+
     def test_single_row_dataframe(self, tmp_path):
         """Test dashboard with single row."""
-        df = pd.DataFrame({
-            'a': [1],
-            'b': [2],
-            'c': [3]
-        })
-        
+        df = pd.DataFrame({"a": [1], "b": [2], "c": [3]})
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "single_row.html"
-        
+
         # Should handle gracefully
         dashboard.create_dashboard(output_path=str(output_path))
         assert output_path.exists()
-    
+
     def test_dataframe_with_all_missing(self, tmp_path):
         """Test dashboard with column of all missing values."""
-        df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5],
-            'b': [np.nan] * 5,
-            'c': [10, 20, 30, 40, 50]
-        })
-        
+        df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [np.nan] * 5, "c": [10, 20, 30, 40, 50]})
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "all_missing.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
         assert output_path.exists()
-    
+
     def test_dataframe_with_unicode_columns(self, tmp_path):
         """Test dashboard with unicode column names."""
-        df = pd.DataFrame({
-            'año': [1, 2, 3, 4, 5],
-            '名前': [10, 20, 30, 40, 50],
-            'Größe': [100, 200, 300, 400, 500]
-        })
-        
+        df = pd.DataFrame(
+            {
+                "año": [1, 2, 3, 4, 5],
+                "名前": [10, 20, 30, 40, 50],
+                "Größe": [100, 200, 300, 400, 500],
+            }
+        )
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "unicode.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
         assert output_path.exists()
-    
+
     def test_dataframe_with_special_chars_in_columns(self, tmp_path):
         """Test dashboard with special characters in column names."""
-        df = pd.DataFrame({
-            'col with spaces': [1, 2, 3, 4, 5],
-            'col-with-dashes': [10, 20, 30, 40, 50],
-            'col_with_underscores': [100, 200, 300, 400, 500]
-        })
-        
+        df = pd.DataFrame(
+            {
+                "col with spaces": [1, 2, 3, 4, 5],
+                "col-with-dashes": [10, 20, 30, 40, 50],
+                "col_with_underscores": [100, 200, 300, 400, 500],
+            }
+        )
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "special_chars.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
         assert output_path.exists()
 
 
 class TestOutputFormats:
     """Test different output formats and paths."""
-    
+
     def test_dashboard_with_relative_path(self, dashboard):
         """Test dashboard creation with relative path."""
         output_path = "test_dashboard.html"
-        
+
         try:
             dashboard.create_dashboard(output_path=output_path)
             assert Path(output_path).exists()
         finally:
             # Cleanup
-# sourcery skip: no-conditionals-in-tests
+            # sourcery skip: no-conditionals-in-tests
             if Path(output_path).exists():
                 Path(output_path).unlink()
-    
+
     def test_dashboard_with_nested_path(self, dashboard, tmp_path):
         """Test dashboard creation with nested directory."""
         output_path = tmp_path / "subdir" / "nested" / "dashboard.html"
-        
+
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         # Should create nested directories
         assert output_path.exists()
-    
+
     def test_dashboard_overwrite_existing(self, dashboard, tmp_path):
         """Test overwriting existing dashboard file."""
         output_path = tmp_path / "dashboard.html"
-        
+
         # Create first dashboard
         dashboard.create_dashboard(output_path=str(output_path))
         assert output_path.exists()
-        
-        first_size = output_path.stat().st_size
-        
+
         # Overwrite with new dashboard
         dashboard.create_dashboard(output_path=str(output_path))
         assert output_path.exists()
-        
+
         # File should still exist (may have different size)
         assert output_path.stat().st_size > 0
 
 
 class TestIntegration:
     """Test integration between different dashboard components."""
-    
+
     def test_create_all_visualizations(self, dashboard, tmp_path):
         """Test creating all visualization types."""
         # Create main dashboard
         dashboard.create_dashboard(output_path=str(tmp_path / "main.html"))
-        
+
         # Create correlation heatmap
         dashboard.create_correlation_heatmap(output_path=str(tmp_path / "corr.html"))
-        
+
         # Create missing data plot
         dashboard.create_missing_data_plot(output_path=str(tmp_path / "missing.html"))
-        
+
         # Generate Streamlit app
         dashboard.generate_streamlit_app(output_path=str(tmp_path / "app.py"))
-        
+
         # All should exist
         assert (tmp_path / "main.html").exists()
         assert (tmp_path / "corr.html").exists()
@@ -481,39 +466,38 @@ class TestIntegration:
 
 class TestPerformance:
     """Test performance with larger datasets."""
-    
+
     def test_large_dataset(self, tmp_path):
         """Test dashboard with larger dataset."""
         np.random.seed(42)
         n_samples = 10000
-        
-        df = pd.DataFrame({
-            f'col_{i}': np.random.randn(n_samples)
-            for i in range(20)
-        })
-        
+
+        df = pd.DataFrame({f"col_{i}": np.random.randn(n_samples) for i in range(20)})
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "large_dashboard.html"
-        
+
         # Should complete without errors
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         assert output_path.exists()
         assert output_path.stat().st_size > 0
-    
+
     def test_many_categories(self, tmp_path):
         """Test dashboard with many categorical values."""
         n_samples = 1000
-        
-        df = pd.DataFrame({
-            'category': [f'cat_{i}' for i in range(n_samples)],
-            'value': np.random.randn(n_samples)
-        })
-        
+
+        df = pd.DataFrame(
+            {
+                "category": [f"cat_{i}" for i in range(n_samples)],
+                "value": np.random.randn(n_samples),
+            }
+        )
+
         dashboard = InteractiveDashboard(df)
         output_path = tmp_path / "many_cats.html"
-        
+
         # Should handle high cardinality
         dashboard.create_dashboard(output_path=str(output_path))
-        
+
         assert output_path.exists()

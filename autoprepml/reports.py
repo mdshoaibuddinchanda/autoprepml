@@ -1,4 +1,5 @@
 """Reporting utilities for AutoPrepML"""
+
 import json
 from jinja2 import Template
 from typing import Dict, Any
@@ -167,32 +168,32 @@ HTML_TEMPLATE = """
 
 def generate_json_report(report: Dict[str, Any]) -> str:
     """Generate JSON report from report dictionary.
-    
+
     Args:
         report: Report data dictionary
-        
+
     Returns:
         JSON string
     """
     # Remove base64 plots from JSON (too large)
     report_copy = report.copy()
-    if 'plots' in report_copy:
-        report_copy['plots'] = {k: '<base64_image_data>' for k in report_copy['plots'].keys()}
-    
+    if "plots" in report_copy:
+        report_copy["plots"] = {k: "<base64_image_data>" for k in report_copy["plots"].keys()}
+
     return json.dumps(report_copy, indent=2, default=str)
 
 
 def generate_html_report(report: Dict[str, Any]) -> str:
     """Generate HTML report from report dictionary.
-    
+
     Args:
         report: Report data dictionary
-        
+
     Returns:
         HTML string
     """
     # Return universal template for non-AutoPrepML reports early
-    if 'detection_results' not in report:
+    if "detection_results" not in report:
         return generate_universal_html_report(report)
     # Use detailed template for AutoPrepML
     tpl = Template(HTML_TEMPLATE)
@@ -201,10 +202,10 @@ def generate_html_report(report: Dict[str, Any]) -> str:
 
 def generate_universal_html_report(report: Dict[str, Any]) -> str:
     """Generate universal HTML report for Text/TimeSeries/Graph preprocessing.
-    
+
     Args:
         report: Report data dictionary
-        
+
     Returns:
         HTML string
     """
@@ -374,11 +375,11 @@ def generate_universal_html_report(report: Dict[str, Any]) -> str:
 </body>
 </html>
     """
-    
+
     # Render from a copy so serialization never mutates the caller's report.
     render_context = report.copy()
     render_context.setdefault(
-        'timestamp',
+        "timestamp",
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     )
     tpl = Template(UNIVERSAL_TEMPLATE)

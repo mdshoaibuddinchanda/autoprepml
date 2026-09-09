@@ -2,26 +2,36 @@
 Demo: Graph Data Preprocessing with AutoPrepML
 Example: Social network analysis with node/edge validation
 """
+
 import pandas as pd
 from autoprepml.graph import GraphPrepML
 
 # Sample data: Social network (users and friendships)
 # Create nodes (users)
 nodes_data = {
-    'id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11],  # Note: duplicate ID 11
-    'username': [
-        'alice', 'bob', 'charlie', 'david', 'eve',
-        'frank', 'grace', 'henry', 'iris', 'jack',
-        'kate', 'kate_duplicate'
+    "id": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11],  # Note: duplicate ID 11
+    "username": [
+        "alice",
+        "bob",
+        "charlie",
+        "david",
+        "eve",
+        "frank",
+        "grace",
+        "henry",
+        "iris",
+        "jack",
+        "kate",
+        "kate_duplicate",
     ],
-    'followers': [120, 85, 200, 45, 150, 30, 95, 110, 70, 180, 60, 61],
+    "followers": [120, 85, 200, 45, 150, 30, 95, 110, 70, 180, 60, 61],
 }
 
 # Create edges (friendships)
 edges_data = {
-    'source': [1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 15, 16],  # 15, 16 are dangling
-    'target': [2, 3, 4, 3, 5, 4, 5, 5, 5, 6, 7, 7, 8, 9, 10, 99, 100],  # 99, 100 don't exist
-    'interaction_count': [25, 40, 15, 30, 20, 35, 45, 10, 10, 50, 25, 30, 40, 20, 35, 1, 1]
+    "source": [1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 15, 16],  # 15, 16 are dangling
+    "target": [2, 3, 4, 3, 5, 4, 5, 5, 5, 6, 7, 7, 8, 9, 10, 99, 100],  # 99, 100 don't exist
+    "interaction_count": [25, 40, 15, 30, 20, 35, 45, 10, 10, 50, 25, 30, 40, 20, 35, 1, 1],
 }
 
 nodes_df = pd.DataFrame(nodes_data)
@@ -34,11 +44,7 @@ print("=" * 80)
 # Initialize GraphPrepML
 print("\n1️⃣  Initializing GraphPrepML...")
 prep = GraphPrepML(
-    nodes_df=nodes_df,
-    edges_df=edges_df,
-    node_id_col='id',
-    source_col='source',
-    target_col='target'
+    nodes_df=nodes_df, edges_df=edges_df, node_id_col="id", source_col="source", target_col="target"
 )
 print(f"✓ Loaded {len(prep.nodes_df)} nodes and {len(prep.edges_df)} edges")
 
@@ -78,7 +84,7 @@ print(f"✓ Valid edges remaining: {len(prep.edges_df)}")
 # Remove duplicate edges
 print("\n5️⃣  Removing duplicate edges...")
 original_edges = len(prep.edges_df)
-prep.remove_duplicate_edges(keep='first')
+prep.remove_duplicate_edges(keep="first")
 removed_edges = original_edges - len(prep.edges_df)
 print(f"✓ Removed {removed_edges} duplicate edges")
 
@@ -93,7 +99,7 @@ print("   - is_isolated (no connections)")
 
 # Show top connected users
 print("\n   Top 5 most connected users:")
-top_users = prep.nodes_df.nlargest(5, 'total_degree')[['id', 'username', 'total_degree']]
+top_users = prep.nodes_df.nlargest(5, "total_degree")[["id", "username", "total_degree"]]
 for _, row in top_users.iterrows():
     print(f"   • {row['username']}: {row['total_degree']} connections")
 
@@ -105,21 +111,21 @@ print("✓ Added edge features: edge_count")
 # Identify connected components
 print("\n8️⃣  Identifying connected components...")
 prep.identify_components()
-num_components = prep.nodes_df['component_id'].nunique()
+num_components = prep.nodes_df["component_id"].nunique()
 print(f"✓ Found {num_components} connected component(s)")
 
 # Show component distribution
-component_sizes = prep.nodes_df.groupby('component_id').size().sort_values(ascending=False)
+component_sizes = prep.nodes_df.groupby("component_id").size().sort_values(ascending=False)
 print("\n   Component sizes:")
 for comp_id, size in component_sizes.items():
     print(f"   • Component {comp_id}: {size} nodes")
 
 # Check for isolated nodes
-isolated_count = prep.nodes_df['is_isolated'].sum()
+isolated_count = prep.nodes_df["is_isolated"].sum()
 print(f"\n   Isolated nodes: {isolated_count}")
 
 if isolated_count > 0:
-    isolated_users = prep.nodes_df[prep.nodes_df['is_isolated']]['username'].tolist()
+    isolated_users = prep.nodes_df[prep.nodes_df["is_isolated"]]["username"].tolist()
     print(f"   Isolated users: {isolated_users}")
 
 # Get graph statistics
@@ -148,10 +154,14 @@ print(f"   Sample: Node 1 connects to: {adj_dict.get(1, [])}")
 print("\n📊 Sample Network Data:")
 print("-" * 80)
 print("\nNodes (Top 5):")
-print(prep.nodes_df[['id', 'username', 'followers', 'total_degree', 'component_id']].head().to_string(index=False))
+print(
+    prep.nodes_df[["id", "username", "followers", "total_degree", "component_id"]]
+    .head()
+    .to_string(index=False)
+)
 
 print("\nEdges (Top 5):")
-print(prep.edges_df[['source', 'target', 'interaction_count']].head().to_string(index=False))
+print(prep.edges_df[["source", "target", "interaction_count"]].head().to_string(index=False))
 
 # Generate report
 print("\n📈 Generating preprocessing report...")
@@ -163,11 +173,11 @@ print(f"✓ Current edges shape:  {report['current_edges_shape']}")
 print(f"✓ Operations performed: {len(report['logs'])}")
 
 # Save cleaned data
-nodes_output = 'social_network_nodes_cleaned.csv'
-edges_output = 'social_network_edges_cleaned.csv'
+nodes_output = "social_network_nodes_cleaned.csv"
+edges_output = "social_network_edges_cleaned.csv"
 prep.nodes_df.to_csv(nodes_output, index=False)
 prep.edges_df.to_csv(edges_output, index=False)
-print(f"\n💾 Saved cleaned graph data:")
+print("\n💾 Saved cleaned graph data:")
 print(f"   • Nodes: {nodes_output}")
 print(f"   • Edges: {edges_output}")
 

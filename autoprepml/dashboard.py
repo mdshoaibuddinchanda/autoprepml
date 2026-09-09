@@ -1,37 +1,37 @@
 """Interactive Dashboard module for AutoPrepML using Plotly and Streamlit"""
-from typing import Dict, Any, List, Optional
+
+from typing import Optional
 import pandas as pd
 import numpy as np
 from pathlib import Path
-import json
 
 
-def create_plotly_dashboard(df: pd.DataFrame, 
-                            title: str = "AutoPrepML Interactive Dashboard",
-                            output_path: Optional[str] = None) -> str:
+def create_plotly_dashboard(
+    df: pd.DataFrame,
+    title: str = "AutoPrepML Interactive Dashboard",
+    output_path: Optional[str] = None,
+) -> str:
     """Create an interactive Plotly dashboard.
-    
+
     Args:
         df: DataFrame to visualize
         title: Dashboard title
         output_path: Optional path to save HTML file
-        
+
     Returns:
         HTML string of the dashboard
     """
     try:
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
-        import plotly.express as px
     except ImportError as e:
         raise ImportError(
-            "Plotly is required for interactive dashboards.\n"
-            "Install with: pip install plotly"
+            "Plotly is required for interactive dashboards.\n" "Install with: pip install plotly"
         ) from e
 
     # Create figure with subplots
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
 
     n_plots = min(4, len(numeric_cols))  # Show up to 4 distribution plots
 
@@ -40,89 +40,80 @@ def create_plotly_dashboard(df: pd.DataFrame,
         fig = go.Figure()
         fig.add_annotation(
             text=f"No numeric columns to visualize<br>Rows: {len(df)}, Columns: {len(df.columns)}",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5,
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
             showarrow=False,
-            font=dict(size=20)
+            font=dict(size=20),
         )
     else:
         # Create subplots for distributions
         fig = make_subplots(
-            rows=2, cols=2,
+            rows=2,
+            cols=2,
             subplot_titles=[f"{col} Distribution" for col in numeric_cols[:n_plots]],
-            specs=[[{"type": "histogram"}, {"type": "box"}],
-                   [{"type": "scatter"}, {"type": "bar"}]]
+            specs=[
+                [{"type": "histogram"}, {"type": "box"}],
+                [{"type": "scatter"}, {"type": "bar"}],
+            ],
         )
 
         # Add histogram
         if len(numeric_cols) > 0:
-            fig.add_trace(
-                go.Histogram(x=df[numeric_cols[0]], name=numeric_cols[0]),
-                row=1, col=1
-            )
+            fig.add_trace(go.Histogram(x=df[numeric_cols[0]], name=numeric_cols[0]), row=1, col=1)
 
         # Add box plot
         if len(numeric_cols) > 1:
-            fig.add_trace(
-                go.Box(y=df[numeric_cols[1]], name=numeric_cols[1]),
-                row=1, col=2
-            )
+            fig.add_trace(go.Box(y=df[numeric_cols[1]], name=numeric_cols[1]), row=1, col=2)
 
         # Add scatter plot
         if len(numeric_cols) >= 2:
             fig.add_trace(
                 go.Scatter(
-                    x=df[numeric_cols[0]], 
+                    x=df[numeric_cols[0]],
                     y=df[numeric_cols[1]],
-                    mode='markers',
-                    name=f"{numeric_cols[0]} vs {numeric_cols[1]}"
+                    mode="markers",
+                    name=f"{numeric_cols[0]} vs {numeric_cols[1]}",
                 ),
-                row=2, col=1
+                row=2,
+                col=1,
             )
 
         # Add value counts for first categorical
         if cat_cols:
             value_counts = df[cat_cols[0]].value_counts().head(10)
             fig.add_trace(
-                go.Bar(x=value_counts.index, y=value_counts.values, name=cat_cols[0]),
-                row=2, col=2
+                go.Bar(x=value_counts.index, y=value_counts.values, name=cat_cols[0]), row=2, col=2
             )
 
-    fig.update_layout(
-        title=title,
-        height=800,
-        showlegend=True,
-        template="plotly_white"
-    )
+    fig.update_layout(title=title, height=800, showlegend=True, template="plotly_white")
 
-    html = fig.to_html(full_html=True, include_plotlyjs='cdn')
+    html = fig.to_html(full_html=True, include_plotlyjs="cdn")
 
     if output_path:
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(html, encoding='utf-8')
+        output_file.write_text(html, encoding="utf-8")
         print(f"✅ Plotly dashboard saved to: {output_path}")
 
     return html
 
 
-def create_correlation_heatmap(df: pd.DataFrame, 
-                               output_path: Optional[str] = None) -> str:
+def create_correlation_heatmap(df: pd.DataFrame, output_path: Optional[str] = None) -> str:
     """Create an interactive correlation heatmap.
-    
+
     Args:
         df: DataFrame with numeric columns
         output_path: Optional path to save HTML file
-        
+
     Returns:
         HTML string of the heatmap
     """
     try:
         import plotly.graph_objects as go
     except ImportError as e:
-        raise ImportError(
-            "Plotly is required. Install with: pip install plotly"
-        ) from e
+        raise ImportError("Plotly is required. Install with: pip install plotly") from e
 
     numeric_df = df.select_dtypes(include=[np.number])
 
@@ -131,52 +122,47 @@ def create_correlation_heatmap(df: pd.DataFrame,
 
     corr_matrix = numeric_df.corr()
 
-    fig = go.Figure(data=go.Heatmap(
-        z=corr_matrix.values,
-        x=corr_matrix.columns,
-        y=corr_matrix.columns,
-        colorscale='RdBu',
-        zmid=0,
-        text=corr_matrix.values.round(2),
-        texttemplate='%{text}',
-        textfont={"size": 10},
-        colorbar=dict(title="Correlation")
-    ))
-
-    fig.update_layout(
-        title="Correlation Heatmap",
-        height=600,
-        template="plotly_white"
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=corr_matrix.values,
+            x=corr_matrix.columns,
+            y=corr_matrix.columns,
+            colorscale="RdBu",
+            zmid=0,
+            text=corr_matrix.values.round(2),
+            texttemplate="%{text}",
+            textfont={"size": 10},
+            colorbar=dict(title="Correlation"),
+        )
     )
 
-    html = fig.to_html(full_html=True, include_plotlyjs='cdn')
+    fig.update_layout(title="Correlation Heatmap", height=600, template="plotly_white")
+
+    html = fig.to_html(full_html=True, include_plotlyjs="cdn")
 
     if output_path:
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(html, encoding='utf-8')
+        output_file.write_text(html, encoding="utf-8")
         print(f"✅ Correlation heatmap saved to: {output_path}")
 
     return html
 
 
-def create_missing_data_plot(df: pd.DataFrame,
-                             output_path: Optional[str] = None) -> str:
+def create_missing_data_plot(df: pd.DataFrame, output_path: Optional[str] = None) -> str:
     """Create interactive visualization of missing data.
-    
+
     Args:
         df: DataFrame to analyze
         output_path: Optional path to save HTML file
-        
+
     Returns:
         HTML string of the plot
     """
     try:
         import plotly.graph_objects as go
     except ImportError as e:
-        raise ImportError(
-            "Plotly is required. Install with: pip install plotly"
-        ) from e
+        raise ImportError("Plotly is required. Install with: pip install plotly") from e
 
     missing_counts = df.isnull().sum()
     missing_pct = (missing_counts / len(df)) * 100
@@ -188,36 +174,40 @@ def create_missing_data_plot(df: pd.DataFrame,
         fig = go.Figure()
         fig.add_annotation(
             text="No missing values detected!",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5,
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
             showarrow=False,
-            font=dict(size=20, color="green")
+            font=dict(size=20, color="green"),
         )
     else:
-        fig = go.Figure(data=[
-            go.Bar(
-                y=missing_cols.index,
-                x=missing_cols.values,
-                orientation='h',
-                text=[f"{missing_pct[col]:.1f}%" for col in missing_cols.index],
-                textposition='auto',
-            )
-        ])
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    y=missing_cols.index,
+                    x=missing_cols.values,
+                    orientation="h",
+                    text=[f"{missing_pct[col]:.1f}%" for col in missing_cols.index],
+                    textposition="auto",
+                )
+            ]
+        )
 
         fig.update_layout(
             title="Missing Data by Column",
             xaxis_title="Number of Missing Values",
             yaxis_title="Column",
             height=max(400, len(missing_cols) * 30),
-            template="plotly_white"
+            template="plotly_white",
         )
 
-    html = fig.to_html(full_html=True, include_plotlyjs='cdn')
+    html = fig.to_html(full_html=True, include_plotlyjs="cdn")
 
     if output_path:
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(html, encoding='utf-8')
+        output_file.write_text(html, encoding="utf-8")
         print(f"✅ Missing data plot saved to: {output_path}")
 
     return html
@@ -225,7 +215,7 @@ def create_missing_data_plot(df: pd.DataFrame,
 
 def generate_streamlit_app(output_path: str = "streamlit_app.py") -> None:
     """Generate a Streamlit app file for interactive data exploration.
-    
+
     Args:
         output_path: Path to save the Streamlit app file
     """
@@ -477,49 +467,49 @@ else:
     4. Download the processed data
     """)
 '''
-    
+
     output_file = Path(output_path)
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(app_code, encoding='utf-8')
+    output_file.write_text(app_code, encoding="utf-8")
     print(f"✅ Streamlit app generated: {output_path}")
     print(f"   Run with: streamlit run {output_path}")
 
 
 class InteractiveDashboard:
     """Interactive dashboard class for AutoPrepML.
-    
+
     Provides methods to create various interactive visualizations
     and generate Streamlit apps.
     """
-    
+
     def __init__(self, df: pd.DataFrame):
         """Initialize InteractiveDashboard.
-        
+
         Args:
             df: DataFrame to visualize
-            
+
         Raises:
             ValueError: If input is not a DataFrame or is empty
         """
         if not isinstance(df, pd.DataFrame):
             raise ValueError("Input must be a pandas DataFrame")
-        
+
         if df.empty:
             raise ValueError("DataFrame cannot be empty")
-        
+
         self.df = df
-    
+
     def create_dashboard(
         self,
         title: str = "AutoPrepML Interactive Dashboard",
         output_path: str = "dashboard.html",
     ) -> str:
         """Create comprehensive interactive dashboard.
-        
+
         Args:
             title: Title to display in the dashboard
             output_path: Path to save HTML file
-            
+
         Returns:
             HTML string
         """
@@ -528,24 +518,24 @@ class InteractiveDashboard:
             title=title,
             output_path=output_path,
         )
-    
+
     def create_correlation_heatmap(self, output_path: str = "correlation.html") -> str:
         """Create correlation heatmap.
-        
+
         Args:
             output_path: Path to save HTML file
-            
+
         Returns:
             HTML string
         """
         return create_correlation_heatmap(self.df, output_path=output_path)
-    
+
     def create_missing_data_plot(self, output_path: str = "missing_data.html") -> str:
         """Create missing data visualization.
-        
+
         Args:
             output_path: Path to save HTML file
-            
+
         Returns:
             HTML string
         """
@@ -555,10 +545,10 @@ class InteractiveDashboard:
     def create_missing_plot(self, output_path: str = "missing_data.html") -> str:
         """Alias for create_missing_data_plot for backward compatibility."""
         return self.create_missing_data_plot(output_path=output_path)
-    
+
     def generate_streamlit_app(self, output_path: str = "streamlit_app.py") -> None:
         """Generate Streamlit app file.
-        
+
         Args:
             output_path: Path to save Python file
         """

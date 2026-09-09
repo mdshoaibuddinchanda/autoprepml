@@ -24,10 +24,10 @@ from . import config
 from . import llm_suggest
 from .config_manager import AutoPrepMLConfig
 from .llm_suggest import (
-    LLMSuggestor, 
-    LLMProvider, 
+    LLMSuggestor,
+    LLMProvider,
     suggest_column_rename,
-    generate_data_documentation
+    generate_data_documentation,
 )
 
 __all__ = [
@@ -37,7 +37,6 @@ __all__ = [
     "TimeSeriesPrepML",
     "GraphPrepML",
     "ImagePrepML",
-    
     # New v1.3.0 features
     "AutoEDA",
     "AutoFeatureEngine",
@@ -45,14 +44,12 @@ __all__ = [
     "InteractiveDashboard",
     "create_plotly_dashboard",
     "generate_streamlit_app",
-    
     # LLM features
     "LLMSuggestor",
     "LLMProvider",
     "AutoPrepMLConfig",
     "suggest_column_rename",
     "generate_data_documentation",
-    
     # Modules
     "detection",
     "cleaning",

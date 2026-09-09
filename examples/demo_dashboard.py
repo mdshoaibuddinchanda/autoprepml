@@ -1,6 +1,7 @@
 """
 Demo: Interactive Dashboard - Plotly and Streamlit Integration
 """
+
 import pandas as pd
 import numpy as np
 from autoprepml import InteractiveDashboard, create_plotly_dashboard, generate_streamlit_app
@@ -10,22 +11,22 @@ np.random.seed(42)
 n_samples = 500
 
 data = {
-    'customer_id': range(1, n_samples + 1),
-    'age': np.random.randint(18, 80, n_samples),
-    'annual_income': np.random.normal(60000, 25000, n_samples),
-    'credit_score': np.random.randint(300, 850, n_samples),
-    'monthly_spending': np.random.uniform(500, 5000, n_samples),
-    'years_customer': np.random.randint(0, 20, n_samples),
-    'num_products': np.random.randint(1, 5, n_samples),
-    'satisfaction_score': np.random.uniform(1, 10, n_samples),
-    'region': np.random.choice(['North', 'South', 'East', 'West'], n_samples),
-    'customer_segment': np.random.choice(['Premium', 'Standard', 'Basic'], n_samples),
-    'churn': np.random.choice([0, 1], n_samples, p=[0.7, 0.3])
+    "customer_id": range(1, n_samples + 1),
+    "age": np.random.randint(18, 80, n_samples),
+    "annual_income": np.random.normal(60000, 25000, n_samples),
+    "credit_score": np.random.randint(300, 850, n_samples),
+    "monthly_spending": np.random.uniform(500, 5000, n_samples),
+    "years_customer": np.random.randint(0, 20, n_samples),
+    "num_products": np.random.randint(1, 5, n_samples),
+    "satisfaction_score": np.random.uniform(1, 10, n_samples),
+    "region": np.random.choice(["North", "South", "East", "West"], n_samples),
+    "customer_segment": np.random.choice(["Premium", "Standard", "Basic"], n_samples),
+    "churn": np.random.choice([0, 1], n_samples, p=[0.7, 0.3]),
 }
 
 # Introduce some missing values
-data['credit_score'][np.random.choice(n_samples, 30, replace=False)] = np.nan
-data['satisfaction_score'][np.random.choice(n_samples, 20, replace=False)] = np.nan
+data["credit_score"][np.random.choice(n_samples, 30, replace=False)] = np.nan
+data["satisfaction_score"][np.random.choice(n_samples, 20, replace=False)] = np.nan
 
 df = pd.DataFrame(data)
 
@@ -33,7 +34,7 @@ print("=" * 80)
 print("Interactive Dashboard Demo - Plotly & Streamlit")
 print("=" * 80)
 
-print(f"\n📊 Sample Dataset:")
+print("\n📊 Sample Dataset:")
 print(f"  Shape: {df.shape}")
 print(f"  Columns: {list(df.columns)}")
 
@@ -44,7 +45,7 @@ dashboard = InteractiveDashboard(df)
 print("\n" + "=" * 80)
 print("🎨 Creating Interactive Plotly Dashboard")
 print("=" * 80)
-html_dashboard = dashboard.create_dashboard('dashboard.html')
+html_dashboard = dashboard.create_dashboard("dashboard.html")
 print("  ✅ Main dashboard saved: dashboard.html")
 print("     Open in browser to interact with the visualizations!")
 
@@ -52,7 +53,7 @@ print("     Open in browser to interact with the visualizations!")
 print("\n🎨 Creating Correlation Heatmap")
 print("=" * 80)
 try:
-    html_corr = dashboard.create_correlation_heatmap('correlation_heatmap.html')
+    html_corr = dashboard.create_correlation_heatmap("correlation_heatmap.html")
     print("  ✅ Correlation heatmap saved: correlation_heatmap.html")
 except Exception as e:
     print(f"  ⚠️  Could not create heatmap: {e}")
@@ -60,14 +61,14 @@ except Exception as e:
 # 3. Create Missing Data Visualization
 print("\n🎨 Creating Missing Data Visualization")
 print("=" * 80)
-html_missing = dashboard.create_missing_plot('missing_data.html')
+html_missing = dashboard.create_missing_plot("missing_data.html")
 print("  ✅ Missing data plot saved: missing_data.html")
 
 # 4. Generate Streamlit App
 print("\n" + "=" * 80)
 print("🚀 Generating Streamlit App")
 print("=" * 80)
-dashboard.generate_streamlit_app('streamlit_dashboard.py')
+dashboard.generate_streamlit_app("streamlit_dashboard.py")
 print("  ✅ Streamlit app generated: streamlit_dashboard.py")
 print("     Run with: streamlit run streamlit_dashboard.py")
 
