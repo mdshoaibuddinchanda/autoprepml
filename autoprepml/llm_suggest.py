@@ -490,8 +490,14 @@ Return as a JSON array of objects with keys: name, method, impact
 
         col = df[column]
 
+        dtype_name = str(col.dtype)
+        # Pandas 3 represents inferred string columns as ``str``. Keep the
+        # public metadata contract stable for callers that expect ``object``.
+        if pd.api.types.is_object_dtype(col.dtype) or pd.api.types.is_string_dtype(col.dtype):
+            dtype_name = "object"
+
         info = {
-            "dtype": str(col.dtype),
+            "dtype": dtype_name,
             "missing_count": int(col.isnull().sum()),
             "missing_pct": float(col.isnull().sum() / len(df) * 100),
             "unique_values": int(col.nunique()),

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
 import base64
+import inspect
 
 
 def plot_missing(df: pd.DataFrame, figsize: tuple = (10, 6)) -> str:
@@ -74,8 +75,14 @@ def plot_outliers(df: pd.DataFrame, outlier_indices: list = None, figsize: tuple
         if n_cols == 1:
             axes = [axes]
 
+        boxplot_kwargs = (
+            {"orientation": "vertical"}
+            if "orientation" in inspect.signature(axes[0].boxplot).parameters
+            else {"vert": True}
+        )
+
         for i, col in enumerate(cols_to_plot):
-            axes[i].boxplot(df[col].dropna(), orientation="vertical")
+            axes[i].boxplot(df[col].dropna(), **boxplot_kwargs)
             axes[i].set_title(col, fontsize=10)
             axes[i].grid(axis="y", alpha=0.3)
 
