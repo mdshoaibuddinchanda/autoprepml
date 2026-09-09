@@ -10,6 +10,7 @@ recursive-include docs *.md *.rst *.txt
 
 # Include examples
 recursive-include examples *.py *.csv *.json *.yaml *.yml
+recursive-include creator_examples *.py *.ipynb *.md
 
 # Include tests
 recursive-include tests *.py

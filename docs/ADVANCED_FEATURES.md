@@ -494,9 +494,8 @@ pytest tests/test_advanced_features.py::TestSMOTE::test_smote_basic -v
 ## Future work
 
 - Benchmark advanced transformations on representative datasets.
-- Add chunked and parallel execution for large workloads.
 - Evaluate additional resampling methods such as ADASYN and BorderlineSMOTE.
-- Document storage adapters and streaming integrations as they become available.
+- Extend storage adapters to additional managed object stores and streaming protocols.
 
 
 ## Questions?

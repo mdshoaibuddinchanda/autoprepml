@@ -5,7 +5,7 @@
   
   **Multi-Modal Data Preprocessing Pipeline**
   
-  [![PyPI version](https://img.shields.io/badge/pypi-v1.3.0-blue.svg)](https://pypi.org/project/autoprepml/)
+  [![PyPI version](https://img.shields.io/badge/pypi-v1.4.0-blue.svg)](https://pypi.org/project/autoprepml/)
   [![CI](https://github.com/mdshoaibuddinchanda/autoprepml/workflows/CI/badge.svg)](https://github.com/mdshoaibuddinchanda/autoprepml/actions)
   [![Python 3.9 through 3.14](https://img.shields.io/badge/python-3.9--3.14-blue.svg)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -42,7 +42,7 @@ The processing flow is straightforward:
 - **CLI + Python API**: Use from command line or Python scripts
 - **Production readiness baseline**: Automated tests, coverage, linting, security, packaging, and documentation gates
 
-### Advanced Features (v1.3.0)
+### Advanced Features (v1.4.0)
 - **AutoEDA**: Automated exploratory data analysis with insights generation
 - **AutoFeatureEngine**: Intelligent feature engineering with 8 creation methods
 - **Interactive Dashboards**: Plotly visualizations and Streamlit app generation
@@ -61,6 +61,7 @@ The processing flow is straightforward:
 | [Supported Data Types](#supported-data-types) | Overview of tabular, text, time series, graph, and image data |
 | [Installation](#installation) | Install from source or PyPI |
 | [Quick Start](#quick-start-guide) | A short tutorial for each data type |
+| [Version 1.4.0 Features](#advanced-features-v140) | Large-data execution, integrations, and creator workflows |
 | [Version 1.3.0 Features](#v130-new-features) | AutoEDA, feature engineering, dashboards |
 | [Advanced Features](docs/ADVANCED_FEATURES.md) | KNN and iterative imputation, and SMOTE |
 | [LLM Integration](docs/LLM_CONFIGURATION.md) | Model assisted suggestions from multiple providers |
@@ -118,6 +119,13 @@ pip install -e ".[llm]"
 ```bash
 pip install -e ".[dev]"  # Includes pytest, coverage, linting tools
 pip install -e ".[all]"  # Everything (dev + llm + docs)
+```
+
+Optional integrations can be installed separately:
+
+```bash
+pip install "autoprepml[storage]"   # fsspec-backed object stores
+pip install "autoprepml[tracking]"  # MLflow experiment tracking
 ```
 
 ### Configure LLM Support (Optional)
@@ -843,6 +851,7 @@ The repository is organised around a small public package and a set of focused m
 * `autoprepml/` contains the library implementation, including modality specific processors, detection, cleaning, reporting, configuration, the command line interface, and optional LLM integrations.
 * `tests/` contains unit and integration coverage for the public API.
 * `examples/` contains runnable demonstrations for each supported data type.
+* `creator_examples/` contains notebook and Python workflows that download public data only into temporary directories.
 * `docs/` contains the user guide, API reference, tutorials, feature guides, and release notes.
 * `scripts/` contains test, documentation, release, and OpenML smoke test helpers.
 * `pyproject.toml` defines package metadata, dependencies, optional extras, and tool configuration.
@@ -945,17 +954,57 @@ Processing time and memory use depend on the modality, schema, optional transfor
 ### Optimization Tips
 
 ```python
-# 1. Use auto mode for faster processing
+# 1. Use auto mode for a complete configured workflow
 prep.clean(task='classification', target_col='label', auto=True)
 
 # 2. Disable reporting for speed
 prep = AutoPrepML(df, config={'reporting': {'include_plots': False}})
 
-# 3. Process in chunks for large data
-for chunk in pd.read_csv('big.csv', chunksize=10000):
-    prep = AutoPrepML(chunk)
-    # Process
+# 3. Process chunks in parallel while preserving input order
+from autoprepml import process_chunks
+
+def clean_chunk(chunk):
+    return AutoPrepML(chunk, config={'reporting': {'include_plots': False}}).clean()[0]
+
+cleaned = process_chunks('big.csv', clean_chunk, chunksize=10000, n_jobs=4)
 ```
+
+### Streaming, storage, and experiment tracking
+
+Use `write_stream` when the output should not be materialised in memory. CSV,
+JSON, JSONL, and Parquet are supported through `LocalStorageAdapter`; remote
+filesystems can be enabled with the optional `FsspecStorageAdapter`.
+
+```python
+from autoprepml import LocalExperimentTracker, write_stream
+
+tracker = LocalExperimentTracker('runs')
+with tracker.start_run('batch-cleaning') as run:
+    write_stream('big.csv', 'cleaned.csv', clean_chunk, chunksize=10000, n_jobs=4)
+    run.log_params({'chunksize': 10000, 'n_jobs': 4})
+    run.log_metrics({'rows_written': 100000})
+```
+
+For model workflows, `make_model_pipeline` returns a scikit-learn pipeline
+that learns imputers, encoders, and scalers only on training data:
+
+```python
+from sklearn.linear_model import LogisticRegression
+from autoprepml import make_model_pipeline
+
+model = make_model_pipeline(
+    train_frame,
+    LogisticRegression(max_iter=300),
+    target_col='label',
+)
+model.fit(train_frame.drop(columns='label'), train_frame['label'])
+predictions = model.predict(test_frame.drop(columns='label'))
+```
+
+See [`creator_examples/`](creator_examples/) for a complete OpenML workflow
+with temporary data, chunk processing, experiment tracking, and model
+evaluation. The optional MLflow adapter is available when `mlflow` is
+installed.
 
 ## License
 
@@ -980,13 +1029,11 @@ For support, use the [issue tracker](https://github.com/mdshoaibuddinchanda/auto
 - [x] YAML and JSON configuration and command line workflows.
 - [x] Advanced imputation, SMOTE balancing, AutoEDA, dashboards, and optional LLM assistance.
 - [x] Blocking CI checks for tests, linting, security, packaging, and documentation.
+- [x] Chunked and ordered parallel processing, storage adapters, streaming output, local experiment tracking, and sklearn pipeline integration.
 
 ### Planned
 
 - [ ] Publish reproducible performance benchmarks for representative workloads.
-- [ ] Add chunked and parallel processing for large datasets.
-- [ ] Expand storage adapters and streaming integrations.
-- [ ] Add experiment tracking and model pipeline integrations.
 - [ ] Continue raising coverage and strengthening contract, integration, and smoke tests.
 
 ## Use Cases

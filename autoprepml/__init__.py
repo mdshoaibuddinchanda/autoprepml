@@ -4,7 +4,7 @@ A Python library for automatic detection, cleaning, and reporting of common
 data quality issues in machine learning pipelines with LLM-powered suggestions.
 """
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 __author__ = "MD Shoaibuddin Chanda"
 __license__ = "MIT"
 
@@ -29,6 +29,17 @@ from .llm_suggest import (
     suggest_column_rename,
     generate_data_documentation,
 )
+from .batch import iter_chunks, iter_processed_chunks, process_chunks
+from .storage import (
+    FsspecStorageAdapter,
+    InMemoryStorageAdapter,
+    LocalStorageAdapter,
+    StorageAdapter,
+    get_storage_adapter,
+)
+from .streaming import stream_process, write_stream
+from .pipeline import make_model_pipeline, make_preprocessing_pipeline
+from .experiments import ExperimentRun, LocalExperimentTracker, MLflowExperimentTracker
 
 __all__ = [
     # Core preprocessing
@@ -37,7 +48,7 @@ __all__ = [
     "TimeSeriesPrepML",
     "GraphPrepML",
     "ImagePrepML",
-    # New v1.3.0 features
+    # v1.3.0 and v1.4.0 features
     "AutoEDA",
     "AutoFeatureEngine",
     "auto_feature_engineering",
@@ -50,6 +61,22 @@ __all__ = [
     "AutoPrepMLConfig",
     "suggest_column_rename",
     "generate_data_documentation",
+    # Execution, storage, and integrations
+    "iter_chunks",
+    "iter_processed_chunks",
+    "process_chunks",
+    "StorageAdapter",
+    "LocalStorageAdapter",
+    "InMemoryStorageAdapter",
+    "FsspecStorageAdapter",
+    "get_storage_adapter",
+    "stream_process",
+    "write_stream",
+    "make_preprocessing_pipeline",
+    "make_model_pipeline",
+    "ExperimentRun",
+    "LocalExperimentTracker",
+    "MLflowExperimentTracker",
     # Modules
     "detection",
     "cleaning",

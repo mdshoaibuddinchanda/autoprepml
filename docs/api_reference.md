@@ -1,6 +1,6 @@
 # API Reference
 
-This page summarises the public API exposed by AutoPrepML 1.3.0. Type signatures are representative; consult the package source and docstrings for the complete contract.
+This page summarises the public API exposed by AutoPrepML 1.4.0. Type signatures are representative; consult the package source and docstrings for the complete contract.
 
 ## Core Module
 
@@ -73,6 +73,28 @@ The package also exports the following high level classes:
 * `AutoEDA`: compute statistical summaries, correlations, distributions, outliers, and generated insights.
 * `AutoFeatureEngine`: create, select, and rank engineered features.
 * `InteractiveDashboard`: create Plotly visualisations and Streamlit applications.
+
+### Chunk and streaming execution
+
+* `iter_chunks(source, chunksize=10000)`: read DataFrame, CSV, JSON, JSONL, or Parquet input as bounded chunks.
+* `iter_processed_chunks(source, processor, chunksize=10000, n_jobs=1, backend='thread')`: process chunks in deterministic order with bounded parallel work.
+* `process_chunks(...)`: materialise processed chunks as one DataFrame.
+* `stream_process(...)` and `write_stream(...)`: process and persist chunks without materialising the complete output.
+
+### Storage adapters
+
+`LocalStorageAdapter` provides atomic local table writes. `InMemoryStorageAdapter`
+is useful for tests and notebooks. `FsspecStorageAdapter` is optional and
+supports fsspec-backed URLs when the corresponding filesystem package is
+installed. Implement `StorageAdapter` to add another backend.
+
+### Experiment and model integrations
+
+`LocalExperimentTracker` stores run parameters, numeric metrics, and copied
+artifacts as JSON manifests. `MLflowExperimentTracker` is loaded lazily and is
+available when MLflow is installed. `make_preprocessing_pipeline` and
+`make_model_pipeline` build scikit-learn pipelines that fit preprocessing
+state on training data only.
 
 See the [advanced features guide](ADVANCED_FEATURES.md), [usage guide](usage.md), and [tutorials](tutorials.md) for examples.
 

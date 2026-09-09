@@ -13,6 +13,8 @@ AutoPrepML detects, cleans, and reports common data issues with minimal code. It
 - **Reports**: Export HTML or JSON reports with statistics and visualizations.
 - **Configuration**: Use YAML or JSON files to make runs reproducible.
 - **Command line interface**: Run repeatable batch jobs from a shell or CI system.
+- **Large-data execution**: Process bounded chunks in parallel and stream results to storage.
+- **Integrations**: Use local or fsspec storage adapters, experiment tracking, and scikit-learn model pipelines.
 - **Quality gates**: The [root README testing section](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/README.md#testing) is the canonical source for the current baseline. CI runs the coverage suite on Python 3.9 through 3.14 and enforces lint, test, security, package, and documentation checks.
 
 ## Quick Start

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+No changes recorded yet.
+
+## [1.4.0]: 2026-09-10
+
 ### Changed
 
 - Expanded the CI coverage matrix to Python 3.9 through 3.14.
@@ -15,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made rolling time-series features forecast-safe by default, with an explicit contemporaneous mode.
 - Added explicit directed or undirected graph semantics for duplicate edges, degree features, adjacency, and density.
 - Consolidated the testing baseline in the root README and removed mutable test-count and coverage claims from supporting documentation.
+- Added bounded chunked and parallel processing with deterministic output ordering.
+- Added local, in-memory, and optional fsspec storage adapters plus streaming writers.
+- Added local JSON and optional MLflow experiment tracking integrations.
+- Added scikit-learn preprocessing and model pipeline builders.
+- Added creator Python and notebook examples using temporary OpenML data.
 
 ## [1.3.0]: 2025-10-24
 

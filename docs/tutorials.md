@@ -198,27 +198,26 @@ clean_df, report = prep.clean(task='classification', target_col='label')
 
 Your CSV file is too large to fit in memory.
 
-### Chunked Processing
+### Chunked and parallel processing
 
 ```python
-import pandas as pd
-from autoprepml import AutoPrepML
+from autoprepml import AutoPrepML, write_stream
 
-chunk_size = 50000
-output_file = 'large_data_cleaned.csv'
-first_chunk = True
+def clean_chunk(chunk):
+    return AutoPrepML(
+        chunk,
+        config={'reporting': {'include_plots': False}},
+    ).clean()[0]
 
-for chunk in pd.read_csv('large_data.csv', chunksize=chunk_size):
-    # Process each chunk
-    prep = AutoPrepML(chunk)
-    clean_chunk, _ = prep.clean()
-    
-    # Append to output file
-    mode = 'w' if first_chunk else 'a'
-    clean_chunk.to_csv(output_file, mode=mode, header=first_chunk, index=False)
-    first_chunk = False
+write_stream(
+    'large_data.csv',
+    'large_data_cleaned.csv',
+    clean_chunk,
+    chunksize=50000,
+    n_jobs=4,
+)
 
-print(f"Processed large file in chunks. Output: {output_file}")
+print('Processed the file with bounded parallel chunks.')
 ```
 
 

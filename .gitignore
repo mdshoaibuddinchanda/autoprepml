@@ -143,6 +143,14 @@ examples/*.png
 examples/*.jpg
 examples/streamlit_app.py
 
+# Creator examples keep all data and run outputs ephemeral
+creator_examples/data/
+creator_examples/artifacts/
+creator_examples/runs/
+creator_examples/dataset-cache/
+creator_examples/*.csv
+creator_examples/*.json
+
 # Default dashboard outputs created by examples and tests
 /dashboard.html
 /missing_data.html

@@ -16,6 +16,13 @@ cd autoprepml
 pip install -e ".[dev]"
 ```
 
+Install optional integrations only when needed:
+
+```bash
+pip install "autoprepml[storage]"   # fsspec-backed storage
+pip install "autoprepml[tracking]"  # MLflow tracking
+```
+
 ## Basic Usage
 
 ### Python API
@@ -239,15 +246,52 @@ pip install autoprepml
 
 ### Issue: Memory errors with large datasets
 
-Process in chunks:
+Use the bounded execution helpers. They preserve input order and limit queued
+work while processing chunks in parallel:
 
 ```python
-chunk_size = 10000
-for chunk in pd.read_csv('large_file.csv', chunksize=chunk_size):
-    prep = AutoPrepML(chunk)
-    clean_chunk, _ = prep.clean()
-    clean_chunk.to_csv('output.csv', mode='a', header=False, index=False)
+from autoprepml import AutoPrepML, write_stream
+
+def clean_chunk(chunk):
+    return AutoPrepML(chunk, config={'reporting': {'include_plots': False}}).clean()[0]
+
+write_stream(
+    'large_file.csv',
+    'output.csv',
+    clean_chunk,
+    chunksize=10000,
+    n_jobs=4,
+)
 ```
+
+For a DataFrame result, use `process_chunks`. For a custom source or object
+store, implement or select a `StorageAdapter` and pass it to `stream_process`
+or `write_stream`.
+
+### Model pipeline integration
+
+`make_model_pipeline` builds a scikit-learn pipeline with learned imputers,
+encoders, and scaling. Fit it on training rows only so validation and test
+rows cannot influence preprocessing state:
+
+```python
+from sklearn.ensemble import RandomForestClassifier
+from autoprepml import make_model_pipeline
+
+pipeline = make_model_pipeline(
+    train_frame,
+    RandomForestClassifier(n_estimators=100, random_state=42),
+    target_col='label',
+)
+pipeline.fit(train_frame.drop(columns='label'), train_frame['label'])
+predictions = pipeline.predict(test_frame.drop(columns='label'))
+```
+
+### Experiment tracking
+
+`LocalExperimentTracker` writes small JSON manifests and copied artifacts to a
+directory you choose. The optional `MLflowExperimentTracker` uses the same
+logging method names without importing MLflow unless explicitly requested.
 
 ### Issue: Matplotlib backend errors
 
