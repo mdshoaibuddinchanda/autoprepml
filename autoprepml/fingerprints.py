@@ -114,6 +114,8 @@ def fingerprint_dataframe(
         raise TypeError("frame must be a pandas DataFrame")
     if mode not in {"schema", "sampled", "full"}:
         raise ValueError("mode must be one of: schema, sampled, full")
+    if not isinstance(sample_rows, int) or isinstance(sample_rows, bool) or sample_rows <= 0:
+        raise ValueError("sample_rows must be a positive integer")
     return DatasetFingerprint(
         schema=schema_fingerprint(frame, target=target),
         content=None if mode == "schema" else _fingerprint_frame(frame, mode, sample_rows),

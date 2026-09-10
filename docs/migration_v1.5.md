@@ -9,14 +9,30 @@ release gates in the v1.5 release note are complete.
 Use `DataPlan` when preprocessing feeds a supervised model or a repeatable
 batch inference job.
 
+<!-- executable -->
 ```python
+from pathlib import Path
+import tempfile
+
+import pandas as pd
 from autoprepml import DataPlan
 
+train = pd.DataFrame(
+    {
+        "age": [20, 30, 40, 50],
+        "country": ["GB", "US", "GB", "US"],
+        "label": [0, 1, 0, 1],
+    }
+)
+validation = pd.DataFrame({"age": [35], "country": ["FR"]})
 plan = DataPlan.infer(train, target="label", task="classification")
 plan.fit(train)
 validation_ready = plan.transform(validation)
 report = plan.validate(validation)
-plan.save("artifacts/data-plan.apml")
+with tempfile.TemporaryDirectory() as directory:
+    plan.save(Path(directory) / "data-plan.apml")
+assert validation_ready.shape == (1, 3)
+assert report.status == "WARN"
 ```
 
 The plan fits imputation, scaling, and category mappings on training rows

@@ -270,11 +270,14 @@ importance = fe.get_feature_importance(task='classification')
 print(importance)
 
 # Quick auto feature engineering
-df_enhanced = auto_feature_engineering(
+df_enhanced, feature_summary = auto_feature_engineering(
     df,
-    numeric_columns=['age', 'income', 'score'],
     target_column='target',
-    select_top_k=15
+    max_features=15,
+    include_polynomials=True,
+    include_interactions=True,
+    include_ratios=True,
+    include_aggregations=True,
 )
 ```
 

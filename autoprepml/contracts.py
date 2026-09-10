@@ -34,6 +34,23 @@ def _dtype_compatible(observed: str, expected: str) -> bool:
     return _canonical_dtype(observed) == _canonical_dtype(expected)
 
 
+def _numeric_conversion_is_safe(series: pd.Series, expected_dtype: str) -> bool:
+    """Return whether a non-numeric series can safely enter a numeric step."""
+    try:
+        expected = pd.api.types.pandas_dtype(expected_dtype)
+    except (TypeError, ValueError):
+        return True
+    if not pd.api.types.is_numeric_dtype(expected) or pd.api.types.is_bool_dtype(expected):
+        return True
+    if pd.api.types.is_numeric_dtype(series.dtype) and not pd.api.types.is_bool_dtype(series):
+        return True
+    non_null = series.dropna()
+    if non_null.empty:
+        return True
+    converted = pd.to_numeric(non_null, errors="coerce")
+    return bool(converted.notna().all())
+
+
 @dataclass(frozen=True)
 class ColumnContract:
     """Expected properties for one input column."""
@@ -282,10 +299,12 @@ class DataContract:
             series = frame[contract.name]
             observed_dtype = str(series.dtype)
             if not _dtype_compatible(observed_dtype, contract.expected_dtype):
-                severity = "FAIL" if mode == "strict" else "WARN"
+                recoverable = _numeric_conversion_is_safe(series, contract.expected_dtype)
+                severity = "FAIL" if mode == "strict" or not recoverable else "WARN"
+                code = "dtype_mismatch" if recoverable else "incompatible_dtype"
                 self._issue(
                     issues,
-                    "dtype_mismatch",
+                    code,
                     severity,
                     contract.name,
                     f"Column '{contract.name}' has dtype {observed_dtype}; expected {contract.expected_dtype}",

@@ -28,6 +28,9 @@ from .pipeline import make_preprocessing_pipeline
 
 
 _ARTIFACT_FORMAT_VERSION = "1.0"
+_DEFAULT_FINGERPRINT_SAMPLE_ROWS = 1_000
+_OUTPUT_FORMATS = {"pandas", "sparse", "numpy"}
+_DEFAULT_MAX_DENSE_ELEMENTS = 10_000_000
 
 
 def _sha256(payload: bytes) -> str:
@@ -54,11 +57,43 @@ class DataPlan:
         config: dict[str, Any],
         random_state: int = 42,
         fit_fingerprint: Optional[DatasetFingerprint] = None,
+        fingerprint_mode: str = "full",
+        fingerprint_sample_rows: int = _DEFAULT_FINGERPRINT_SAMPLE_ROWS,
+        output_format: str = "pandas",
+        max_dense_elements: int = _DEFAULT_MAX_DENSE_ELEMENTS,
     ) -> None:
+        fingerprint_mode = (
+            fingerprint_mode.lower().strip()
+            if isinstance(fingerprint_mode, str)
+            else fingerprint_mode
+        )
+        if fingerprint_mode not in {"schema", "sampled", "full"}:
+            raise ValueError("fingerprint_mode must be schema, sampled, or full")
+        if (
+            not isinstance(fingerprint_sample_rows, int)
+            or isinstance(fingerprint_sample_rows, bool)
+            or fingerprint_sample_rows < 1
+        ):
+            raise ValueError("fingerprint_sample_rows must be a positive integer")
+        output_format = (
+            output_format.lower().strip() if isinstance(output_format, str) else output_format
+        )
+        if output_format not in _OUTPUT_FORMATS:
+            raise ValueError("output_format must be pandas, sparse, or numpy")
+        if (
+            not isinstance(max_dense_elements, int)
+            or isinstance(max_dense_elements, bool)
+            or max_dense_elements < 1
+        ):
+            raise ValueError("max_dense_elements must be a positive integer")
         self.contract = contract
         self.config = config
         self.random_state = random_state
         self._fit_fingerprint = fit_fingerprint
+        self.fingerprint_mode = fingerprint_mode
+        self.fingerprint_sample_rows = fingerprint_sample_rows
+        self.output_format = output_format
+        self.max_dense_elements = max_dense_elements
         self._pipeline = None
         self._output_columns: Optional[tuple[str, ...]] = None
         self._feature_columns = contract.feature_columns
@@ -74,6 +109,9 @@ class DataPlan:
         config: Optional[dict[str, Any]] = None,
         random_state: int = 42,
         fingerprint_mode: str = "full",
+        fingerprint_sample_rows: int = _DEFAULT_FINGERPRINT_SAMPLE_ROWS,
+        output_format: str = "pandas",
+        max_dense_elements: int = _DEFAULT_MAX_DENSE_ELEMENTS,
     ) -> "DataPlan":
         """Infer an unfitted plan from training schema and configuration."""
         if not isinstance(frame, pd.DataFrame):
@@ -84,8 +122,27 @@ class DataPlan:
             raise ContractError("DataPlan requires string column names")
         contract = DataContract.infer(frame, target=target, task=task)
         merged_config = validate_config(config or {})
-        fingerprint = fingerprint_dataframe(frame, mode=fingerprint_mode, target=target)
-        return cls(contract, merged_config, random_state, fit_fingerprint=fingerprint)
+        fingerprint_mode = (
+            fingerprint_mode.lower().strip()
+            if isinstance(fingerprint_mode, str)
+            else fingerprint_mode
+        )
+        fingerprint = fingerprint_dataframe(
+            frame,
+            mode=fingerprint_mode,
+            sample_rows=fingerprint_sample_rows,
+            target=target,
+        )
+        return cls(
+            contract,
+            merged_config,
+            random_state,
+            fit_fingerprint=fingerprint,
+            fingerprint_mode=fingerprint_mode,
+            fingerprint_sample_rows=fingerprint_sample_rows,
+            output_format=output_format,
+            max_dense_elements=max_dense_elements,
+        )
 
     @property
     def fitted(self) -> bool:
@@ -114,6 +171,10 @@ class DataPlan:
                 self._fit_fingerprint.to_dict() if self._fit_fingerprint is not None else None
             ),
             "random_state": self.random_state,
+            "fingerprint_mode": self.fingerprint_mode,
+            "fingerprint_sample_rows": self.fingerprint_sample_rows,
+            "output_format": self.output_format,
+            "max_dense_elements": self.max_dense_elements,
         }
 
     def report(self) -> dict[str, Any]:
@@ -178,10 +239,10 @@ class DataPlan:
             raise TypeError("frame must be a pandas DataFrame")
         if any(not isinstance(column, str) for column in frame.columns):
             raise ContractError("DataPlan requires string column names")
-        if self.contract.target and frame[self.contract.target].isna().any():
-            raise ContractError("Training target contains missing values")
         report = self.contract.validate(frame, mode="compatible", include_target=True)
         report.raise_for_error()
+        if self.contract.target and frame[self.contract.target].isna().any():
+            raise ContractError("Training target contains missing values")
         features = frame.loc[:, self._feature_columns]
         if features.shape[1] == 0:
             raise ContractError("DataPlan requires at least one feature column")
@@ -194,12 +255,23 @@ class DataPlan:
         self._pipeline = pipeline
         self._output_columns = output_columns
         self._lineage = self._build_lineage(frame)
-        self._fit_fingerprint = fingerprint_dataframe(frame, target=self.contract.target)
+        self._fit_fingerprint = fingerprint_dataframe(
+            frame,
+            mode=self.fingerprint_mode,
+            sample_rows=self.fingerprint_sample_rows,
+            target=self.contract.target,
+        )
         self._fit_timestamp_utc = datetime.now(timezone.utc).isoformat()
         return self
 
-    def transform(self, frame: pd.DataFrame) -> pd.DataFrame:
-        """Transform compatible data using fitted state only."""
+    def transform(self, frame: pd.DataFrame) -> Union[pd.DataFrame, np.ndarray]:
+        """Transform compatible data using fitted state only.
+
+        The default ``pandas`` output preserves the historical DataFrame API.
+        Use ``sparse`` to receive a pandas sparse DataFrame without a dense
+        allocation, or ``numpy`` for a dense array. Dense conversion is
+        refused when it exceeds ``max_dense_elements``.
+        """
         self._require_fitted()
         if not isinstance(frame, pd.DataFrame):
             raise TypeError("frame must be a pandas DataFrame")
@@ -207,15 +279,30 @@ class DataPlan:
         report.raise_for_error()
         features = frame.loc[:, self._feature_columns]
         transformed = self._pipeline.transform(features)
+        output_columns = list(self._output_columns or ())
         if sparse.issparse(transformed):
-            transformed = transformed.toarray()
-        return pd.DataFrame(
-            np.asarray(transformed),
-            index=frame.index,
-            columns=list(self._output_columns or ()),
-        )
+            matrix = transformed.tocsr()
+            if self.output_format == "sparse":
+                return pd.DataFrame.sparse.from_spmatrix(
+                    matrix, index=frame.index, columns=output_columns
+                )
+            if matrix.shape[0] * matrix.shape[1] > self.max_dense_elements:
+                raise MemoryError(
+                    "Dense DataPlan output exceeds max_dense_elements; "
+                    "use output_format='sparse' or increase the explicit limit"
+                )
+            transformed = matrix.toarray()
+        if self.output_format == "numpy":
+            return np.asarray(transformed)
+        if self.output_format == "sparse":
+            return pd.DataFrame.sparse.from_spmatrix(
+                sparse.csr_matrix(np.asarray(transformed)),
+                index=frame.index,
+                columns=output_columns,
+            )
+        return pd.DataFrame(np.asarray(transformed), index=frame.index, columns=output_columns)
 
-    def fit_transform(self, frame: pd.DataFrame) -> pd.DataFrame:
+    def fit_transform(self, frame: pd.DataFrame) -> Union[pd.DataFrame, np.ndarray]:
         """Fit on training data and immediately transform it."""
         return self.fit(frame).transform(frame)
 
@@ -272,6 +359,10 @@ class DataPlan:
                 "config": self.config,
                 "random_state": self.random_state,
                 "fit_fingerprint": self._fit_fingerprint,
+                "fingerprint_mode": self.fingerprint_mode,
+                "fingerprint_sample_rows": self.fingerprint_sample_rows,
+                "output_format": self.output_format,
+                "max_dense_elements": self.max_dense_elements,
                 "output_columns": self._output_columns,
                 "feature_columns": self._feature_columns,
                 "lineage": self._lineage,
@@ -288,6 +379,10 @@ class DataPlan:
             "contract": self.contract.to_dict(),
             "config": self.config,
             "random_state": self.random_state,
+            "fingerprint_mode": self.fingerprint_mode,
+            "fingerprint_sample_rows": self.fingerprint_sample_rows,
+            "output_format": self.output_format,
+            "max_dense_elements": self.max_dense_elements,
             "output_columns": self._output_columns,
             "lineage": self._lineage,
         }
@@ -316,6 +411,10 @@ class DataPlan:
             "schema_fingerprint": self.contract.schema_fingerprint,
             "configuration_digest": _json_digest(self.config),
             "random_state": self.random_state,
+            "fingerprint_mode": self.fingerprint_mode,
+            "fingerprint_sample_rows": self.fingerprint_sample_rows,
+            "output_format": self.output_format,
+            "max_dense_elements": self.max_dense_elements,
             "fit_timestamp_utc": self._fit_timestamp_utc,
             "input_columns": list(self._feature_columns),
             "output_columns": list(self._output_columns or ()),
@@ -395,6 +494,10 @@ class DataPlan:
                 payload["config"],
                 payload["random_state"],
                 payload["fit_fingerprint"],
+                payload.get("fingerprint_mode", "full"),
+                payload.get("fingerprint_sample_rows", _DEFAULT_FINGERPRINT_SAMPLE_ROWS),
+                payload.get("output_format", "pandas"),
+                payload.get("max_dense_elements", _DEFAULT_MAX_DENSE_ELEMENTS),
             )
             plan._pipeline = payload["pipeline"]
             plan._output_columns = tuple(payload["output_columns"])

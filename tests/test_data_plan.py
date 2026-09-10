@@ -39,6 +39,13 @@ def test_plan_state_and_not_fitted_guard(training_frame):
     assert plan.state == "FITTED"
 
 
+def test_fit_missing_target_raises_contract_error(training_frame):
+    plan = DataPlan.infer(training_frame, target="label")
+
+    with pytest.raises(ContractError, match="label"):
+        plan.fit(training_frame.drop(columns="label"))
+
+
 def test_transform_is_ordered_unknown_category_safe_and_does_not_change_state(training_frame):
     plan = DataPlan.infer(training_frame, target="label", task="classification").fit(training_frame)
     before = plan.state_fingerprint
@@ -117,6 +124,86 @@ def test_fingerprints_are_deterministic_and_mode_aware(training_frame):
     assert sampled.content is not None
     assert schema_only.content is None
     assert first.schema == sampled.schema == schema_only.schema
+
+
+@pytest.mark.parametrize("mode", ["schema", "sampled", "full"])
+def test_fingerprint_mode_is_preserved_through_fit_and_save_load(training_frame, mode, tmp_path):
+    plan = DataPlan.infer(
+        training_frame,
+        target="label",
+        fingerprint_mode=mode,
+        fingerprint_sample_rows=2,
+    ).fit(training_frame)
+
+    assert plan.fingerprint_mode == mode
+    assert plan.manifest()["dataset_fingerprint"]["mode"] == mode
+    loaded = DataPlan.load(plan.save(tmp_path / f"{mode}.apml"))
+    assert loaded.fingerprint_mode == mode
+    assert loaded.fingerprint_sample_rows == 2
+
+
+def test_incompatible_numeric_dtype_is_a_blocking_contract_error(training_frame):
+    plan = DataPlan.infer(training_frame, target="label").fit(training_frame)
+    future = pd.DataFrame({"age": ["not-a-number"], "country": ["GB"]})
+
+    report = plan.validate(future)
+
+    assert report.status == "FAIL"
+    assert {issue.code for issue in report.issues} == {"incompatible_dtype"}
+
+
+def test_numeric_text_dtype_variation_remains_compatible(training_frame):
+    plan = DataPlan.infer(training_frame, target="label").fit(training_frame)
+    future = pd.DataFrame({"age": ["100"], "country": ["GB"]})
+
+    report = plan.validate(future)
+
+    assert report.status == "WARN"
+    assert {issue.code for issue in report.issues} == {"dtype_mismatch"}
+
+
+def test_sparse_output_policy_avoids_dense_conversion(training_frame):
+    plan = DataPlan.infer(
+        training_frame,
+        target="label",
+        output_format="sparse",
+    ).fit(training_frame)
+
+    transformed = plan.transform(training_frame.drop(columns="label"))
+
+    assert isinstance(transformed, pd.DataFrame)
+    assert all(isinstance(dtype, pd.SparseDtype) for dtype in transformed.dtypes)
+
+
+def test_dense_output_limit_is_enforced_for_sparse_pipeline(training_frame):
+    sparse_training = pd.DataFrame(
+        {
+            "age": list(range(20)),
+            "country": [f"country-{index}" for index in range(20)],
+            "label": [0, 1] * 10,
+        }
+    )
+    plan = DataPlan.infer(
+        sparse_training,
+        target="label",
+        max_dense_elements=1,
+    ).fit(sparse_training)
+
+    with pytest.raises(MemoryError, match="max_dense_elements"):
+        plan.transform(sparse_training.drop(columns="label"))
+
+
+def test_numpy_output_policy_returns_array(training_frame):
+    plan = DataPlan.infer(
+        training_frame,
+        target="label",
+        output_format="numpy",
+    ).fit(training_frame)
+
+    transformed = plan.transform(training_frame.drop(columns="label"))
+
+    assert isinstance(transformed, np.ndarray)
+    assert transformed.shape[0] == len(training_frame)
 
 
 def test_fit_resample_is_explicit_and_does_not_change_transform(training_frame):
