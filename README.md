@@ -8,7 +8,19 @@ Project links: [PyPI](https://pypi.org/project/autoprepml/),
 [source repository](https://github.com/mdshoaibuddinchanda/autoprepml), and
 [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
 
-> **A practical preprocessing library for tabular, text, time series, graph, and image data.**
+## Project profile
+
+| Tag | Details |
+| --- | --- |
+| `machine-learning` | Data preparation and model-readiness workflows |
+| `data-preprocessing` | Detection, cleaning, validation, and transformation |
+| `multi-modal` | Tabular, text, time-series, graph, and image data |
+| `python-3.9-to-3.14` | Supported and tested interpreter range |
+| `production-readiness` | Contracts, lineage, reproducibility, and CI quality gates |
+| `mit-license` | Permissive open-source license |
+
+AutoPrepML is a practical preprocessing library for tabular, text, time-series,
+graph, and image data.
 
 AutoPrepML is a Python framework for ML data readiness: inspection,
 leakage-safe preprocessing, validation, provenance, and reproducible

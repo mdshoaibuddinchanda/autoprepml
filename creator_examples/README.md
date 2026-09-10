@@ -8,6 +8,15 @@ when the process exits.
 The examples never write datasets, credentials, model artifacts, or experiment
 runs into the repository. Run them from an environment with network access:
 
+## Workflow tags
+
+| Tag | Meaning |
+| --- | --- |
+| `open-data` | Uses the versioned OpenML Adult v2 dataset |
+| `temporary-only` | Downloaded data and artifacts are deleted automatically |
+| `parallel-processing` | Demonstrates bounded, ordered chunk execution |
+| `leakage-safe` | Fits model preprocessing on training rows only |
+
 ```bash
 python creator_examples/01_openml_pipeline.py --rows 300
 ```

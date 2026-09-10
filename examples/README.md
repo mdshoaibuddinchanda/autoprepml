@@ -5,6 +5,15 @@ are intentionally small, deterministic, and runnable from a clean checkout.
 They use synthetic data unless a creator workflow explicitly names a public
 dataset.
 
+## Example tags
+
+| Tag | Meaning |
+| --- | --- |
+| `deterministic` | Fixed inputs and seeds for repeatable results |
+| `synthetic-data` | No external dataset or credentials required |
+| `notebook` | Runnable Jupyter workflow |
+| `production-patterns` | Validation, leakage controls, and cleanup are demonstrated |
+
 ## Notebook index
 
 | Notebook | Scope | External services |

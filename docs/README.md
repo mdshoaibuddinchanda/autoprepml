@@ -4,6 +4,19 @@ The repository currently targets the 1.5.0 development release. PyPI 1.4.0
 remains the latest published version while the v1.5 architecture is developed.
 See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository](https://github.com/mdshoaibuddinchanda/autoprepml), and [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
 
+## Project tags
+
+| Tag | Scope |
+| --- | --- |
+| `machine-learning` | Data preparation and model-readiness workflows |
+| `data-preprocessing` | Detection, cleaning, validation, and transformation |
+| `multi-modal` | Tabular, text, time-series, graph, and image data |
+| `python-3.9-to-3.14` | Supported and tested interpreter range |
+| `production-readiness` | Contracts, lineage, reproducibility, and CI quality gates |
+
+The documentation is organised as a guided path from installation and examples
+to the fitted v1.5 architecture, integrations, and release procedures.
+
 ## Documentation Overview
 
 ### Getting Started
