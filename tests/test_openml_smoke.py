@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from scripts import smoke_openml_adult
+from scripts import benchmark_v15
 
 
 def test_load_adult_sample_is_deterministic(monkeypatch):
@@ -88,3 +89,21 @@ def test_main_writes_json_output(monkeypatch, tmp_path, capsys):
         smoke_openml_adult.main(["--rows", "25", "--seed", "9", "--output", str(output_path)]) == 0
     )
     assert json.loads(output_path.read_text(encoding="utf-8")) == result
+
+
+def test_benchmark_is_deterministic_and_uses_aggregate_results():
+    first = benchmark_v15.run_benchmark(rows=20, chunksize=7, n_jobs=1, seed=9)
+    second = benchmark_v15.run_benchmark(rows=20, chunksize=7, n_jobs=1, seed=9)
+
+    assert first["rows"] == 20
+    assert first["transformed_shape"] == [20, 3]
+    assert first["chunk_shape"] == [20, 4]
+    assert first["seed"] == second["seed"]
+    assert first["transformed_shape"] == second["transformed_shape"]
+
+
+def test_benchmark_validates_resource_options():
+    with pytest.raises(ValueError, match="chunksize"):
+        benchmark_v15.run_benchmark(rows=2, chunksize=0)
+    with pytest.raises(ValueError, match="n_jobs"):
+        benchmark_v15.run_benchmark(rows=2, n_jobs=0)
