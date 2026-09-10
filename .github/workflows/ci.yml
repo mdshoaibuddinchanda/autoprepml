@@ -72,6 +72,7 @@ jobs:
           autoprepml/data_plan.py
           autoprepml/contracts.py
           autoprepml/fingerprints.py
+          autoprepml/feature_engine.py
           autoprepml/readiness.py
           autoprepml/protocols.py
           --ignore-missing-imports

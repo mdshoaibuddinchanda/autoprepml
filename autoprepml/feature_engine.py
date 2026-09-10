@@ -160,7 +160,7 @@ class AutoFeatureEngine:
 
         self.df = df.copy()
         self.target_column = target_column
-        self.feature_log = []
+        self.feature_log: List[Dict[str, Any]] = []
         self.original_columns = list(df.columns)
 
     def create_polynomial_features(
@@ -365,7 +365,7 @@ class AutoFeatureEngine:
         return self.df
 
     def create_aggregation_features(
-        self, columns: Optional[List[str]] = None, operations: List[str] = None
+        self, columns: Optional[List[str]] = None, operations: Optional[List[str]] = None
     ) -> pd.DataFrame:
         """Create aggregation features across columns.
 
@@ -387,10 +387,10 @@ class AutoFeatureEngine:
             warnings.warn("Need at least 2 columns for aggregations")
             return self.df
 
-        new_features = {}
+        new_features: Dict[str, Any] = {}
 
         # Map operations to (feature_name, function) to simplify branching and avoid unnecessary f-strings
-        ops_map = {
+        ops_map: Dict[str, Tuple[str, Any]] = {
             "sum": ("agg_sum", lambda: self.df[columns].sum(axis=1)),
             "mean": ("agg_mean", lambda: self.df[columns].mean(axis=1)),
             "std": ("agg_std", lambda: self.df[columns].std(axis=1)),
@@ -411,13 +411,15 @@ class AutoFeatureEngine:
         return self.df
 
     # TODO Rename this here and in `create_interactions`, `create_ratio_features` and `create_aggregation_features`
-    def _extracted_from_create_aggregation_features_36(self, new_features, arg1):
+    def _extracted_from_create_aggregation_features_36(
+        self, new_features: Dict[str, Any], arg1: str
+    ) -> None:
         new_df = pd.DataFrame(new_features, index=self.df.index)
         self.df = pd.concat([self.df, new_df], axis=1)
         self.feature_log.append({"operation": arg1, "n_features_created": len(new_features)})
 
     def create_datetime_features(
-        self, columns: Optional[List[str]] = None, features: List[str] = None
+        self, columns: Optional[List[str]] = None, features: Optional[List[str]] = None
     ) -> pd.DataFrame:
         """Create features from datetime columns.
 
@@ -606,7 +608,7 @@ class AutoFeatureEngine:
         n_current = len(self.df.columns)
         n_created = n_current - n_original
 
-        operations_count = {}
+        operations_count: Dict[str, int] = {}
         for log in self.feature_log:
             op = log["operation"]
             operations_count[op] = operations_count.get(op, 0) + 1
