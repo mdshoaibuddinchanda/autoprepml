@@ -396,9 +396,7 @@ def test_forecast_safe_features_are_invariant_to_future_value_changes():
 
     first = TimeSeriesPrepML(original, "date", "value").add_rolling_features(windows=[3])
     second = TimeSeriesPrepML(changed, "date", "value").add_rolling_features(windows=[3])
-    assert first.loc[:4, "value_rolling_mean_3"].equals(
-        second.loc[:4, "value_rolling_mean_3"]
-    )
+    assert first.loc[:4, "value_rolling_mean_3"].equals(second.loc[:4, "value_rolling_mean_3"])
 
 
 def test_historical_normalizer_is_invariant_to_future_value_changes():

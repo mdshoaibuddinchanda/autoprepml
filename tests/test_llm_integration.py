@@ -353,9 +353,7 @@ class TestLLMCalls:
 
     def test_structured_recommendation_validation(self):
         assert validate_analysis_recommendation({"quality_score": 8})["warnings"] == []
-        assert validate_feature_suggestions([{"name": "age_bucket"}]) == [
-            {"name": "age_bucket"}
-        ]
+        assert validate_feature_suggestions([{"name": "age_bucket"}]) == [{"name": "age_bucket"}]
         with pytest.raises(RecommendationValidationError, match="quality_score"):
             validate_analysis_recommendation({"quality_score": 11})
         with pytest.raises(RecommendationValidationError, match="feature suggestion"):
