@@ -16,6 +16,10 @@ FITTED
 The plan does not train a model. It prepares data and can be composed with
 scikit-learn estimators through `make_model_pipeline`.
 
+For a compact operational summary, call `plan.readiness_report(future_data)`.
+The report separates schema warnings from blocking failures and records
+evidence for leakage safety, reproducibility, dataset identity, and lineage.
+
 ## State rules
 
 Calling `transform()` before `fit()` raises `NotFittedError`. Fitting never

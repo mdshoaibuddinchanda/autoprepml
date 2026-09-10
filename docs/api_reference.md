@@ -287,7 +287,7 @@ Return default configuration.
 
 ## DataPlan and Contracts
 
-### `DataPlan.infer(frame, target=None, task=None, config=None, random_state=42)`
+### `DataPlan.infer(frame, target=None, task=None, config=None, random_state=42, fingerprint_mode='full', fingerprint_sample_rows=1000, output_format='pandas', max_dense_elements=10000000)`
 
 Infer an unfitted plan from training schema. The plan records feature roles and
 configuration but learns no transformation statistics until `fit()`.
@@ -297,10 +297,13 @@ configuration but learns no transformation statistics until `fit()`.
 Fit imputation, encoding, and scaling on training rows only. Returns the same
 plan instance.
 
-### `plan.transform(frame) -> pd.DataFrame`
+### `plan.transform(frame) -> pd.DataFrame | numpy.ndarray`
 
 Apply fitted state to future rows in stable feature order. Calling this before
 `fit()` raises `NotFittedError`; missing required columns raise `ContractError`.
+The default pandas output is dense but refuses conversion above
+`max_dense_elements`. Use `output_format='sparse'` for a pandas sparse DataFrame
+or `output_format='numpy'` for an array.
 
 ### `plan.validate(frame, mode='compatible') -> ValidationReport`
 
@@ -318,6 +321,11 @@ validation, test, or production data.
 Write or load an atomic, checksummed `.apml` artifact containing a manifest and
 serialized fitted state. Only load artifacts from trusted sources because
 Python pickle can execute code during deserialization.
+
+### `plan.readiness_report(frame=None)`
+
+Return a structured `DataReadinessReport` covering schema integrity, leakage
+safety, reproducibility, dataset identity, and transformation lineage.
 
 
 ## Reporting Module

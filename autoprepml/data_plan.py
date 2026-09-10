@@ -25,6 +25,7 @@ from .contracts import DataContract, ValidationReport
 from .exceptions import ArtifactError, ConfigurationError, ContractError, NotFittedError
 from .fingerprints import DatasetFingerprint, fingerprint_dataframe
 from .pipeline import make_preprocessing_pipeline
+from .readiness import DataReadinessReport, assess_data_readiness
 
 
 _ARTIFACT_FORMAT_VERSION = "1.0"
@@ -94,7 +95,7 @@ class DataPlan:
         self.fingerprint_sample_rows = fingerprint_sample_rows
         self.output_format = output_format
         self.max_dense_elements = max_dense_elements
-        self._pipeline = None
+        self._pipeline: Any = None
         self._output_columns: Optional[tuple[str, ...]] = None
         self._feature_columns = contract.feature_columns
         self._lineage: list[dict[str, Any]] = []
@@ -186,6 +187,10 @@ class DataPlan:
         """
         return self.manifest() if self.fitted else self.inspect()
 
+    def readiness_report(self, frame: Optional[pd.DataFrame] = None) -> DataReadinessReport:
+        """Return evidence-backed data-readiness checks for this plan."""
+        return assess_data_readiness(self, frame)
+
     def _pipeline_kwargs(self) -> dict[str, Any]:
         cleaning = self.config.get("cleaning", {})
         categorical_strategy = cleaning.get("categorical_strategy", "mode")
@@ -264,7 +269,7 @@ class DataPlan:
         self._fit_timestamp_utc = datetime.now(timezone.utc).isoformat()
         return self
 
-    def transform(self, frame: pd.DataFrame) -> Union[pd.DataFrame, np.ndarray]:
+    def transform(self, frame: pd.DataFrame) -> Union[pd.DataFrame, np.ndarray[Any, Any]]:
         """Transform compatible data using fitted state only.
 
         The default ``pandas`` output preserves the historical DataFrame API.
@@ -302,7 +307,7 @@ class DataPlan:
             )
         return pd.DataFrame(np.asarray(transformed), index=frame.index, columns=output_columns)
 
-    def fit_transform(self, frame: pd.DataFrame) -> Union[pd.DataFrame, np.ndarray]:
+    def fit_transform(self, frame: pd.DataFrame) -> Union[pd.DataFrame, np.ndarray[Any, Any]]:
         """Fit on training data and immediately transform it."""
         return self.fit(frame).transform(frame)
 

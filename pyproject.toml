@@ -50,6 +50,8 @@ dependencies = [
 dev = [
     "pytest==8.4.2",
     "pytest-cov==7.0.0",
+    "hypothesis>=6.100,<7",
+    "mypy>=1.11,<2",
     "black==24.10.0",
     "ruff==0.8.4; python_version < '3.14'",
     "ruff>=0.16.0,<0.17; python_version >= '3.14'",
@@ -83,6 +85,8 @@ notebooks = [
 all = [
     "pytest==8.4.2",
     "pytest-cov==7.0.0",
+    "hypothesis>=6.100,<7",
+    "mypy>=1.11,<2",
     "black==24.10.0",
     "ruff==0.8.4; python_version < '3.14'",
     "ruff>=0.16.0,<0.17; python_version >= '3.14'",

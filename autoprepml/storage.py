@@ -6,6 +6,7 @@ requires pandas; remote filesystems are supported through the optional
 """
 
 from abc import ABC, abstractmethod
+import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any, Iterable, Iterator, Optional, Union
@@ -16,6 +17,20 @@ import pandas as pd
 DataSource = Union[str, Path, pd.DataFrame]
 
 
+def _format_for_path(path: Any) -> str:
+    """Return the supported table format represented by a path."""
+    name = str(path).lower()
+    if name.endswith((".csv", ".csv.gz", ".csv.bz2", ".csv.zip", ".csv.xz")):
+        return "csv"
+    if name.endswith(".jsonl"):
+        return "jsonl"
+    if name.endswith(".json"):
+        return "json"
+    if name.endswith(".parquet"):
+        return "parquet"
+    raise ValueError("Unsupported data format; use CSV, JSON, JSONL, or Parquet")
+
+
 def _validate_chunksize(chunksize: int) -> None:
     if not isinstance(chunksize, int) or isinstance(chunksize, bool) or chunksize < 1:
         raise ValueError("chunksize must be a positive integer")
@@ -23,18 +38,24 @@ def _validate_chunksize(chunksize: int) -> None:
 
 def _read_frame(path: Any, **read_kwargs: Any) -> pd.DataFrame:
     """Read a complete frame based on a path suffix."""
-    name = str(path).lower()
-    if name.endswith((".csv", ".csv.gz", ".csv.bz2", ".csv.zip", ".csv.xz")):
+    data_format = _format_for_path(path)
+    if data_format == "csv":
         return pd.read_csv(path, **read_kwargs)
-    if name.endswith(".jsonl"):
+    if data_format == "jsonl":
         options = dict(read_kwargs)
         options.setdefault("lines", True)
         return pd.read_json(path, **options)
-    if name.endswith(".json"):
+    if data_format == "json":
         return pd.read_json(path, **read_kwargs)
-    if name.endswith(".parquet"):
+    if data_format == "parquet":
         return pd.read_parquet(path, **read_kwargs)
-    raise ValueError("Unsupported data format; use CSV, JSON, JSONL, or Parquet")
+    raise AssertionError("unreachable format")
+
+
+def _sync_file(path: Path) -> None:
+    """Flush a completed temporary file before replacing the destination."""
+    with path.open("r+b") as stream:
+        os.fsync(stream.fileno())
 
 
 class StorageAdapter(ABC):
@@ -86,7 +107,16 @@ class LocalStorageAdapter(StorageAdapter):
         path = self._path(source)
         if not path.exists():
             raise FileNotFoundError(f"Input data source does not exist: {path}")
-        return _read_frame(path, **read_kwargs)
+        try:
+            return _read_frame(path, **read_kwargs)
+        except pd.errors.EmptyDataError:
+            if _format_for_path(path) == "csv":
+                return pd.DataFrame()
+            raise
+        except ValueError:
+            if _format_for_path(path) in {"json", "jsonl"} and path.stat().st_size == 0:
+                return pd.DataFrame()
+            raise
 
     def iter_chunks(
         self, source: Any, chunksize: int = 10_000, **read_kwargs: Any
@@ -96,11 +126,13 @@ class LocalStorageAdapter(StorageAdapter):
         path = self._path(source)
         if not path.exists():
             raise FileNotFoundError(f"Input data source does not exist: {path}")
-        name = str(path).lower()
-        if name.endswith((".csv", ".csv.gz", ".csv.bz2", ".csv.zip", ".csv.xz")):
+        if _format_for_path(path) == "csv":
             options = dict(read_kwargs)
             options.pop("chunksize", None)
-            yield from pd.read_csv(path, chunksize=chunksize, **options)
+            try:
+                yield from pd.read_csv(path, chunksize=chunksize, **options)
+            except pd.errors.EmptyDataError:
+                yield pd.DataFrame()
             return
         frame = self.read(path, **read_kwargs)
         for start in range(0, len(frame), chunksize):
@@ -112,24 +144,25 @@ class LocalStorageAdapter(StorageAdapter):
             raise TypeError("frame must be a pandas DataFrame")
         path = self._path(destination)
         path.parent.mkdir(parents=True, exist_ok=True)
-        suffix = str(path).lower()
+        data_format = _format_for_path(path)
         with NamedTemporaryFile(
             mode="w+b", prefix=f".{path.name}.", suffix=path.suffix, dir=path.parent, delete=False
         ) as temporary:
             temporary_path = Path(temporary.name)
         try:
-            if suffix.endswith((".csv", ".csv.gz", ".csv.bz2", ".csv.zip", ".csv.xz")):
+            if data_format == "csv":
                 frame.to_csv(temporary_path, index=False, **write_kwargs)
-            elif suffix.endswith((".json", ".jsonl")):
+            elif data_format in {"json", "jsonl"}:
                 options = dict(write_kwargs)
-                if suffix.endswith(".jsonl"):
+                if data_format == "jsonl":
                     options.setdefault("orient", "records")
                     options.setdefault("lines", True)
                 frame.to_json(temporary_path, **options)
-            elif suffix.endswith(".parquet"):
+            elif data_format == "parquet":
                 frame.to_parquet(temporary_path, index=False, **write_kwargs)
             else:
-                raise ValueError("Unsupported data format; use CSV, JSON, JSONL, or Parquet")
+                raise AssertionError("unreachable format")
+            _sync_file(temporary_path)
             temporary_path.replace(path)
         finally:
             if temporary_path.exists():
@@ -145,8 +178,8 @@ class LocalStorageAdapter(StorageAdapter):
         """Stream CSV/JSONL output without materialising all chunks."""
         path = self._path(destination)
         path.parent.mkdir(parents=True, exist_ok=True)
-        suffix = str(path).lower()
-        if not suffix.endswith((".csv", ".jsonl")):
+        data_format = _format_for_path(path)
+        if data_format not in {"csv", "jsonl"}:
             return super().write_chunks(chunks, path, **write_kwargs)
 
         temporary_path = None
@@ -159,7 +192,7 @@ class LocalStorageAdapter(StorageAdapter):
                 for frame in chunks:
                     if not isinstance(frame, pd.DataFrame):
                         raise TypeError("chunks must contain pandas DataFrame objects")
-                    if suffix.endswith(".csv"):
+                    if data_format == "csv":
                         frame.to_csv(temporary, index=False, header=not wrote, **write_kwargs)
                     else:
                         options = dict(write_kwargs)
@@ -167,6 +200,8 @@ class LocalStorageAdapter(StorageAdapter):
                         options.setdefault("lines", True)
                         frame.to_json(temporary, **options)
                     wrote = True
+                temporary.flush()
+                os.fsync(temporary.fileno())
             temporary_path.replace(path)
         finally:
             if temporary_path is not None and temporary_path.exists():
@@ -178,7 +213,13 @@ class InMemoryStorageAdapter(StorageAdapter):
     """Storage adapter useful for tests, notebooks, and service boundaries."""
 
     def __init__(self, initial: Optional[dict] = None):
-        self._tables = {str(name): frame.copy() for name, frame in (initial or {}).items()}
+        if initial is not None and not isinstance(initial, dict):
+            raise TypeError("initial must be a dictionary of DataFrames")
+        self._tables = {}
+        for name, frame in (initial or {}).items():
+            if not isinstance(frame, pd.DataFrame):
+                raise TypeError("initial tables must contain DataFrame objects")
+            self._tables[str(name)] = frame.copy()
 
     def read(self, source: Any, **read_kwargs: Any) -> pd.DataFrame:
         del read_kwargs
@@ -232,8 +273,7 @@ class FsspecStorageAdapter(LocalStorageAdapter):
         self, source: Any, chunksize: int = 10_000, **read_kwargs: Any
     ) -> Iterator[pd.DataFrame]:
         _validate_chunksize(chunksize)
-        name = str(source).lower()
-        if name.endswith(".csv"):
+        if _format_for_path(source) == "csv":
             options = dict(read_kwargs)
             options.pop("chunksize", None)
             with self._filesystem(source, mode="rb") as handle:
@@ -247,22 +287,22 @@ class FsspecStorageAdapter(LocalStorageAdapter):
         """Write a remote table using fsspec's filesystem handle."""
         if not isinstance(frame, pd.DataFrame):
             raise TypeError("frame must be a pandas DataFrame")
-        name = str(destination).lower()
-        if name.endswith((".csv", ".json", ".jsonl")):
+        data_format = _format_for_path(destination)
+        if data_format in {"csv", "json", "jsonl"}:
             with self._filesystem(destination, mode="wt") as handle:
-                if name.endswith(".csv"):
+                if data_format == "csv":
                     frame.to_csv(handle, index=False, **write_kwargs)
                 else:
                     options = dict(write_kwargs)
-                    if name.endswith(".jsonl"):
+                    if data_format == "jsonl":
                         options.setdefault("orient", "records")
                         options.setdefault("lines", True)
                     frame.to_json(handle, **options)
-        elif name.endswith(".parquet"):
+        elif data_format == "parquet":
             with self._filesystem(destination, mode="wb") as handle:
                 frame.to_parquet(handle, index=False, **write_kwargs)
         else:
-            raise ValueError("Unsupported data format; use CSV, JSON, JSONL, or Parquet")
+            raise AssertionError("unreachable format")
         return str(destination)
 
     def write_chunks(
@@ -272,14 +312,14 @@ class FsspecStorageAdapter(LocalStorageAdapter):
         **write_kwargs: Any,
     ) -> str:
         """Write remote CSV/JSONL streams without local temporary files."""
-        name = str(destination).lower()
-        if name.endswith((".csv", ".jsonl")):
+        data_format = _format_for_path(destination)
+        if data_format in {"csv", "jsonl"}:
             with self._filesystem(destination, mode="wt") as handle:
                 wrote = False
                 for frame in chunks:
                     if not isinstance(frame, pd.DataFrame):
                         raise TypeError("chunks must contain pandas DataFrame objects")
-                    if name.endswith(".csv"):
+                    if data_format == "csv":
                         frame.to_csv(handle, index=False, header=not wrote, **write_kwargs)
                     else:
                         options = dict(write_kwargs)

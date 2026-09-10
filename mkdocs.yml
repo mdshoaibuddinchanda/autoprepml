@@ -44,6 +44,7 @@ nav:
   - Limitations: limitations.md
   - Advanced features: ADVANCED_FEATURES.md
   - CLI quick start: QUICK_START_CLI.md
+  - CLI reference: cli.md
   - API reference: api_reference.md
   - LLM configuration: LLM_CONFIGURATION.md
   - Dynamic LLM configuration: DYNAMIC_LLM_CONFIGURATION.md

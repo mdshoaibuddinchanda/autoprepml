@@ -8,6 +8,7 @@ See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository
 
 ### Getting Started
 - **[Quick Start CLI](QUICK_START_CLI.md)**: Command-line usage and examples
+- **[CLI reference](cli.md)**: Fitted DataPlan command workflows
 - **[Usage Guide](usage.md)**: Python API usage and patterns
 - **[Tutorials](tutorials.md)**: Step by step guides for common tasks
 

@@ -68,6 +68,30 @@ class ExperimentRun:
         self.tracker._write_run(self)
         return destination
 
+    def log_plan(self, plan: Any, artifact_name: str = "data-plan.json") -> Path:
+        """Persist a plan manifest as a non-tabular lineage artifact."""
+        if not hasattr(plan, "manifest") or not callable(plan.manifest):
+            raise TypeError("plan must provide a manifest() method")
+        if Path(artifact_name).name != artifact_name or not artifact_name.endswith(".json"):
+            raise ValueError("artifact_name must be a JSON file name")
+        manifest = plan.manifest()
+        if not isinstance(manifest, dict):
+            raise TypeError("plan.manifest() must return a dictionary")
+        destination = self.tracker._run_dir(self.run_id) / "artifacts" / artifact_name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_suffix(destination.suffix + ".tmp")
+        try:
+            temporary.write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+            temporary.replace(destination)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+        self.artifacts[artifact_name] = str(destination)
+        self.tracker._write_run(self)
+        return destination
+
     def end(self, status: str = "finished") -> None:
         """Finalize the run and persist its manifest."""
         if status not in {"finished", "failed", "cancelled"}:
@@ -178,5 +202,21 @@ class MLflowExperimentTracker:
             def log_artifact(self_inner, path, artifact_name=None):
                 del artifact_name
                 tracker.log_artifact(str(path))
+
+            def log_plan(self_inner, plan, artifact_name="data-plan.json"):
+                if not hasattr(plan, "manifest") or not callable(plan.manifest):
+                    raise TypeError("plan must provide a manifest() method")
+                manifest = plan.manifest()
+                temporary = NamedTemporaryFile(
+                    mode="w", encoding="utf-8", suffix=".json", delete=False
+                )
+                temporary_path = Path(temporary.name)
+                try:
+                    json.dump(manifest, temporary, indent=2, sort_keys=True)
+                    temporary.write("\n")
+                    temporary.close()
+                    tracker.log_artifact(str(temporary_path), artifact_path=artifact_name)
+                finally:
+                    temporary_path.unlink(missing_ok=True)
 
         return _RunContext()

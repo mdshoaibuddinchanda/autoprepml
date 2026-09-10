@@ -68,7 +68,8 @@ from .exceptions import (
     ValidationError,
 )
 from .fingerprints import DatasetFingerprint, fingerprint_dataframe, schema_fingerprint
-from .protocols import PrepProtocol
+from .protocols import ExperimentRunProtocol, ExperimentTrackerProtocol, PrepProtocol
+from .readiness import DataReadinessReport, ReadinessCheck, assess_data_readiness
 
 __all__ = [
     # Core preprocessing
@@ -129,6 +130,11 @@ __all__ = [
     "StorageError",
     "IntegrationError",
     "PrepProtocol",
+    "ExperimentRunProtocol",
+    "ExperimentTrackerProtocol",
+    "ReadinessCheck",
+    "DataReadinessReport",
+    "assess_data_readiness",
     # Modules
     "detection",
     "cleaning",

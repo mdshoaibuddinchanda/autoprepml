@@ -58,13 +58,24 @@ jobs:
             requirements.txt
 
       - name: Install quality tools
-        run: python -m pip install "ruff==0.8.4" "black==24.10.0"
+        run: python -m pip install "ruff==0.8.4" "black==24.10.0" "mypy>=1.11,<2"
 
       - name: Run Ruff
         run: ruff check autoprepml tests examples creator_examples --exclude '*.ipynb'
 
       - name: Check Black formatting
         run: black --check autoprepml tests examples creator_examples
+
+      - name: Run strict typing gate for v1.5 core
+        run: >-
+          mypy --strict
+          autoprepml/data_plan.py
+          autoprepml/contracts.py
+          autoprepml/fingerprints.py
+          autoprepml/readiness.py
+          autoprepml/protocols.py
+          --ignore-missing-imports
+          --follow-imports=skip
 
   test:
     name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}

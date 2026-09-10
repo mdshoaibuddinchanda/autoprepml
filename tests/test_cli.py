@@ -149,3 +149,61 @@ def test_successful_cleaning_writes_output_and_report(tmp_path, capsys):
     assert output_path.exists()
     assert report_path.exists()
     assert "completed successfully" in capsys.readouterr().out
+
+
+def test_modern_version_command(capsys):
+    assert cli.main(["version"]) == 0
+    assert capsys.readouterr().out.strip() == cli.__version__
+
+
+def test_modern_inspect_fit_validate_and_transform_commands(tmp_path, capsys):
+    input_path = tmp_path / "input.csv"
+    features_path = tmp_path / "features.csv"
+    transformed_path = tmp_path / "transformed.csv"
+    plan_path = tmp_path / "plan.apml"
+    _write_csv(input_path)
+    pd.read_csv(input_path).drop(columns="label").to_csv(features_path, index=False)
+
+    assert cli.main(["inspect", str(input_path), "--target", "label"]) == 0
+    inspection = capsys.readouterr().out
+    assert '"feature_columns"' in inspection
+
+    assert (
+        cli.main(
+            [
+                "fit",
+                str(input_path),
+                "--target",
+                "label",
+                "--output",
+                str(plan_path),
+            ]
+        )
+        == 0
+    )
+    assert plan_path.exists()
+    capsys.readouterr()
+
+    assert cli.main(["validate", str(features_path), "--plan", str(plan_path)]) == 0
+    assert '"status": "PASS"' in capsys.readouterr().out
+
+    assert (
+        cli.main(
+            [
+                "transform",
+                str(features_path),
+                "--plan",
+                str(plan_path),
+                "--output",
+                str(transformed_path),
+            ]
+        )
+        == 0
+    )
+    assert transformed_path.exists()
+    assert not pd.read_csv(transformed_path).empty
+
+
+def test_modern_commands_report_input_errors(tmp_path, capsys):
+    assert cli.main(["inspect", str(tmp_path / "missing.csv")]) == 1
+    assert "does not exist" in capsys.readouterr().err

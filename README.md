@@ -101,6 +101,7 @@ are complete; the existing 1.x classes remain supported.
 | [LLM Integration](docs/LLM_CONFIGURATION.md) | Model assisted suggestions from multiple providers |
 | [Dynamic LLM Configuration](docs/DYNAMIC_LLM_CONFIGURATION.md) | Configure supported models at runtime |
 | [CLI Configuration](docs/QUICK_START_CLI.md) | Manage provider credentials with autoprepml-config |
+| [CLI reference](docs/cli.md) | Inspect, fit, validate, transform, and version commands |
 | [CLI Reference](#command-line-usage) | Command line options and examples |
 | [Examples](#examples) | Working notebooks with reproducible outputs |
 | [Normalization standards](docs/normalization.md) | Production rules for CSV, image, text, time-series, and graph processing |
@@ -860,7 +861,7 @@ cleanup rules.
 
 ## Testing
 
-The CI baseline runs the complete pytest suite with coverage on Python 3.9 through 3.14. Every runtime enforces the 75 percent line coverage threshold, and cross-platform checks run on Windows and macOS with Python 3.12. The same workflow also gates linting, security, packaging, and strict documentation builds. See the [CI workflow](.github/workflows/ci.yml) for current run results.
+The CI baseline runs the complete pytest suite with line and branch coverage on Python 3.9 through 3.14. Every runtime currently enforces the 75 percent coverage threshold while the v1.5 roadmap raises core and package targets toward 100 percent. Cross-platform checks run on Windows and macOS with Python 3.12. The same workflow also gates linting, security, packaging, and strict documentation builds. See the [CI workflow](.github/workflows/ci.yml) for current run results.
 
 ### Run the test suite
 

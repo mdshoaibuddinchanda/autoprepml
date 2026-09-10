@@ -371,7 +371,7 @@ class DataContract:
                 )
         return ValidationReport(mode=mode, issues=tuple(issues))
 
-    def to_pandera(self):
+    def to_pandera(self) -> Any:
         """Export common checks to Pandera when the optional dependency exists."""
         try:
             import pandera as pa
