@@ -11,6 +11,7 @@ from autoprepml import (
     ColumnContract,
     DataContract,
     DataPlan,
+    PrepProtocol,
     fingerprint_dataframe,
 )
 from autoprepml.exceptions import ArtifactError, ContractError, NotFittedError
@@ -63,6 +64,7 @@ def test_transform_ignores_target_and_extra_columns(training_frame):
 def test_report_matches_inspection_before_fit_and_manifest_after_fit(training_frame):
     plan = DataPlan.infer(training_frame, target="label")
 
+    assert isinstance(plan, PrepProtocol)
     assert plan.report() == plan.inspect()
     plan.fit(training_frame)
 
