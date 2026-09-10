@@ -221,6 +221,34 @@ Example config file:
 
 By default, AutoPrepML sends aggregate dataset metadata to an LLM rather than raw samples. Only include raw samples when the `include_samples` option or `AUTOPREPML_LLM_INCLUDE_SAMPLES` environment variable is explicitly enabled and the data policy permits it.
 
+## Structured recommendations
+
+`analyze_dataframe` and `suggest_features` parse JSON responses when a provider
+returns structured output. The parser validates the quality score and list or
+object shapes before returning them. Invalid output is returned as an advisory
+`raw_response` with a `validation_error`; it is never treated as executable
+pipeline configuration.
+
+Applications that accept recommendations at a stricter boundary can validate
+their own payloads explicitly:
+
+```python
+from autoprepml import validate_analysis_recommendation, validate_feature_suggestions
+
+analysis = validate_analysis_recommendation({
+    "quality_score": 8,
+    "critical_issues": [],
+    "pipeline_steps": [],
+    "feature_suggestions": [],
+    "warnings": [],
+})
+features = validate_feature_suggestions([{"name": "customer_age_bucket"}])
+```
+
+These helpers validate shape and ranges only. A human or application policy
+must still review whether a suggested transformation is appropriate for the
+dataset and task.
+
 ## Troubleshooting
 
 ### "No API key found" Warning

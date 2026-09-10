@@ -886,7 +886,8 @@ The repository is organised around a small public package and a set of focused m
 * `examples/` contains the maintained deterministic Jupyter notebooks.
 * `creator_examples/` contains notebook and Python workflows that download public data only into temporary directories.
 * `docs/` contains the user guide, API reference, tutorials, feature guides, and release notes.
-* `scripts/` contains test, documentation, release, and OpenML smoke test helpers.
+* `scripts/` contains test, documentation, release, OpenML smoke, and benchmark helpers.
+* `benchmarks/` documents reproducible performance measurements without storing datasets or results.
 * `pyproject.toml` defines package metadata, dependencies, optional extras, and tool configuration.
 
 ## Development Setup
