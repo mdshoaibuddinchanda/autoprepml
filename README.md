@@ -861,7 +861,7 @@ cleanup rules.
 
 ## Testing
 
-The CI baseline runs the complete pytest suite with line and branch coverage on Python 3.9 through 3.14. Every runtime currently enforces the 75 percent coverage threshold while the v1.5 roadmap raises core and package targets toward 100 percent. Cross-platform checks run on Windows and macOS with Python 3.12. The same workflow also gates linting, security, packaging, and strict documentation builds. See the [CI workflow](.github/workflows/ci.yml) for current run results.
+The CI baseline runs the complete pytest suite with line and branch coverage on Python 3.9 through 3.14. Every runtime currently enforces the 80 percent coverage threshold while the v1.5 roadmap raises core and package targets toward 100 percent. Cross-platform checks run on Windows and macOS with Python 3.12. The same workflow also gates linting, security, packaging, and strict documentation builds. See the [CI workflow](.github/workflows/ci.yml) for current run results.
 
 ### Run the test suite
 

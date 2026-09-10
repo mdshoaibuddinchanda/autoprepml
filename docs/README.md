@@ -71,7 +71,7 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 
 ## Testing and CI/CD
 
-The [root README testing section](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/README.md#testing) is the canonical source for the current quality baseline. Continuous integration runs the test and coverage suite on Python 3.9 through 3.14, with additional Windows and macOS validation on Python 3.12, and blocks linting, security, packaging, and documentation regressions.
+The [root README testing section](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/README.md#testing) is the canonical source for the current quality baseline. Continuous integration runs the test and coverage suite on Python 3.9 through 3.14 with an 80 percent branch-aware gate, adds Windows and macOS validation on Python 3.12, and blocks linting, security, packaging, and documentation regressions.
 
 ## Contributing
 
