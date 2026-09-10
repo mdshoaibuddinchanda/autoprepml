@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+
 # Serialized state is integrity-checked and trusted-source-only.
 import pickle  # nosec B403
 import platform
@@ -83,9 +84,7 @@ class DataPlan:
             raise ContractError("DataPlan requires string column names")
         contract = DataContract.infer(frame, target=target, task=task)
         merged_config = validate_config(config or {})
-        fingerprint = fingerprint_dataframe(
-            frame, mode=fingerprint_mode, target=target
-        )
+        fingerprint = fingerprint_dataframe(frame, mode=fingerprint_mode, target=target)
         return cls(contract, merged_config, random_state, fit_fingerprint=fingerprint)
 
     @property
@@ -356,7 +355,10 @@ class DataPlan:
                 state = archive.read("state.pkl")
         except (OSError, KeyError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
             raise ArtifactError(f"Invalid DataPlan artifact: {source}") from exc
-        if manifest.get("artifact_format_version", "").split(".")[0] != _ARTIFACT_FORMAT_VERSION.split(".")[0]:
+        if (
+            manifest.get("artifact_format_version", "").split(".")[0]
+            != _ARTIFACT_FORMAT_VERSION.split(".")[0]
+        ):
             raise ArtifactError(
                 f"Unsupported DataPlan artifact format: {manifest.get('artifact_format_version')}"
             )

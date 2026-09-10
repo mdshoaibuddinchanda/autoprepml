@@ -128,7 +128,11 @@ class DataContract:
             raise ContractError(f"Target column '{target}' not found in DataFrame")
         if task not in (None, "classification", "regression"):
             raise ContractError("task must be 'classification', 'regression', or None")
-        if not isinstance(max_categories, int) or isinstance(max_categories, bool) or max_categories <= 0:
+        if (
+            not isinstance(max_categories, int)
+            or isinstance(max_categories, bool)
+            or max_categories <= 0
+        ):
             raise ValueError("max_categories must be a positive integer")
 
         contracts = []
@@ -197,9 +201,7 @@ class DataContract:
         if mode not in {"compatible", "strict"}:
             raise ValidationError("mode must be 'compatible' or 'strict'")
         expected = [
-            column
-            for column in self.columns
-            if include_target or column.semantic_role != "target"
+            column for column in self.columns if include_target or column.semantic_role != "target"
         ]
         expected_names = [column.name for column in expected]
         issues: list[ValidationIssue] = []
@@ -224,7 +226,11 @@ class DataContract:
                 "missing_required_column" if contract.required else "missing_optional_column",
                 severity,
                 name,
-                f"Required column '{name}' is missing" if contract.required else f"Optional column '{name}' is missing",
+                (
+                    f"Required column '{name}' is missing"
+                    if contract.required
+                    else f"Optional column '{name}' is missing"
+                ),
                 expected=contract.expected_dtype,
             )
 

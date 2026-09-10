@@ -101,7 +101,9 @@ def test_fit_resample_is_explicit_and_does_not_change_transform(training_frame):
     before = plan.state_fingerprint
     features = training_frame.drop(columns="label")
 
-    sampled_features, sampled_target = plan.fit_resample(features, training_frame["label"], "oversample")
+    sampled_features, sampled_target = plan.fit_resample(
+        features, training_frame["label"], "oversample"
+    )
 
     assert len(sampled_features) == len(sampled_target)
     assert len(sampled_features) >= len(features)
@@ -123,8 +125,10 @@ def test_plan_save_load_round_trip_and_manifest(training_frame, tmp_path):
 
 
 def test_corrupt_plan_is_rejected(training_frame, tmp_path):
-    path = DataPlan.infer(training_frame, target="label").fit(training_frame).save(
-        tmp_path / "dataset.apml"
+    path = (
+        DataPlan.infer(training_frame, target="label")
+        .fit(training_frame)
+        .save(tmp_path / "dataset.apml")
     )
     corrupt_path = tmp_path / "corrupt.apml"
     with zipfile.ZipFile(path, "r") as source, zipfile.ZipFile(corrupt_path, "w") as target:
