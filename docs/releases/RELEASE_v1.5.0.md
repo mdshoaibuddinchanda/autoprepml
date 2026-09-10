@@ -56,4 +56,5 @@ objective. These improvements are additive and do not lower the 90 percent
 release gate.
 
 See the [migration guide](../migration_v1.5.md), [API reference](../api_reference.md),
-and [root README](../../README.md) for usage details.
+and [root README](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/README.md)
+for usage details.
