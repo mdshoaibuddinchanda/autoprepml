@@ -257,7 +257,7 @@ class ImagePrepML:
         if self.issues:
             print("\nIssue breakdown:")
             for issue_type, items in self.issues.items():
-                print(f"   • {issue_type}: {len(items)}")
+                print(f"   {issue_type}: {len(items)}")
         else:
             print("\nNo issues detected.")
 

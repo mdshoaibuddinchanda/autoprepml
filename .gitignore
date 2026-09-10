@@ -33,6 +33,7 @@ MANIFEST
 
 # Unit test / coverage reports
 htmlcov/
+pytest.xml
 .tox/
 .nox/
 .coverage
@@ -153,3 +154,6 @@ creator_examples/*.json
 # Default dashboard outputs created by examples and tests
 /dashboard.html
 /missing_data.html
+
+# CI failure archives and other local investigation artifacts
+assets/

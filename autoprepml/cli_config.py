@@ -137,7 +137,7 @@ Supported providers: openai, anthropic, google, ollama
             masked = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***"
             print(f"{info['name']} API key is configured: {masked}")
         elif provider == "ollama":
-            print(f"ℹ️  {info['name']} doesn't require an API key (local LLM)")
+            print(f"{info['name']} doesn't require an API key (local LLM)")
         else:
             print(f"{info['name']} API key is not configured")
             print(f"   Configure it with: autoprepml-config --set {provider}")
@@ -157,7 +157,7 @@ Supported providers: openai, anthropic, google, ollama
         print(f"Config File: {AutoPrepMLConfig.CONFIG_FILE}")
         print("\nSupported LLM Providers:")
         for provider, info in AutoPrepMLConfig.PROVIDERS.items():
-            print(f"  • {info['name']}")
+            print(f"  {info['name']}")
         print("\nDocumentation: https://github.com/mdshoaibuddinchanda/autoprepml")
         print("=" * 60 + "\n")
         return 0

@@ -30,11 +30,14 @@ The processing flow is straightforward:
 - **Train-only normalization**: Fitted tabular scalers and explicit image pixel conventions prevent data leakage
 - **Production readiness baseline**: Automated tests, coverage, linting, security, packaging, and documentation gates
 
-### Advanced Features (v1.4.0)
+### Current feature set (1.4.1 release candidate)
 - **AutoEDA**: Automated exploratory data analysis with insights generation
 - **AutoFeatureEngine**: Intelligent feature engineering with 8 creation methods
 - **Interactive Dashboards**: Plotly visualizations and Streamlit app generation
 - **Enhanced LLM Assistant**: Column renaming, documentation, quality analysis
+- **Large-data execution**: Bounded chunking, ordered parallel processing, and streaming output
+- **Storage and tracking integrations**: Local, in-memory, fsspec, MLflow, and experiment manifests
+- **Model pipeline integration**: Leakage-safe scikit-learn preprocessing and estimator pipelines
 - **Normalization utilities**: Train-only tabular scalers, image statistics, and explicit pixel conventions
 
 ### Previous Releases
@@ -50,14 +53,13 @@ The processing flow is straightforward:
 | [Supported Data Types](#supported-data-types) | Overview of tabular, text, time series, graph, and image data |
 | [Installation](#installation) | Install from source or PyPI |
 | [Quick Start](#quick-start-guide) | A short tutorial for each data type |
-| [Version 1.4.0 Features](#advanced-features-v140) | Large-data execution, integrations, and creator workflows |
-| [Version 1.3.0 Features](#v130-new-features) | AutoEDA, feature engineering, dashboards |
+| [Current feature details](#feature-details) | AutoEDA, feature engineering, dashboards, and integrations |
 | [Advanced Features](docs/ADVANCED_FEATURES.md) | KNN and iterative imputation, and SMOTE |
 | [LLM Integration](docs/LLM_CONFIGURATION.md) | Model assisted suggestions from multiple providers |
 | [Dynamic LLM Configuration](docs/DYNAMIC_LLM_CONFIGURATION.md) | Configure supported models at runtime |
 | [CLI Configuration](docs/QUICK_START_CLI.md) | Manage provider credentials with autoprepml-config |
 | [CLI Reference](#command-line-usage) | Command line options and examples |
-| [Examples](#examples-directory) | Working notebooks with reproducible outputs |
+| [Examples](#examples) | Working notebooks with reproducible outputs |
 | [Normalization standards](docs/normalization.md) | Production rules for CSV, image, text, time-series, and graph processing |
 | [Full API](#complete-feature-reference) | Function and class reference |
 | [Configuration](#configuration) | YAML and JSON configuration for reproducibility |
@@ -144,7 +146,7 @@ python -c "from autoprepml import AutoPrepML; print('Installation successful')"
 autoprepml --help
 ```
 
-## v1.3.0 New Features
+## Feature details
 
 ### AutoEDA: Automated Exploratory Data Analysis
 
@@ -331,7 +333,7 @@ print(fix)
 
 ### New Dependencies
 
-v1.3.0 adds optional dependencies for visualization:
+The visualization extra provides optional dependencies:
 
 ```bash
 # Install with visualization support
@@ -360,7 +362,7 @@ df = pd.read_csv('data.csv')
 
 # Initialize and clean
 prep = AutoPrepML(df)
-clean_df, target = prep.clean(task='classification', target_col='label')
+clean_df, report = prep.clean(task='classification', target_col='label')
 
 # Generate report
 prep.save_report('report.html')
@@ -564,7 +566,7 @@ print(f"Missing values: {issues['missing_values']}")
 print(f"Outliers: {issues['outliers']['outlier_count']}")
 
 # Auto-clean
-clean_df, target = prep.clean(task='classification', target_col='Survived', auto=True)
+clean_df, report = prep.clean(task='classification', target_col='Survived', auto=True)
 
 # Generate report
 prep.save_report('titanic_report.html')
@@ -748,12 +750,11 @@ cleaning:
 
 detection:
   outlier_method: iforest
-  outlier_contamination: 0.1
+  contamination: 0.1
   imbalance_threshold: 0.3
 
 reporting:
   include_plots: true
-  plot_dpi: 100
 
 logging:
   level: INFO
@@ -766,7 +767,7 @@ from autoprepml import AutoPrepML
 
 # Load with config file
 prep = AutoPrepML(df, config_path='config.yaml')
-clean_df, target = prep.clean(task='classification', target_col='label')
+clean_df, report = prep.clean(task='classification', target_col='label')
 
 # Or pass config dict directly
 config = {
@@ -794,6 +795,7 @@ files or creating repository artifacts.
 | `05_image_data.ipynb` | Temporary synthetic images, validation, normalization, and augmentation |
 | `06_scalable_pipeline.ipynb` | Chunking, parallel processing, streaming, storage, and experiment tracking |
 | `07_llm_integration.ipynb` | Provider configuration and opt-in LLM requests without exposing credentials |
+| `08_normalization_standards.ipynb` | Train-only normalization, image statistics, and preprocessing standards |
 
 Install the notebook extra and run the full suite from the repository root:
 
@@ -946,10 +948,15 @@ prep = AutoPrepML(df, config={'reporting': {'include_plots': False}})
 from autoprepml import process_chunks
 
 def clean_chunk(chunk):
-    return AutoPrepML(chunk, config={'reporting': {'include_plots': False}}).clean()[0]
+    return chunk.dropna(subset=['label']).reset_index(drop=True)
 
 cleaned = process_chunks('big.csv', clean_chunk, chunksize=10000, n_jobs=4)
 ```
+
+This example is appropriate for bounded, row-local cleaning. Do not fit an
+imputer or scaler independently in every chunk when training a model. Fit the
+transformer on the training partition once and apply it to each chunk; use
+`make_model_pipeline` for that leakage-safe workflow.
 
 ### Streaming, storage, and experiment tracking
 
@@ -1015,8 +1022,29 @@ For support, use the [issue tracker](https://github.com/mdshoaibuddinchanda/auto
 
 ### Planned
 
-- [ ] Publish reproducible performance benchmarks for representative workloads.
-- [ ] Continue raising coverage and strengthening contract, integration, and smoke tests.
+#### Patch release 1.4.1
+
+- [x] Apply train-only preprocessing and explicit normalization conventions.
+- [x] Validate configuration values before a workflow starts.
+- [x] Remove generated CI artifacts and document a reproducible release gate.
+- [ ] Create the `v1.4.1` tag and publish only after the release workflow is green.
+
+#### Minor release 1.5.0
+
+- [ ] Publish reproducible benchmarks for representative tabular, text, image, and streaming workloads.
+- [ ] Add schema contracts and compatibility checks for storage and streaming adapters.
+- [ ] Expand adapter coverage for object stores and experiment tracking backends.
+- [ ] Strengthen integration, contract, and smoke tests while keeping coverage thresholds honest.
+
+#### Major release 2.0.0
+
+- [ ] Version the adapter and model-pipeline protocols for long-term extensibility.
+- [ ] Review breaking API cleanup, deprecations, and configuration migration tooling.
+- [ ] Add a documented resource planner for CPU, memory, process, and optional GPU execution.
+
+### Release policy
+
+Patch releases contain backwards-compatible fixes, documentation updates, and safety corrections. Minor releases add backwards-compatible capabilities. Major releases are reserved for intentional breaking API changes and include migration guidance. A release tag must match the version in `pyproject.toml`; the trusted publisher workflow is the only supported path to PyPI.
 
 ## Use Cases
 

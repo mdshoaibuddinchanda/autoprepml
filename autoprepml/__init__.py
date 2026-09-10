@@ -4,7 +4,7 @@ A Python library for automatic detection, cleaning, and reporting of common
 data quality issues in machine learning pipelines with LLM-powered suggestions.
 """
 
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __author__ = "MD Shoaibuddin Chanda"
 __license__ = "MIT"
 
@@ -56,7 +56,7 @@ __all__ = [
     "TimeSeriesPrepML",
     "GraphPrepML",
     "ImagePrepML",
-    # v1.3.0 and v1.4.0 features
+    # Current and historical feature exports
     "AutoEDA",
     "AutoFeatureEngine",
     "auto_feature_engineering",

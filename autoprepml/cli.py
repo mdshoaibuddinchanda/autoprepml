@@ -102,13 +102,13 @@ Examples:
         missing_count = len(detection_results.get("missing_values", {}))
         outlier_count = detection_results.get("outliers", {}).get("outlier_count", 0)
 
-        print(f"   • Missing values: {missing_count} columns affected")
-        print(f"   • Outliers detected: {outlier_count} rows")
+        print(f"   Missing values: {missing_count} columns affected")
+        print(f"   Outliers detected: {outlier_count} rows")
 
         if args.target and "class_imbalance" in detection_results:
             imbalance = detection_results["class_imbalance"]
             status = "Imbalanced" if imbalance["is_imbalanced"] else "Balanced"
-            print(f"   • Class distribution: {status}")
+            print(f"   Class distribution: {status}")
 
         if args.detect_only:
             print("\nDetection complete (--detect-only mode)")
@@ -126,7 +126,7 @@ Examples:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         clean_df.to_csv(args.output, index=False)
         print(f"Cleaned data saved to {args.output}")
-        print(f"   Shape: {clean_df.shape[0]} rows × {clean_df.shape[1]} columns")
+        print(f"   Shape: {clean_df.shape[0]} rows x {clean_df.shape[1]} columns")
 
         # Save report
         if args.report:

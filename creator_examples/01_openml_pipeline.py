@@ -17,7 +17,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 from autoprepml import (
-    AutoPrepML,
     LocalExperimentTracker,
     make_model_pipeline,
     process_chunks,
@@ -25,10 +24,8 @@ from autoprepml import (
 
 
 def clean_chunk(chunk: pd.DataFrame) -> pd.DataFrame:
-    """Apply the library's current stateless cleaning API to one chunk."""
-    prep = AutoPrepML(chunk, config={"reporting": {"include_plots": False}})
-    cleaned, _ = prep.clean()
-    return cleaned
+    """Apply row-local cleaning without fitting statistics per chunk."""
+    return chunk.dropna(subset=["target"]).reset_index(drop=True)
 
 
 def run_creator_example(rows: int = 300, seed: int = 42) -> Dict[str, Any]:

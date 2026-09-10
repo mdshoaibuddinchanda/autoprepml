@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-No changes recorded yet.
+Future work is tracked in the repository roadmap. The next planned minor
+release focuses on benchmark evidence, schema contracts, and broader adapter
+integration.
+
+## [1.4.1] - Release candidate
+
+### Changed
+
+- Added train-only imputation and scaling paths through `fit_frame`,
+  `TabularNormalizer`, and scikit-learn model pipelines.
+- Made high-level nominal categorical encoding one-hot by default while
+  retaining explicit label encoding for ordinal features.
+- Excluded supervised targets from outlier detection and advanced imputation;
+  missing target labels are dropped before cleaning and balancing.
+- Added fail-fast configuration validation for supported enum and numeric
+  controls.
+- Added deterministic image ordering, SHA-256 duplicate detection, and
+  constructor validation for image geometry and color mode.
+- Added chronological time-series normalization safeguards and validation for
+  lags, interpolation, and resampling.
+- Removed a tracked CI failure archive and ignored future local investigation
+  artifacts.
+- Expanded regression tests and documentation for the production contracts.
 
 ## [1.4.0]: 2026-09-10
 
@@ -41,7 +63,7 @@ No changes recorded yet.
   - `generate_report()`: Interactive HTML reports with visualizations
   - `to_json()`: Export analysis results to JSON format
 - **Full Integration**: Added to `autoprepml` package exports
-- **Example Script**: `examples/demo_autoeda.py` with complete workflow
+- **Example Notebook**: `examples/notebooks/01_tabular_quality.ipynb` with complete workflow
 - **Test Suite**: 40+ comprehensive tests for AutoEDA module
 
 ### Added: AutoFeatureEngine Module
@@ -56,7 +78,7 @@ No changes recorded yet.
   - `get_feature_importance()`: Rank features by importance
 - **Convenience Function**: `auto_feature_engineering()` for quick feature creation
 - **Full Integration**: Added to `autoprepml` package exports
-- **Example Script**: `examples/demo_feature_engine.py` with all methods
+- **Example Notebook**: `examples/notebooks/01_tabular_quality.ipynb` with feature engineering methods
 - **Test Suite**: 45+ comprehensive tests for feature engineering
 
 ### Added: Interactive Dashboard Module
@@ -77,7 +99,7 @@ No changes recorded yet.
   - Preprocessing tab (missing value handling, encoding)
   - Feature engineering tab (interactions, polynomial, binning)
 - **Full Integration**: Added to `autoprepml` package exports
-- **Example Script**: `examples/demo_dashboard.py` with all visualizations
+- **Example Notebook**: `examples/notebooks/01_tabular_quality.ipynb` with visualisation output
 - **Test Suite**: 35+ comprehensive tests for dashboard module
 
 ### Added: Enhanced LLM Assistant
@@ -91,7 +113,7 @@ No changes recorded yet.
   - `suggest_column_rename()`: Quick column rename
   - `generate_data_documentation()`: Quick doc generation
 - **Full Integration**: Enhanced existing LLMSuggestor class
-- **Example Script**: `examples/demo_llm_assistant.py` with all features
+- **Example Notebook**: `examples/notebooks/07_llm_integration.ipynb` with provider configuration
 - **Use Cases**:
   - Automated dataset documentation
   - Intelligent column naming for readability
@@ -148,7 +170,7 @@ No changes recorded yet.
   - NumPy array export for ML pipelines
 - **Convenience Function**: `preprocess_images()` for quick processing
 - **Full Integration**: Added to `autoprepml` package exports
-- **Example Script**: `examples/demo_image.py` with complete workflow
+- **Example Notebook**: `examples/notebooks/05_image_data.ipynb` with complete workflow
 - **Test Suite**: 17 comprehensive tests for image module
 
 ## [1.0.1]: 2025-10-24 (v1.2.0 Features)
@@ -216,7 +238,7 @@ No changes recorded yet.
   - Complete integration verification
   - Feature matrix
   - API consistency checks
-- **V1.2.0 Roadmap** (`V1.2.0_ROADMAP.md`)
+- **V1.2.0 Release Notes** (`docs/releases/RELEASE_v1.2.0.md`)
   - Implementation plan for v1.2.0 features
   - Priority matrix
   - Timeline and dependencies
@@ -238,7 +260,7 @@ No changes recorded yet.
 - **Total Test Count**: 159 tests (125 passing, 7 skipped, 27 requiring optional dependencies)
 
 ### Added: Examples
-- **Complete Integration Demo** (`examples/complete_integration_demo.py`)
+- **Complete Integration Example** (`creator_examples/01_openml_pipeline.py`)
   - Demonstrates all v1.2.0 features
   - Shows basic  to  advanced  to  LLM workflow
   - Multiple provider examples

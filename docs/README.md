@@ -1,6 +1,7 @@
 # AutoPrepML Documentation
 
-Version 1.4.0. See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository](https://github.com/mdshoaibuddinchanda/autoprepml), and [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
+The repository currently targets the 1.4.1 patch release. PyPI 1.4.0 remains
+the latest published version until the 1.4.1 tag is created. See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository](https://github.com/mdshoaibuddinchanda/autoprepml), and [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
 
 ## Documentation Overview
 
@@ -18,6 +19,7 @@ Version 1.4.0. See the [PyPI package](https://pypi.org/project/autoprepml/), [Gi
 - **[Dynamic LLM Config](DYNAMIC_LLM_CONFIGURATION.md)**: Runtime configuration management
 
 ### Release Notes
+- **[v1.4.1](releases/RELEASE_v1.4.1.md)**: Production preprocessing safety, normalization, and documentation cleanup
 - **[v1.4.0](releases/RELEASE_v1.4.0.md)**: Chunked execution, storage, streaming, experiment tracking, and sklearn pipelines
 - **[v1.3.0](releases/RELEASE_v1.3.0.md)**: AutoEDA, AutoFeatureEngine, and interactive dashboards
 - **[v1.2.0](releases/RELEASE_v1.2.0.md)**: LLM Integration, Dashboard improvements

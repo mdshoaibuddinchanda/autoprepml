@@ -684,7 +684,7 @@ Provide a brief, actionable summary of data quality issues and recommendations."
 
         prompt = f"""Generate comprehensive markdown documentation for this dataset:
 
-Dataset: {summary['shape']['rows']} rows × {summary['shape']['columns']} columns
+Dataset: {summary['shape']['rows']} rows x {summary['shape']['columns']} columns
 
 Columns: {', '.join(summary['columns'][:20])}
 Data types: {summary['dtypes']}

@@ -17,6 +17,10 @@ income dataset. The script uses only aggregate output in the terminal. The
 dataset license and source are documented by [UCI](https://archive.ics.uci.edu/dataset/2/adult)
 and the [OpenML data guide](https://docs.openml.org/data/use/).
 
+The chunk callback performs only row-local target filtering. Model imputers,
+encoders, and scalers are fitted once on the training partition through
+`make_model_pipeline`, then applied to the test partition. This keeps the
+example leakage-safe while still demonstrating bounded parallel processing.
+
 The matching notebook is `01_openml_pipeline.ipynb`. It contains the same
 workflow as executable cells and does not embed downloaded data.
-

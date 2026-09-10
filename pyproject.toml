@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoprepml"
-version = "1.4.0"
+version = "1.4.1"
 description = "Multi-modal Python preprocessing and EDA toolkit for tabular, text, time-series, graph, and image data"
 readme = "README.md"
 requires-python = ">=3.9"

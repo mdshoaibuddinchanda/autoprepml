@@ -37,6 +37,7 @@ nav:
   - LLM configuration: LLM_CONFIGURATION.md
   - Dynamic LLM configuration: DYNAMIC_LLM_CONFIGURATION.md
   - Releases:
+      - v1.4.1: releases/RELEASE_v1.4.1.md
       - v1.4.0: releases/RELEASE_v1.4.0.md
       - v1.3.0: releases/RELEASE_v1.3.0.md
       - v1.2.0: releases/RELEASE_v1.2.0.md
