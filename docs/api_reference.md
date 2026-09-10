@@ -1,6 +1,6 @@
 # API Reference
 
-This page summarises the public API exposed by AutoPrepML 1.5.0 development.
+This page summarises the public API exposed by AutoPrepML 1.5.0.
 Type signatures are representative; consult the package source and docstrings
 for the complete contract.
 

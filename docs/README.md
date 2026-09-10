@@ -1,7 +1,7 @@
 # AutoPrepML Documentation
 
-The repository currently targets the 1.5.0 development release. PyPI 1.4.0
-remains the latest published version while the v1.5 architecture is developed.
+The repository currently documents the 1.5.0 release. The fitted v1.5 API is
+the recommended path for reproducible, train-only preprocessing workflows.
 See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository](https://github.com/mdshoaibuddinchanda/autoprepml), and [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
 
 ## Project tags
@@ -46,7 +46,7 @@ to the fitted v1.5 architecture, integrations, and release procedures.
 - **[Benchmark harness](https://github.com/mdshoaibuddinchanda/autoprepml/tree/main/benchmarks)**: Reproduce synthetic fitted-plan and chunked throughput measurements
 
 ### Release Notes
-- **[v1.5.0 development plan](releases/RELEASE_v1.5.0.md)**: DataPlan, contracts, fingerprints, lineage, and serialization
+- **[v1.5.0 release](releases/RELEASE_v1.5.0.md)**: DataPlan, contracts, fingerprints, lineage, and serialization
 - **[v1.4.1](releases/RELEASE_v1.4.1.md)**: Production preprocessing safety, normalization, and documentation cleanup
 - **[v1.4.0](releases/RELEASE_v1.4.0.md)**: Chunked execution, storage, streaming, experiment tracking, and sklearn pipelines
 - **[v1.3.0](releases/RELEASE_v1.3.0.md)**: AutoEDA, AutoFeatureEngine, and interactive dashboards
@@ -85,7 +85,7 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 
 ## Testing and CI/CD
 
-The [root README testing section](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/README.md#testing) is the canonical source for the current quality baseline. Continuous integration runs the test and coverage suite on Python 3.9 through 3.14 with an 80 percent branch-aware gate, adds Windows and macOS validation on Python 3.12, and blocks linting, security, packaging, and documentation regressions.
+The [root README testing section](https://github.com/mdshoaibuddinchanda/autoprepml/blob/main/README.md#testing) is the canonical source for the current quality baseline. Continuous integration runs the test and coverage suite on Python 3.9 through 3.14 with a 90 percent branch-aware gate, adds Windows and macOS validation on Python 3.12, and blocks linting, security, packaging, and documentation regressions.
 
 ## Contributing
 

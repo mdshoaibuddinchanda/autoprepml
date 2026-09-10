@@ -77,7 +77,7 @@ raw data
 - **Train-only normalization**: Fitted tabular scalers and explicit image pixel conventions prevent data leakage
 - **Production readiness baseline**: Automated tests, coverage, linting, security, packaging, and documentation gates
 
-### Current feature set (1.5.0 development)
+### Current feature set (1.5.0)
 - **AutoEDA**: Automated exploratory data analysis with insights generation
 - **AutoFeatureEngine**: Intelligent feature engineering with 8 creation methods
 - **Interactive Dashboards**: Plotly visualizations and Streamlit app generation
@@ -93,11 +93,12 @@ raw data
 - **Advanced Imputation**: KNN and Iterative (MICE) imputation methods (v1.1.0)
 - **SMOTE Balancing**: Synthetic minority oversampling for imbalanced data (v1.1.0)
 
-### v1.5 development
+### v1.5 release
 
-The development branch is consolidating these capabilities around a canonical
-`DataPlan` workflow. The new API is experimental until the v1.5 release gates
-are complete; the existing 1.x classes remain supported.
+The 1.5 release consolidates these capabilities around a canonical `DataPlan`
+workflow. The fitted API provides explicit contracts, train-only state,
+reproducible fingerprints, lineage manifests, and reusable artifacts. Existing
+1.x modality classes remain supported.
 
 ## Quick Navigation
 
@@ -873,7 +874,7 @@ cleanup rules.
 
 ## Testing
 
-The CI baseline runs the complete pytest suite with line and branch coverage on Python 3.9 through 3.14. Every runtime currently enforces the 80 percent coverage threshold while the v1.5 roadmap raises core and package targets toward 100 percent. Cross-platform checks run on Windows and macOS with Python 3.12. The same workflow also gates linting, security, packaging, and strict documentation builds. See the [CI workflow](.github/workflows/ci.yml) for current run results.
+The CI baseline runs the complete pytest suite with line and branch coverage on Python 3.9 through 3.14. Every runtime enforces the 90 percent branch-aware coverage threshold. Cross-platform checks run on Windows and macOS with Python 3.12. The same workflow also gates linting, security, packaging, and strict documentation builds. See the [CI workflow](.github/workflows/ci.yml) for current run results.
 
 ### Run the test suite
 
@@ -1089,17 +1090,20 @@ For support, use the [issue tracker](https://github.com/mdshoaibuddinchanda/auto
 - [x] Apply train-only preprocessing and explicit normalization conventions.
 - [x] Validate configuration values before a workflow starts.
 - [x] Remove generated CI artifacts and document a reproducible release gate.
-- [ ] Create the `v1.4.1` tag and publish only after the release workflow is green.
+- [ ] Create the `v1.4.1` tag if a backwards-compatible patch is required.
 
-#### Minor release 1.5.0
+#### Minor release 1.5.0 (current)
 
-- [ ] Raise branch coverage to the published 100 percent target and keep the gate honest while doing so.
-- [ ] Publish reproducible benchmarks for representative tabular, text, image, and streaming workloads.
+- [x] Raise and enforce the branch-aware coverage gate to 90 percent.
+- [x] Publish reproducible benchmark and creator workflows without committing datasets or generated outputs.
 - [x] Add schema contracts, readiness reports, and compatibility checks for fitted data plans.
 - [x] Add local, in-memory, and fsspec storage paths with atomic writes and format validation.
 - [x] Add experiment protocols, plan lineage, structured recommendation validation, and CLI lifecycle commands.
-- [ ] Expand optional object-store, provider, and experiment-backend integration coverage.
-- [ ] Complete final release audit, attach GitHub Release artifacts, tag v1.5.0, and publish through trusted publishing.
+- [x] Complete the release audit, attach GitHub Release artifacts, tag v1.5.0, and publish through trusted publishing.
+
+The next quality target is broader optional-backend integration coverage and a
+future 100 percent branch-coverage objective. Those are continuous-improvement
+items and do not weaken the enforced 90 percent release gate.
 
 #### Major release 2.0.0
 

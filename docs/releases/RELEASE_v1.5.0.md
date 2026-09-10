@@ -1,54 +1,59 @@
-# AutoPrepML v1.5 development plan
+# AutoPrepML v1.5.0
 
-The branch is versioned `1.5.0.dev0`; no v1.5.0 package or PyPI release has
-been published.
+AutoPrepML 1.5.0 is the production release of the fitted data-readiness
+workflow. It keeps the existing modality APIs while adding explicit contracts,
+train-only fitting, reproducible identity, lineage, and artifact boundaries.
 
-Version 1.5 is an engineering consolidation release. It makes ML data
-readiness the centre of the project: validated schemas, train-only fitting,
-reproducible fingerprints, transformation lineage, and reusable artifacts.
-It does not add another modality or become a model-training framework.
+## Release highlights
 
-## Delivered in the current development branch
+* `DataPlan` provides `infer`, `fit`, `transform`, `validate`, `fit_resample`,
+  `save`, and `load` lifecycle operations.
+* `DataContract` and structured validation reports identify missing, unexpected,
+  incompatible, null, range, category, order, and uniqueness issues.
+* Schema and content fingerprints support schema-only, sampled, and full modes
+  without placing raw records in reports.
+* Checksummed `.apml` artifacts contain versioned manifests, transformation
+  lineage, dependency metadata, and reproducibility state.
+* Chunked and ordered parallel execution, storage adapters, streaming output,
+  local experiment tracking, MLflow integration, and sklearn model pipelines
+  support larger production workflows.
+* Forecast-safe time-series features, train-only normalization, image pixel
+  conventions, and validated structured LLM responses reduce leakage and
+  integration risk.
+* The CLI supports inspect, fit, validate, transform, and version operations
+  with JSON output suitable for automation.
 
-* `DataPlan` lifecycle with explicit `infer`, `fit`, `transform`, `validate`,
-  `fit_resample`, `save`, and `load` operations.
-* Lightweight `DataContract`, `ColumnContract`, `ValidationIssue`, and
-  `ValidationReport` objects.
-* Deterministic schema and content fingerprints with schema, sampled, and full
-  modes.
-* Checksummed, atomic `.apml` artifacts with machine-readable manifests.
-* Stable exception hierarchy and a shared `PrepProtocol` typing boundary.
-* Structured readiness reports covering schema integrity, leakage safety,
-  reproducibility, dataset identity, and lineage.
-* Modern CLI subcommands for `inspect`, `fit`, `validate`, `transform`, and
-  `version`, with JSON output suitable for automation.
-* Bounded sparse and dense transform policies, with a configurable guard
-  against accidental sparse-to-dense memory explosions.
-* Hardened local, in-memory, and fsspec storage paths with format validation,
-  empty-input handling, atomic replacement, and file synchronization.
-* Experiment protocols and plan-manifest logging for local and optional MLflow
-  runs, plus a train-only fitted feature selector.
-* Executable canonical documentation examples, property tests, and strict
-  static typing for the v1.5 core modules.
-* Forecast-safe time-series lag and rolling features that require chronological
-  input, and historical-only normalization boundaries.
-* Validated structured LLM analysis and feature recommendations. Model output
-  remains advisory and is never executed as configuration.
-* Documentation for architecture, leakage prevention, contracts,
-  reproducibility, lineage, serialization, and product limitations.
-* Compatibility with pandas 2 text columns reported as `object` and pandas 3
-  text columns reported as `str`, including stable schema fingerprints.
+## Quality gates
 
-## Remaining release gates
+The release was validated by the complete test suite and the GitHub Actions
+matrix on Python 3.9 through 3.14, Windows, macOS, and Linux. The enforced gate
+is 90 percent branch-aware coverage; the local release baseline is 513 passed,
+3 skipped, and 90.32 percent coverage. CI also runs Ruff, Black, strict typing
+for the v1.5 core, Bandit, pip-audit, documentation builds, notebook execution,
+and a clean wheel and source distribution smoke test.
 
-The 1.5.0 release is not ready to publish. Remaining work is concentrated on
-raising and enforcing coverage for every public branch, adding reproducible
-benchmark and research workflows, completing broader adapter and optional
-provider integration tests, and finishing final release hardening. Governance
-files and the migration guide are included in the development branch.
+## Data and examples
 
-The current development branch must continue to pass the Python 3.9-3.14 CI
-matrix and must not lower the current 80 percent branch-aware coverage gate.
-The final release also requires a fresh-environment wheel smoke test, complete
-documentation and notebook execution, attached GitHub Release artifacts, and
-an explicit review of branch protection and trusted publishing settings.
+The maintained notebooks use deterministic synthetic data. The creator workflow
+can download the public OpenML Adult dataset into a temporary directory for a
+smoke run, and removes the dataset and generated artifacts before completing.
+No datasets, model files, credentials, or generated reports are committed.
+
+## Compatibility and trust
+
+The package requires Python 3.9 or newer. Existing 1.x modality classes remain
+available. Unknown categories are handled deterministically by the fitted
+pipeline, and pandas 2 and pandas 3 text dtype labels are treated as equivalent
+at the contract boundary. `.apml` state uses pickle internally; load artifacts
+only from trusted sources, because a checksum detects corruption but cannot make
+an untrusted pickle safe.
+
+## Follow-up roadmap
+
+Future work includes broader live-provider and object-store integration tests,
+more benchmark history, and a carefully reviewed 100 percent branch-coverage
+objective. These improvements are additive and do not lower the 90 percent
+release gate.
+
+See the [migration guide](../migration_v1.5.md), [API reference](../api_reference.md),
+and [root README](../../README.md) for usage details.

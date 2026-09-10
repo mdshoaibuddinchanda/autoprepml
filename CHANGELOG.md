@@ -5,13 +5,12 @@ All notable changes to AutoPrepML will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.5.0] - 2026-09-10
 
-Version 1.5 development is tracked in
-`docs/releases/RELEASE_v1.5.0.md` and the repository roadmap. The release
-consolidates DataPlan architecture, contracts, fingerprints, lineage, scalable
-execution, CLI workflows, and reproducible quality controls; it is not ready
-to publish.
+This release consolidates DataPlan architecture, contracts, fingerprints,
+lineage, scalable execution, CLI workflows, and reproducible quality controls.
+The release gate enforces 90 percent branch-aware coverage across the supported
+Python 3.9 through 3.14 matrix.
 
 ### Added
 

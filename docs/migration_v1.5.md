@@ -1,8 +1,8 @@
-# Migration guide for the v1.5 development API
+# Migration guide for the v1.5 API
 
-The v1.5 development line introduces a canonical fitted workflow without
-removing the existing 1.x classes. The new API is experimental until the
-release gates in the v1.5 release note are complete.
+The v1.5 release introduces a canonical fitted workflow without removing the
+existing 1.x classes. Use the new API when preprocessing feeds a supervised
+model or a repeatable batch inference job.
 
 ## Recommended migration
 
@@ -61,7 +61,5 @@ train/test contract should migrate to `DataPlan`.
 
 ## Version and support policy
 
-The development package version is `1.5.0.dev0`. Do not publish it as a final
-release. Follow `RELEASE_CHECKLIST.md` and the v1.5 release note when the
-remaining coverage, CLI, integration, benchmark, and governance gates are
-complete.
+The package version is `1.5.0`. Follow `RELEASE_CHECKLIST.md` for subsequent
+patch releases and keep artifact loading restricted to trusted sources.
