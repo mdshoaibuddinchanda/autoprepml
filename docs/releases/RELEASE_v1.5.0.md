@@ -29,7 +29,8 @@ The 1.5.0 release is not ready to publish. Remaining work includes storage and
 tracking coverage, time-series and supervised feature-engineering audits,
 structured LLM suggestions, CLI subcommands, strict static typing, property
 tests, branch-coverage improvement, reproducible benchmarks, research
-experiments, governance files, and a migration guide.
+experiments, and final release hardening. Governance files and the migration
+guide are now included in the development branch.
 
 The current development branch must continue to pass the existing Python
 3.9-3.14 CI matrix and must not lower the current coverage gate. The final
