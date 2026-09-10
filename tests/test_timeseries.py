@@ -409,3 +409,68 @@ def test_historical_normalizer_is_invariant_to_future_value_changes():
     second = TimeSeriesPrepML(changed, "date", "value").fit_normalizer(fit_end=4)
     np.testing.assert_allclose(first.normalizer_.scaler_.mean_, second.normalizer_.scaler_.mean_)
     np.testing.assert_allclose(first.normalizer_.scaler_.scale_, second.normalizer_.scaler_.scale_)
+
+
+def test_timeseries_rejects_unparseable_timestamps_and_missing_value_operations():
+    with pytest.raises(ValueError, match="Could not convert"):
+        TimeSeriesPrepML(pd.DataFrame({"date": ["not-a-date"]}), "date")
+    frame = pd.DataFrame({"date": pd.date_range("2024-01-01", periods=2)})
+    prep = TimeSeriesPrepML(frame, "date")
+    for operation in (prep.interpolate_missing, prep.detect_outliers):
+        with pytest.raises(ValueError, match="value_column"):
+            operation()
+    with pytest.raises(ValueError, match="value_column"):
+        prep.add_lag_features()
+    with pytest.raises(ValueError, match="value_column"):
+        prep.add_rolling_features()
+    with pytest.raises(ValueError, match="columns or value_column"):
+        prep.fit_normalizer()
+
+
+def test_timeseries_interpolation_and_outlier_validation():
+    frame = pd.DataFrame(
+        {"date": pd.date_range("2024-01-01", periods=3), "value": [np.nan, 2.0, np.nan]}
+    )
+    prep = TimeSeriesPrepML(frame, "date", "value")
+    prep.interpolate_missing(method="bfill")
+    assert prep.df["value"].iloc[0] == 2.0
+    with pytest.raises(ValueError, match="Unknown interpolation"):
+        prep.interpolate_missing(method="nearest")
+    with pytest.raises(ValueError, match="Unknown method"):
+        prep.detect_outliers(method="mad")
+    with pytest.raises(ValueError, match="Unknown method"):
+        prep.detect_outliers(method="zscorex")
+
+
+@pytest.mark.parametrize("agg_func", ["sum", "min", "max", "count"])
+def test_timeseries_resample_all_aggregation_functions(agg_func):
+    frame = pd.DataFrame(
+        {"date": pd.date_range("2024-01-01", periods=4), "value": [1.0, 2.0, 3.0, 4.0]}
+    )
+    result = TimeSeriesPrepML(frame, "date", "value").resample("2D", agg_func=agg_func)
+    assert len(result) == 2
+    assert "date" in result.columns
+
+
+def test_timeseries_normalizer_guards_and_external_frame():
+    frame = pd.DataFrame(
+        {
+            "date": pd.date_range("2024-01-01", periods=3),
+            "value": [1.0, 2.0, 3.0],
+            "other": [3, 4, 5],
+        }
+    )
+    prep = TimeSeriesPrepML(frame, "date", "value")
+    with pytest.raises(TypeError, match="fit_end"):
+        prep.fit_normalizer(fit_end=True)
+    with pytest.raises(ValueError, match="between"):
+        prep.fit_normalizer(fit_end=0)
+    with pytest.raises(ValueError, match="between"):
+        prep.fit_normalizer(fit_end=4)
+    prep.fit_normalizer(columns=["value"], fit_end=2)
+    external = frame.copy()
+    transformed = prep.transform_normalized(external)
+    assert transformed["value"].tolist() != external["value"].tolist()
+    prep.fit_transform_normalized(columns=["value"])
+    with pytest.raises(ValueError, match="[Oo]utput path"):
+        prep.save_report("report.txt")

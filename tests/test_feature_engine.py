@@ -499,3 +499,106 @@ class TestChaining:
 
         # Should have created features from all operations
         assert result.shape[1] > sample_df.shape[1]
+
+
+def test_feature_engineering_noop_warnings_and_summary_reset(sample_df):
+    fe = AutoFeatureEngine(sample_df[["category"]].copy())
+    with pytest.warns(UserWarning, match="numeric"):
+        fe.create_polynomial_features()
+    with pytest.warns(UserWarning, match="at least 2"):
+        fe.create_interactions(columns=["target"])
+    with pytest.warns(UserWarning, match="at least 2"):
+        fe.create_ratio_features(columns=["target"])
+    with pytest.warns(UserWarning, match="at least 2"):
+        fe.create_aggregation_features(columns=["target"])
+    with pytest.warns(UserWarning, match="No datetime"):
+        fe.create_datetime_features()
+    assert fe.get_features().equals(sample_df[["category"]])
+    assert fe.get_feature_log() == []
+
+    engineered = AutoFeatureEngine(sample_df.copy())
+    engineered.create_interactions(columns=["age", "income"], max_interactions=1)
+    assert engineered.get_summary()["features_created"] == 1
+    engineered.reset()
+    assert engineered.get_features().columns.tolist() == sample_df.columns.tolist()
+    assert engineered.get_feature_log() == []
+
+
+def test_feature_engineering_datetime_conversion_and_extended_features(sample_df):
+    frame = pd.DataFrame({"date": ["2024-01-06", "2024-01-07"], "value": [1.0, 2.0]})
+    fe = AutoFeatureEngine(frame)
+    result = fe.create_datetime_features(
+        features=["year", "month", "day", "hour", "quarter", "is_weekend"]
+    )
+    assert {"date_year", "date_quarter", "date_is_weekend"}.issubset(result.columns)
+    assert result["date_is_weekend"].tolist() == [1, 1]
+
+    no_target = AutoFeatureEngine(sample_df.copy(), target_column="missing")
+    with pytest.warns(UserWarning, match="not found"):
+        no_target.select_features()
+    categorical = AutoFeatureEngine(sample_df[["category", "target"]], target_column="target")
+    with pytest.warns(UserWarning, match="No numeric"):
+        categorical.select_features()
+
+
+def test_feature_engineering_onehot_and_all_aggregation_options(sample_df):
+    fe = AutoFeatureEngine(sample_df.copy())
+    result = fe.create_binned_features(columns=["age"], n_bins=3, encode="onehot")
+    assert any(name.startswith("age_") for name in result.columns)
+    result = fe.create_aggregation_features(
+        columns=["age", "income"],
+        operations=["sum", "mean", "std", "min", "max", "median", "ignored"],
+    )
+    assert {"agg_min", "agg_max", "agg_median"}.issubset(result.columns)
+    importance = AutoFeatureEngine(
+        sample_df.copy(), target_column="target"
+    ).get_feature_importance()
+    assert list(importance.columns) == ["feature", "importance"]
+
+
+@pytest.mark.parametrize(
+    "kwargs, error",
+    [
+        ({"method": "bad"}, "method"),
+        ({"task": "bad"}, "task"),
+        ({"k": 0}, "k"),
+        ({"k": True}, "k"),
+        ({"random_state": False}, "random_state"),
+    ],
+)
+def test_fitted_feature_selector_validates_options(sample_df, kwargs, error):
+    with pytest.raises((TypeError, ValueError), match=error):
+        FittedFeatureSelector(**kwargs).fit(sample_df, "target")
+
+
+def test_fitted_feature_selector_regression_and_input_guards(sample_df):
+    regression = sample_df.copy()
+    regression["target"] = regression["income"] + np.random.default_rng(0).normal(
+        size=len(regression)
+    )
+    selector = FittedFeatureSelector(method="f_test", task="regression", k=100)
+    selected = selector.fit_transform(regression, "target")
+    assert len(selected.columns) == len(regression.select_dtypes(include=[np.number]).columns) - 1
+    with pytest.raises(TypeError, match="DataFrame"):
+        selector.transform(np.ones((2, 2)))
+    with pytest.raises(ValueError, match="missing"):
+        selector.transform(pd.DataFrame({"other": [1]}))
+    with pytest.raises(ValueError, match="missing"):
+        FittedFeatureSelector().fit(regression.assign(target=np.nan), "target")
+    with pytest.raises(ValueError, match="numeric"):
+        FittedFeatureSelector().fit(pd.DataFrame({"text": ["a", "b"], "target": [0, 1]}), "target")
+    with pytest.raises(RuntimeError, match="not fitted"):
+        FittedFeatureSelector().report()
+
+
+def test_auto_feature_engineering_feature_flags(sample_df):
+    result, summary = auto_feature_engineering(
+        sample_df,
+        include_polynomials=False,
+        include_interactions=False,
+        include_ratios=True,
+        include_aggregations=False,
+        max_features=10,
+    )
+    assert isinstance(result, pd.DataFrame)
+    assert "ratio_features" in summary["operations_breakdown"]

@@ -1,5 +1,8 @@
 """Tests for storage adapters."""
 
+import io
+from contextlib import contextmanager
+
 import pandas as pd
 import pytest
 
@@ -8,7 +11,11 @@ from autoprepml.storage import (
     InMemoryStorageAdapter,
     LocalStorageAdapter,
     get_storage_adapter,
+    StorageAdapter,
+    _format_for_path,
+    _read_frame,
 )
+from autoprepml import storage as storage_module
 
 
 def test_local_storage_reads_and_streams_csv(tmp_path):
@@ -100,6 +107,37 @@ def test_storage_rejects_bad_sources_and_adapters(tmp_path):
         get_storage_adapter("file.csv", adapter=object())
 
 
+def test_storage_format_and_parquet_dispatch(monkeypatch, tmp_path):
+    frame = pd.DataFrame({"x": [1]})
+    assert _format_for_path("table.parquet") == "parquet"
+    with pytest.raises(ValueError, match="Unsupported"):
+        _format_for_path("table.tsv")
+    monkeypatch.setattr(pd, "read_parquet", lambda path, **kwargs: frame)
+    pd.testing.assert_frame_equal(_read_frame(tmp_path / "table.parquet"), frame)
+
+
+def test_storage_base_write_chunks_and_memory_write_validation(tmp_path):
+    class MinimalStorage(StorageAdapter):
+        def read(self, source, **kwargs):
+            return pd.DataFrame()
+
+        def iter_chunks(self, source, chunksize=1, **kwargs):
+            yield pd.DataFrame()
+
+        def write(self, frame, destination, **kwargs):
+            self.last = frame
+            return destination
+
+    adapter = MinimalStorage()
+    destination = tmp_path / "out.csv"
+    assert adapter.write_chunks([], destination) == destination
+    adapter.write_chunks([pd.DataFrame({"x": [1]}), pd.DataFrame({"x": [2]})], destination)
+    assert adapter.last["x"].tolist() == [1, 2]
+    memory = InMemoryStorageAdapter()
+    with pytest.raises(TypeError, match="DataFrame"):
+        memory.write([], "table")
+
+
 def test_fsspec_memory_filesystem_round_trip():
     pytest.importorskip("fsspec")
     frame = pd.DataFrame({"value": [1, 2], "label": ["a", "b"]})
@@ -111,3 +149,87 @@ def test_fsspec_memory_filesystem_round_trip():
     pd.testing.assert_frame_equal(storage.read(destination), frame)
     chunks = list(storage.iter_chunks(destination, chunksize=1))
     pd.testing.assert_frame_equal(pd.concat(chunks, ignore_index=True), frame)
+
+
+def test_storage_validates_chunk_sizes_and_memory_sources():
+    frame = pd.DataFrame({"value": [1, 2]})
+    memory = InMemoryStorageAdapter({"table": frame})
+    with pytest.raises(ValueError, match="positive"):
+        list(memory.iter_chunks("table", chunksize=0))
+    with pytest.raises(ValueError, match="positive"):
+        list(LocalStorageAdapter().iter_chunks("missing.csv", chunksize=True))
+    pd.testing.assert_frame_equal(memory.read(frame), frame)
+    with pytest.raises(FileNotFoundError, match="In-memory"):
+        memory.read("missing")
+
+
+def test_local_storage_remote_paths_are_rejected(tmp_path):
+    storage = LocalStorageAdapter()
+    for source in (
+        "s3://bucket/file.csv",
+        "gs://bucket/file.csv",
+        "az://container/file.csv",
+        "https://example/file.csv",
+    ):
+        with pytest.raises(ValueError, match="local paths"):
+            storage._path(source)
+    with pytest.raises(TypeError, match="paths"):
+        storage._path(pd.DataFrame())
+
+
+def test_local_storage_jsonl_stream_handles_empty_and_fallback_formats(tmp_path, monkeypatch):
+    storage = LocalStorageAdapter()
+    destination = tmp_path / "empty.jsonl"
+    storage.write_chunks([], destination)
+    assert destination.exists()
+    assert storage.read(destination).empty
+
+    captured = {}
+
+    def fake_write(frame, path, **kwargs):
+        captured["frame"] = frame.copy()
+        captured["path"] = path
+        captured["kwargs"] = kwargs
+        return path
+
+    monkeypatch.setattr(storage, "write", fake_write)
+    result = storage.write_chunks([pd.DataFrame({"x": [1]})], tmp_path / "result.parquet")
+    assert result.name == "result.parquet"
+    assert captured["frame"]["x"].tolist() == [1]
+
+
+def test_fsspec_adapter_paths_and_streaming_without_optional_dependency(monkeypatch):
+    frame = pd.DataFrame({"value": [1, 2], "label": ["a", "b"]})
+    storage = FsspecStorageAdapter()
+
+    @contextmanager
+    def handle_for(path, mode="rb"):
+        if "r" in mode:
+            yield io.BytesIO(frame.to_csv(index=False).encode())
+        else:
+            yield io.StringIO()
+
+    monkeypatch.setattr(storage, "_filesystem", handle_for)
+    chunks = list(storage.iter_chunks("remote.csv", chunksize=1))
+    assert [len(chunk) for chunk in chunks] == [1, 1]
+    assert storage.write(frame, "remote.csv") == "remote.csv"
+    assert storage.write(frame, "remote.jsonl") == "remote.jsonl"
+    assert storage.write_chunks([frame.iloc[:1], frame.iloc[1:]], "remote.csv") == "remote.csv"
+    assert storage.write_chunks([frame.iloc[:1]], "remote.jsonl") == "remote.jsonl"
+    with pytest.raises(TypeError, match="DataFrame"):
+        storage.write("not-a-frame", "remote.csv")
+    with pytest.raises(TypeError, match="DataFrame"):
+        storage.write_chunks(["not-a-frame"], "remote.csv")
+
+    monkeypatch.setattr(storage_module, "_read_frame", lambda source, **kwargs: frame.copy())
+    pd.testing.assert_frame_equal(storage.read("remote.json", unused=True), frame)
+    pd.testing.assert_frame_equal(storage.read(frame), frame)
+    non_csv = list(storage.iter_chunks("remote.json", chunksize=1))
+    assert [len(chunk) for chunk in non_csv] == [1, 1]
+
+
+def test_fsspec_adapter_reports_missing_optional_dependency(monkeypatch):
+    storage = FsspecStorageAdapter()
+    monkeypatch.setitem(__import__("sys").modules, "fsspec", None)
+    with pytest.raises(ImportError, match="fsspec"):
+        storage._filesystem("remote.csv")

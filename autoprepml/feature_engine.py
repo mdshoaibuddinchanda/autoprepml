@@ -347,9 +347,16 @@ class AutoFeatureEngine:
             self.df = pd.concat([self.df, binned_df], axis=1)
             n_features = len(columns)
         else:  # onehot
-            # Get feature names for one-hot encoded bins
+            # ``encode='onehot'`` may return a sparse matrix and the number of
+            # output columns can be smaller than ``n_bins`` for low-cardinality
+            # or constant input columns.  Derive names from the fitted
+            # discretizer and materialize only this bounded feature block.
+            if hasattr(binned_data, "toarray"):
+                binned_data = binned_data.toarray()
             n_features = binned_data.shape[1]
-            feature_names = [f"bin_{i}" for i in range(n_features)]
+            feature_names = list(discretizer.get_feature_names_out(columns))
+            if len(feature_names) != n_features:
+                feature_names = [f"bin_{i}" for i in range(n_features)]
             binned_df = pd.DataFrame(binned_data, columns=feature_names, index=self.df.index)
             self.df = pd.concat([self.df, binned_df], axis=1)
 

@@ -15,6 +15,7 @@ from autoprepml import (
     fingerprint_dataframe,
 )
 from autoprepml.exceptions import ArtifactError, ContractError, NotFittedError
+from autoprepml.exceptions import ConfigurationError
 
 
 @pytest.fixture
@@ -260,3 +261,91 @@ def test_label_encoding_handles_unknown_categories(training_frame):
 
     assert transformed.shape == (1, 2)
     assert transformed["country"].iloc[0] == -1
+
+
+def test_data_plan_validates_constructor_and_inference_options(training_frame):
+    contract = DataContract.infer(training_frame, target="label")
+    for kwargs, error in [
+        ({"fingerprint_mode": "bad"}, "fingerprint_mode"),
+        ({"fingerprint_sample_rows": 0}, "fingerprint_sample_rows"),
+        ({"output_format": "arrow"}, "output_format"),
+        ({"max_dense_elements": 0}, "max_dense_elements"),
+    ]:
+        with pytest.raises(ValueError, match=error):
+            DataPlan(contract, {}, **kwargs)
+    with pytest.raises(TypeError, match="DataFrame"):
+        DataPlan.infer([1, 2])
+    with pytest.raises(TypeError, match="random_state"):
+        DataPlan.infer(training_frame, random_state=True)
+    with pytest.raises(ContractError, match="string"):
+        DataPlan.infer(training_frame.rename(columns={"age": 1}), target="label")
+    with pytest.raises(ValueError, match="mode"):
+        DataPlan.infer(training_frame, fingerprint_mode="bad")
+
+
+def test_data_plan_lineage_and_pipeline_configuration_branches(training_frame, monkeypatch):
+    no_scale = DataPlan(
+        DataContract.infer(training_frame, target="label"), {"cleaning": {"scale_method": None}}
+    )
+    assert no_scale._pipeline_kwargs()["scale_numeric"] is False
+    assert [item["name"] for item in no_scale._build_lineage(training_frame)] == [
+        "median_imputation",
+        "onehot_encoding",
+    ]
+    with pytest.raises(ContractError, match="feature"):
+        DataPlan.infer(pd.DataFrame({"label": [0, 1]}), target="label").fit(
+            pd.DataFrame({"label": [0, 1]})
+        )
+
+    import autoprepml.data_plan as module
+
+    monkeypatch.setattr(
+        module,
+        "make_preprocessing_pipeline",
+        lambda **kwargs: (_ for _ in ()).throw(TypeError("bad pipeline")),
+    )
+    with pytest.raises(ConfigurationError, match="Could not fit"):
+        DataPlan.infer(training_frame, target="label").fit(training_frame)
+
+
+def test_data_plan_fit_transform_and_resampling_guards(training_frame):
+    plan = DataPlan.infer(training_frame, target="label").fit(training_frame)
+    with pytest.raises(TypeError, match="DataFrame"):
+        plan.transform([1])
+    with pytest.raises(TypeError, match="DataFrame"):
+        plan.fit_transform([1])
+    with pytest.raises(ValueError, match="same number"):
+        plan.fit_resample(training_frame.drop(columns="label"), [1])
+    assert plan.fit_resample(training_frame.drop(columns="label"), [0, 1, 0, 1], "disabled")[
+        1
+    ].tolist() == [0, 1, 0, 1]
+    with pytest.raises(ValueError, match="none"):
+        plan.fit_resample(training_frame.drop(columns="label"), [0, 1, 0, 1], "invalid")
+    with pytest.raises(TypeError, match="DataFrame"):
+        plan.fit_resample([1], [0])
+    with pytest.raises(ContractError, match="dtype"):
+        plan.validate(pd.DataFrame({"age": ["bad"], "country": ["GB"]})).raise_for_error()
+
+
+@pytest.mark.parametrize("payload", [b"not an archive", b""])
+def test_data_plan_load_rejects_invalid_archives(tmp_path, payload):
+    path = tmp_path / "bad.apml"
+    path.write_bytes(payload)
+    with pytest.raises(ArtifactError, match="Invalid"):
+        DataPlan.load(path)
+
+
+def test_data_plan_load_rejects_unsupported_manifest_version(training_frame, tmp_path):
+    path = (
+        DataPlan.infer(training_frame, target="label")
+        .fit(training_frame)
+        .save(tmp_path / "plan.apml")
+    )
+    rewritten = tmp_path / "unsupported.apml"
+    with zipfile.ZipFile(path) as source, zipfile.ZipFile(rewritten, "w") as target:
+        manifest = json.loads(source.read("manifest.json"))
+        manifest["artifact_format_version"] = "2.0"
+        target.writestr("manifest.json", json.dumps(manifest))
+        target.writestr("state.pkl", source.read("state.pkl"))
+    with pytest.raises(ArtifactError, match="Unsupported"):
+        DataPlan.load(rewritten)

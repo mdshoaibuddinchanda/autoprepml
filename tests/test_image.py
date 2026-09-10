@@ -351,5 +351,95 @@ def test_image_augmentation_rejects_unknown_options():
         prep._augment_images(np.zeros((1, 2, 2), dtype=np.uint8), {"zoom": 2})
 
 
+def test_image_constructor_validates_all_public_options():
+    from autoprepml.image import ImagePrepML
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for kwargs, error in [
+            ({"target_size": "bad"}, "target_size"),
+            ({"target_size": (1, True)}, "target_size"),
+            ({"color_mode": None}, "color_mode"),
+            ({"normalize": "yes"}, "normalize"),
+            ({"normalization_mode": None}, "normalization_mode"),
+        ]:
+            with pytest.raises((TypeError, ValueError), match=error):
+                ImagePrepML(image_dir=tmpdir, image_paths=[Path(tmpdir) / "a.png"], **kwargs)
+
+
+def test_image_collection_deduplicates_explicit_paths_and_expected_modes(tmp_path):
+    pytest.importorskip("PIL")
+    from autoprepml.image import ImagePrepML
+    from PIL import Image
+
+    path = tmp_path / "sample.png"
+    Image.new("L", (2, 2), color=128).save(path)
+    prep = ImagePrepML(image_paths=[str(path), str(path)], color_mode="gray", normalize=False)
+    assert prep.image_paths == [path]
+    assert prep._get_expected_pil_mode() == "L"
+    assert prep.get_statistics() == {}
+    prep.detect(verbose=False)
+    assert prep.get_statistics()["total_images"] == 1
+
+
+def test_image_detects_corrupt_and_duplicate_files_and_clean_skips_corrupt(tmp_path):
+    pytest.importorskip("PIL")
+    from autoprepml.image import ImagePrepML
+    from PIL import Image
+
+    valid = tmp_path / "valid.png"
+    duplicate = tmp_path / "duplicate.png"
+    Image.new("RGB", (2, 2), color="red").save(valid)
+    Image.new("RGB", (2, 2), color="red").save(duplicate)
+    corrupt = tmp_path / "corrupt.png"
+    corrupt.write_bytes(b"not-an-image")
+    prep = ImagePrepML(image_paths=[valid, duplicate, corrupt], target_size=(2, 2))
+    issues = prep.detect(verbose=False)
+    assert "corrupted" in issues and "duplicates" in issues and "low_quality" in issues
+    processed = prep.clean(remove_corrupted=True)
+    assert len(processed) == 2
+
+
+def test_image_augmentation_covers_rotation_and_validation_edges():
+    from autoprepml.image import ImagePrepML
+
+    prep = object.__new__(ImagePrepML)
+    images = np.arange(4, dtype=np.uint8).reshape(1, 2, 2)
+    rotated = prep._augment_images(
+        images, {"vertical_flip": True, "rotations": [90, 180, 90], "include_original": False}
+    )
+    assert rotated.shape[0] == 3
+    for config, error in [
+        ([], "dictionary"),
+        ({"horizontal_flip": 1}, "boolean"),
+        ({"rotations": "90"}, "integer"),
+        ({"rotations": [45]}, "multiples"),
+        ({"include_original": False}, "enable"),
+    ]:
+        with pytest.raises((TypeError, ValueError), match=error):
+            prep._augment_images(images, config)
+    assert prep._augment_images(np.array([]), {}).size == 0
+
+
+def test_image_split_and_save_without_normalization(tmp_path):
+    pytest.importorskip("PIL")
+    from autoprepml.image import ImagePrepML
+    from PIL import Image
+
+    path = tmp_path / "sample.png"
+    Image.new("RGB", (2, 2), color="red").save(path)
+    prep = ImagePrepML(image_paths=[path], target_size=(2, 2), normalize=False)
+    with pytest.raises(ValueError, match="processed"):
+        prep.split_dataset()
+    prep.detect(verbose=False)
+    prep.clean(resize=False, convert_mode=False)
+    with pytest.raises(ValueError, match="sum"):
+        prep.split_dataset(0.5, 0.5, 0.2)
+    train, val, test = prep.split_dataset(shuffle=False)
+    assert len(train) + len(val) + len(test) == 1
+    output = tmp_path / "saved"
+    prep.save_processed(output, format="png", prefix="item_")
+    assert (output / "item_0000.png").exists()
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

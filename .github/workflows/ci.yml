@@ -126,7 +126,7 @@ jobs:
           --cov=autoprepml
           --cov-report=xml
           --cov-report=term-missing
-          --cov-fail-under=80
+          --cov-fail-under=90
           --junitxml=pytest.xml
           --tb=short
 

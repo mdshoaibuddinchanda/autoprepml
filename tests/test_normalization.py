@@ -9,6 +9,7 @@ from autoprepml import (
     TabularNormalizer,
     denormalize_image_array,
     fit_image_statistics,
+    fit_tabular_normalizer,
     normalize_image_array,
 )
 
@@ -104,3 +105,130 @@ def test_image_normalization_rejects_invalid_statistics():
             mean=[0.0, 0.0, 0.0],
             std=[1.0, 0.0, 1.0],
         )
+
+
+@pytest.mark.parametrize("method", [None, "unknown", " STANDARD "])
+def test_tabular_normalizer_validates_method(method):
+    frame = pd.DataFrame({"x": [1.0, 2.0]})
+    if method == " STANDARD ":
+        assert fit_tabular_normalizer(frame, method=method).columns_ == ["x"]
+    elif method is None:
+        with pytest.raises(TypeError, match="method"):
+            TabularNormalizer(method=method).fit(frame)
+    else:
+        with pytest.raises(ValueError, match="Unknown method"):
+            TabularNormalizer(method=method).fit(frame)
+
+
+def test_tabular_normalizer_selects_numeric_columns_and_rejects_invalid_selection():
+    frame = pd.DataFrame({"number": [1.0, 2.0], "flag": [True, False], "text": ["a", "b"]})
+    fitted = TabularNormalizer().fit(frame)
+    assert fitted.columns_ == ["number"]
+    with pytest.raises(ValueError, match="duplicates"):
+        TabularNormalizer(columns=["number", "number"]).fit(frame)
+    with pytest.raises(ValueError, match="not found"):
+        TabularNormalizer(columns=["missing"]).fit(frame)
+    with pytest.raises(TypeError, match="numeric"):
+        TabularNormalizer(columns=["text"]).fit(frame)
+    with pytest.raises(ValueError, match="No numeric"):
+        TabularNormalizer().fit(frame[["flag", "text"]])
+
+
+@pytest.mark.parametrize(
+    "kwargs, message",
+    [
+        ({"feature_range": (1.0, 1.0)}, "feature_range"),
+        ({"feature_range": (0.0, np.inf)}, "feature_range"),
+        ({"feature_range": (0.0,)}, "feature_range"),
+        ({"quantile_range": (75.0, 25.0)}, "quantile_range"),
+        ({"quantile_range": (-1.0, 50.0)}, "quantile_range"),
+        ({"clip": "yes"}, "clip"),
+    ],
+)
+def test_tabular_normalizer_validates_scaler_options(kwargs, message):
+    with pytest.raises((TypeError, ValueError), match=message):
+        TabularNormalizer(method="minmax" if "feature_range" in kwargs else "robust", **kwargs).fit(
+            pd.DataFrame({"x": [1.0, 2.0]})
+        )
+
+
+def test_tabular_normalizer_validates_transform_inputs_and_feature_names():
+    fitted = TabularNormalizer(columns=["x"]).fit(pd.DataFrame({"x": [1.0, 2.0]}))
+    with pytest.raises(TypeError, match="DataFrame"):
+        fitted.transform(np.array([[1.0]]))
+    with pytest.raises(ValueError, match="missing fitted"):
+        fitted.transform(pd.DataFrame({"y": [1.0]}))
+    with pytest.raises(ValueError, match="infinite"):
+        fitted.transform(pd.DataFrame({"x": [np.inf]}))
+    with pytest.raises(ValueError, match="missing fitted"):
+        fitted.inverse_transform(pd.DataFrame({"y": [1.0]}))
+    assert fitted.get_feature_names_out().tolist() == ["x"]
+    assert fitted.get_feature_names_out(["x", "other"]).tolist() == ["x"]
+    with pytest.raises(ValueError, match="missing fitted"):
+        fitted.get_feature_names_out(["other"])
+
+
+@pytest.mark.parametrize(
+    "images, kwargs, error",
+    [
+        (np.array([1]), {}, "at least"),
+        (np.array([["x"]]), {}, "numeric"),
+        (np.array([[np.nan]]), {}, "non-finite"),
+        (np.array([[-1.0]]), {}, "range"),
+        (
+            np.zeros((2, 2, 3)),
+            {"mode": "standard", "mean": [0.0, 0.0], "std": [1.0, 1.0]},
+            "values",
+        ),
+        (
+            np.zeros((2, 2, 3)),
+            {"mode": "standard", "mean": [0, 0, 0], "std": [1, 1, 1], "channel_axis": 4},
+            "bounds",
+        ),
+    ],
+)
+def test_image_normalization_validates_shape_values_and_channels(images, kwargs, error):
+    with pytest.raises((TypeError, ValueError), match=error):
+        normalize_image_array(images, **kwargs)
+
+
+def test_image_none_mode_copies_and_grayscale_standard_uses_scalars():
+    pixels = np.array([[0, 255]], dtype=np.uint8)
+    copied = normalize_image_array(pixels, mode="none", channel_axis=None)
+    copied[0, 0] = 99
+    assert pixels[0, 0] == 0
+    standardized = normalize_image_array(
+        pixels, mode="standard", mean=0.5, std=0.25, channel_axis=None
+    )
+    restored = denormalize_image_array(
+        standardized, mode="standard", mean=0.5, std=0.25, channel_axis=None
+    )
+    np.testing.assert_array_equal(restored, pixels)
+
+
+def test_image_denormalization_modes_and_statistics_validation():
+    values = np.array([[-1.0, 1.0]], dtype=np.float32)
+    np.testing.assert_array_equal(
+        denormalize_image_array(values, mode="minus_one_one"), np.array([[0, 255]], dtype=np.uint8)
+    )
+    np.testing.assert_array_equal(
+        denormalize_image_array(np.array([[0.0, 2.0]]), mode="zero_one"),
+        np.array([[0, 255]], dtype=np.uint8),
+    )
+    copied = denormalize_image_array(values, mode="none")
+    assert copied.dtype == np.float32
+    with pytest.raises(ValueError, match="mean is required"):
+        normalize_image_array(np.zeros((2, 2)), mode="standard", std=1.0, channel_axis=None)
+    with pytest.raises(ValueError, match="std"):
+        denormalize_image_array(
+            np.zeros((2, 2)), mode="standard", mean=0.0, std=0.0, channel_axis=None
+        )
+
+
+def test_fit_image_statistics_grayscale_and_invalid_axis():
+    pixels = np.array([[0, 255], [64, 128]], dtype=np.uint8)
+    mean, std = fit_image_statistics(pixels, channel_axis=None)
+    assert mean.shape == ()
+    assert float(std) > 0
+    with pytest.raises(ValueError, match="bounds"):
+        fit_image_statistics(pixels, channel_axis=2)

@@ -64,3 +64,29 @@ def test_preprocessing_pipeline_handles_bool_only_features():
     transformed = pipeline.fit_transform(frame.drop(columns="target"))
 
     assert transformed.shape == (4, 2)
+
+
+@pytest.mark.parametrize(
+    "kwargs, error",
+    [
+        ({"scale_numeric": "yes"}, "scale_numeric"),
+        ({"scale_method": None}, "scale_method"),
+        ({"scale_method": "unknown"}, "scale_method"),
+        ({"encode_method": None}, "encode_method"),
+        ({"encode_method": "unknown"}, "encode_method"),
+    ],
+)
+def test_preprocessing_pipeline_validates_scaler_and_encoder_options(kwargs, error):
+    with pytest.raises((TypeError, ValueError), match=error):
+        make_preprocessing_pipeline(_training_frame(), **kwargs)
+
+
+def test_preprocessing_pipeline_can_disable_scaling_and_model_requires_estimator():
+    frame = _training_frame()
+    pipeline = make_preprocessing_pipeline(frame, target_col="target", scale_numeric=False)
+    transformed = pipeline.fit_transform(frame.drop(columns="target"))
+    assert transformed.shape[0] == len(frame)
+    with pytest.raises(TypeError, match="estimator"):
+        make_model_pipeline(frame, estimator=None)
+    with pytest.raises(TypeError, match="estimator"):
+        make_model_pipeline(frame, estimator=object())
