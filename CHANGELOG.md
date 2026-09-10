@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Future work is tracked in the repository roadmap. The next planned minor
-release focuses on benchmark evidence, schema contracts, and broader adapter
-integration.
+Version 1.5 development is tracked in
+`docs/releases/RELEASE_v1.5.0.md` and the repository roadmap. The release is
+focused on DataPlan architecture, contracts, fingerprints, lineage, and
+reusable artifacts; it is not ready to publish.
 
 ## [1.4.1] - Release candidate
 

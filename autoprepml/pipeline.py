@@ -14,6 +14,7 @@ from sklearn.preprocessing import (
     RobustScaler,
     StandardScaler,
     FunctionTransformer,
+    OrdinalEncoder,
 )
 
 
@@ -29,6 +30,7 @@ def make_preprocessing_pipeline(
     scale_method: str = "standard",
     numeric_strategy: str = "median",
     categorical_strategy: str = "most_frequent",
+    encode_method: str = "onehot",
 ) -> Pipeline:
     """Build a fitted-state-free sklearn preprocessing pipeline.
 
@@ -43,6 +45,8 @@ def make_preprocessing_pipeline(
         scale_method: ``standard``, ``minmax``, ``robust``, or ``maxabs``.
         numeric_strategy: Strategy passed to ``SimpleImputer``.
         categorical_strategy: Strategy passed to ``SimpleImputer``.
+        encode_method: ``onehot`` for nominal features or ``label`` for an
+            explicit ordinal encoding with deterministic unknown handling.
     """
     if not isinstance(frame, pd.DataFrame):
         raise TypeError("frame must be a pandas DataFrame")
@@ -55,6 +59,11 @@ def make_preprocessing_pipeline(
     scale_method = scale_method.lower().strip()
     if scale_method not in {"standard", "minmax", "robust", "maxabs"}:
         raise ValueError("scale_method must be standard, minmax, robust, or maxabs")
+    if not isinstance(encode_method, str):
+        raise TypeError("encode_method must be a string")
+    encode_method = encode_method.lower().strip()
+    if encode_method not in {"onehot", "label"}:
+        raise ValueError("encode_method must be onehot or label")
 
     feature_frame = frame.drop(columns=[target_col]) if target_col else frame
     numeric_columns = [
@@ -83,11 +92,18 @@ def make_preprocessing_pipeline(
         transformers.append(("numeric", Pipeline(numeric_steps), numeric_columns))
     if categorical_columns or boolean_columns:
         categorical_columns = categorical_columns + boolean_columns
-        encoder_options = {"handle_unknown": "ignore"}
-        if "sparse_output" in inspect.signature(OneHotEncoder).parameters:
-            encoder_options["sparse_output"] = True
+        if encode_method == "label":
+            encoder = OrdinalEncoder(
+                handle_unknown="use_encoded_value",
+                unknown_value=-1,
+            )
         else:
-            encoder_options["sparse"] = True
+            encoder_options = {"handle_unknown": "ignore"}
+            if "sparse_output" in inspect.signature(OneHotEncoder).parameters:
+                encoder_options["sparse_output"] = True
+            else:
+                encoder_options["sparse"] = True
+            encoder = OneHotEncoder(**encoder_options)
         categorical_pipeline = Pipeline(
             [
                 # scikit-learn's SimpleImputer rejects a bool-only block;
@@ -102,7 +118,7 @@ def make_preprocessing_pipeline(
                     ),
                 ),
                 ("imputer", SimpleImputer(strategy=categorical_strategy)),
-                ("encoder", OneHotEncoder(**encoder_options)),
+                ("encoder", encoder),
             ]
         )
         transformers.append(("categorical", categorical_pipeline, categorical_columns))

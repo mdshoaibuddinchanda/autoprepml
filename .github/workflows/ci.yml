@@ -254,6 +254,9 @@ jobs:
       - name: Build docs with strict link checking
         run: bash scripts/build_docs.sh
 
+      - name: Validate Python documentation snippet syntax
+        run: python scripts/validate_docs_examples.py
+
   notebooks:
     name: Execute maintained notebooks
     runs-on: ubuntu-latest
@@ -305,6 +308,7 @@ jobs:
           python -m venv wheel-smoke
           wheel-smoke/bin/python -m pip install dist/*.whl
           wheel-smoke/bin/python -c "import autoprepml; print(autoprepml.__version__)"
+          wheel-smoke/bin/python -m autoprepml.cli --help
 
       - name: Upload distributions
         uses: actions/upload-artifact@v6

@@ -6,7 +6,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -44,5 +44,28 @@ jobs:
       - name: Validate distribution metadata
         run: python -m twine check dist/*
 
+      - name: Verify distribution contents
+        shell: python
+        run: |
+          import glob
+          import tarfile
+          import zipfile
+
+          forbidden = (".coverage", "coverage.xml", "pytest.xml", ".env", ".git/")
+          for path in glob.glob("dist/*"):
+              names = (
+                  zipfile.ZipFile(path).namelist()
+                  if path.endswith(".whl")
+                  else tarfile.open(path, "r:gz").getnames()
+              )
+              bad = [name for name in names if any(token in name for token in forbidden)]
+              if bad:
+                  raise SystemExit(f"Forbidden files in {path}: {bad}")
+
       - name: Publish with trusted publishing
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "AutoPrepML $GITHUB_REF_NAME"

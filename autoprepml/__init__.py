@@ -4,7 +4,14 @@ A Python library for automatic detection, cleaning, and reporting of common
 data quality issues in machine learning pipelines with LLM-powered suggestions.
 """
 
-__version__ = "1.4.1"
+from importlib.metadata import PackageNotFoundError, version as _distribution_version
+
+
+try:
+    # The distribution metadata is the single source of truth for releases.
+    __version__ = _distribution_version("autoprepml")
+except PackageNotFoundError:  # pragma: no cover - only possible from an unpacked source tree
+    __version__ = "0+unknown"
 __author__ = "MD Shoaibuddin Chanda"
 __license__ = "MIT"
 
@@ -48,6 +55,20 @@ from .normalization import (
     normalize_image_array,
 )
 from .config import validate_config
+from .contracts import ColumnContract, DataContract, ValidationIssue, ValidationReport
+from .data_plan import DataPlan
+from .exceptions import (
+    ArtifactError,
+    AutoPrepMLError,
+    ConfigurationError,
+    ContractError,
+    IntegrationError,
+    NotFittedError,
+    StorageError,
+    ValidationError,
+)
+from .fingerprints import DatasetFingerprint, fingerprint_dataframe, schema_fingerprint
+from .protocols import PrepProtocol
 
 __all__ = [
     # Core preprocessing
@@ -91,6 +112,23 @@ __all__ = [
     "normalize_image_array",
     "denormalize_image_array",
     "validate_config",
+    "DataPlan",
+    "ColumnContract",
+    "DataContract",
+    "ValidationIssue",
+    "ValidationReport",
+    "DatasetFingerprint",
+    "fingerprint_dataframe",
+    "schema_fingerprint",
+    "AutoPrepMLError",
+    "ConfigurationError",
+    "NotFittedError",
+    "ContractError",
+    "ValidationError",
+    "ArtifactError",
+    "StorageError",
+    "IntegrationError",
+    "PrepProtocol",
     # Modules
     "detection",
     "cleaning",

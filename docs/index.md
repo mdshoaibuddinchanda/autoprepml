@@ -1,6 +1,8 @@
 # AutoPrepML Documentation
 
-AutoPrepML is a Python library for repeatable data quality assessment and preprocessing in machine learning workflows.
+AutoPrepML is a Python framework for ML data readiness: inspection,
+leakage-safe preprocessing, validation, provenance, and reproducible
+transformation across tabular, text, time-series, graph, and image data.
 
 ## What is AutoPrepML?
 
@@ -8,7 +10,7 @@ AutoPrepML detects, cleans, and reports common data issues with minimal code. It
 
 ## Key Features
 
-- **One call preprocessing**: Transform a dataset with a single library call.
+- **Fitted preprocessing**: Learn transformations from training rows and reuse them safely.
 - **Issue detection**: Identify missing values, outliers, and class imbalance.
 - **Reports**: Export HTML or JSON reports with statistics and visualizations.
 - **Configuration**: Use YAML or JSON files to make runs reproducible.
@@ -76,6 +78,13 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 - [API Reference](api_reference.md): Public classes and functions
 - [Tutorials](tutorials.md): End to end examples
 - [Normalization standards](normalization.md): Production rules for schemas, scaling, leakage prevention, and modality-specific processing
+- [Getting started](getting_started.md): The canonical `DataPlan` workflow
+- [DataPlan architecture](concepts/data_plan.md): Fit, transform, validate, and save semantics
+- [Data contracts](concepts/contracts.md): Structured compatibility checks
+- [Leakage prevention](concepts/leakage.md): Train-only fitting and resampling rules
+- [Reproducibility](concepts/reproducibility.md): Fingerprints and repeatability metadata
+- [Transformation lineage](concepts/lineage.md): Machine-readable provenance manifests
+- [Limitations](limitations.md): Explicit product boundaries and artifact trust guidance
 
 ## Links
 

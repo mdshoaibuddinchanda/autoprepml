@@ -1,6 +1,8 @@
 # API Reference
 
-This page summarises the public API exposed by AutoPrepML 1.4.1. Type signatures are representative; consult the package source and docstrings for the complete contract.
+This page summarises the public API exposed by AutoPrepML 1.5.0 development.
+Type signatures are representative; consult the package source and docstrings
+for the complete contract.
 
 ## Core Module
 
@@ -10,7 +12,7 @@ Main class for data preprocessing pipeline.
 
 #### Constructor
 
-```python
+```text
 AutoPrepML(df: pd.DataFrame, config: Optional[Dict] = None, config_path: Optional[str] = None)
 ```
 
@@ -281,6 +283,41 @@ Save configuration to a YAML or JSON file. The format is selected from the outpu
 #### `get_default_config() -> Dict`
 
 Return default configuration.
+
+
+## DataPlan and Contracts
+
+### `DataPlan.infer(frame, target=None, task=None, config=None, random_state=42)`
+
+Infer an unfitted plan from training schema. The plan records feature roles and
+configuration but learns no transformation statistics until `fit()`.
+
+### `plan.fit(frame) -> DataPlan`
+
+Fit imputation, encoding, and scaling on training rows only. Returns the same
+plan instance.
+
+### `plan.transform(frame) -> pd.DataFrame`
+
+Apply fitted state to future rows in stable feature order. Calling this before
+`fit()` raises `NotFittedError`; missing required columns raise `ContractError`.
+
+### `plan.validate(frame, mode='compatible') -> ValidationReport`
+
+Return structured compatibility findings. Compatible mode reports unknown
+categories, extra columns, and dtype changes as warnings. Strict mode promotes
+those changes to failures.
+
+### `plan.fit_resample(features, target, method=None)`
+
+Resample transformed training rows only. `transform()` never resamples
+validation, test, or production data.
+
+### `plan.save(path)` and `DataPlan.load(path)`
+
+Write or load an atomic, checksummed `.apml` artifact containing a manifest and
+serialized fitted state. Only load artifacts from trusted sources because
+Python pickle can execute code during deserialization.
 
 
 ## Reporting Module

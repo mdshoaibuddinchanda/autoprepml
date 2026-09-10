@@ -1,7 +1,8 @@
 # AutoPrepML Documentation
 
-The repository currently targets the 1.4.1 patch release. PyPI 1.4.0 remains
-the latest published version until the 1.4.1 tag is created. See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository](https://github.com/mdshoaibuddinchanda/autoprepml), and [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
+The repository currently targets the 1.5.0 development release. PyPI 1.4.0
+remains the latest published version while the v1.5 architecture is developed.
+See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository](https://github.com/mdshoaibuddinchanda/autoprepml), and [issue tracker](https://github.com/mdshoaibuddinchanda/autoprepml/issues).
 
 ## Documentation Overview
 
@@ -18,7 +19,18 @@ the latest published version until the 1.4.1 tag is created. See the [PyPI packa
 - **[LLM Configuration](LLM_CONFIGURATION.md)**: OpenAI, Anthropic, Google, Ollama setup
 - **[Dynamic LLM Config](DYNAMIC_LLM_CONFIGURATION.md)**: Runtime configuration management
 
+### v1.5 architecture
+
+- **[Getting started](getting_started.md)**: Recommended fitted workflow
+- **[DataPlan](concepts/data_plan.md)**: Reusable leakage-safe preprocessing state
+- **[Data contracts](concepts/contracts.md)**: Structured schema compatibility checks
+- **[Leakage prevention](concepts/leakage.md)**: Train-only fitting and resampling
+- **[Reproducibility](concepts/reproducibility.md)**: Fingerprints and repeatability metadata
+- **[Transformation lineage](concepts/lineage.md)**: Machine-readable manifests
+- **[Limitations](limitations.md)**: Explicit scope and artifact trust guidance
+
 ### Release Notes
+- **[v1.5.0 development plan](releases/RELEASE_v1.5.0.md)**: DataPlan, contracts, fingerprints, lineage, and serialization
 - **[v1.4.1](releases/RELEASE_v1.4.1.md)**: Production preprocessing safety, normalization, and documentation cleanup
 - **[v1.4.0](releases/RELEASE_v1.4.0.md)**: Chunked execution, storage, streaming, experiment tracking, and sklearn pipelines
 - **[v1.3.0](releases/RELEASE_v1.3.0.md)**: AutoEDA, AutoFeatureEngine, and interactive dashboards

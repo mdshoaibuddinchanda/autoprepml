@@ -1,5 +1,5 @@
 site_name: AutoPrepML
-site_description: AI-assisted, multi-modal data preprocessing for machine learning
+site_description: ML data readiness with leakage-safe preprocessing, validation, and provenance
 site_url: https://autoprepml.readthedocs.io/
 repo_url: https://github.com/mdshoaibuddinchanda/autoprepml
 repo_name: mdshoaibuddinchanda/autoprepml
@@ -26,17 +26,28 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting started: usage.md
+  - Getting started: getting_started.md
+  - Usage guide: usage.md
   - Tutorials: tutorials.md
   - Examples: examples.md
   - Normalization standards: normalization.md
   - Creator examples: creator_examples.md
+  - Concepts:
+      - DataPlan architecture: concepts/data_plan.md
+      - Leakage prevention: concepts/leakage.md
+      - Data contracts: concepts/contracts.md
+      - Reproducibility: concepts/reproducibility.md
+      - Transformation lineage: concepts/lineage.md
+  - Guides:
+      - Serialization: guides/serialization.md
+  - Limitations: limitations.md
   - Advanced features: ADVANCED_FEATURES.md
   - CLI quick start: QUICK_START_CLI.md
   - API reference: api_reference.md
   - LLM configuration: LLM_CONFIGURATION.md
   - Dynamic LLM configuration: DYNAMIC_LLM_CONFIGURATION.md
   - Releases:
+      - v1.5.0 development plan: releases/RELEASE_v1.5.0.md
       - v1.4.1: releases/RELEASE_v1.4.1.md
       - v1.4.0: releases/RELEASE_v1.4.0.md
       - v1.3.0: releases/RELEASE_v1.3.0.md

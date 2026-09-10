@@ -1,6 +1,9 @@
+# Base runtime requirements mirrored from pyproject.toml for pip-audit and
+# minimal environments. pyproject.toml remains the authoritative source.
 pandas>=2.2.3,<3; python_version < '3.14'
 pandas>=3.0.0,<4; python_version >= '3.14'
 numpy>=1.26.4,<3
+joblib>=1.3,<2
 scikit-learn>=1.6.1,<1.7; python_version < '3.10'
 scikit-learn>=1.7.2,<2; python_version >= '3.10'
 matplotlib>=3.9.0,<4; python_version < '3.10'

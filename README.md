@@ -10,7 +10,9 @@ Project links: [PyPI](https://pypi.org/project/autoprepml/),
 
 > **A practical preprocessing library for tabular, text, time series, graph, and image data.**
 
-A comprehensive Python library that automatically detects, cleans, and transforms data across multiple modalities. Built for real-world ML pipelines with one-line automation and detailed reporting.
+AutoPrepML is a Python framework for ML data readiness: inspection,
+leakage-safe preprocessing, validation, provenance, and reproducible
+transformation across tabular, text, time-series, graph, and image data.
 
 The processing flow is straightforward:
 
@@ -19,10 +21,43 @@ The processing flow is straightforward:
 3. Apply configured cleaning and feature transformations.
 4. Export the processed data and a reproducible report.
 
+For supervised machine-learning workflows, use the fitted `DataPlan` API. It
+keeps learned preprocessing state in one reusable artifact and separates
+training from validation, test, and production transformation:
+
+```python
+import pandas as pd
+from autoprepml import DataPlan
+
+train = pd.read_csv("train.csv")
+test = pd.read_csv("test.csv")
+
+plan = DataPlan.infer(train, target="label", task="classification")
+plan.fit(train)
+test_ready = plan.transform(test)
+validation = plan.validate(test)
+plan.save("dataset.apml")
+```
+
+The canonical workflow is: split the data, infer a plan, fit on training rows,
+transform future partitions, validate schema compatibility, and save the
+artifact. The legacy `AutoPrepML.clean()` API remains available for generic
+whole-dataset cleaning; it is not a substitute for train-only fitting.
+
+```text
+raw data
+  inspection
+  data contract and data plan
+  fit on training rows
+  transform validation, test, and production rows
+  validate schema and provenance
+  reusable ML-ready data and artifact
+```
+
 ## Features
 
 ### Core Features
-- **Multi-Modal Support**: Works with 5 different data types out of the box
+- **Multi-Modal Support**: Supports tabular, text, time-series, graph, and image data
 - **Automatic Issue Detection**: Missing values, outliers, duplicates, anomalies
 - **Visual Reports**: HTML reports with embedded plots and statistics
 - **Highly Configurable**: YAML/JSON configuration for reproducibility
@@ -30,7 +65,7 @@ The processing flow is straightforward:
 - **Train-only normalization**: Fitted tabular scalers and explicit image pixel conventions prevent data leakage
 - **Production readiness baseline**: Automated tests, coverage, linting, security, packaging, and documentation gates
 
-### Current feature set (1.4.1 release candidate)
+### Current feature set (1.5.0 development)
 - **AutoEDA**: Automated exploratory data analysis with insights generation
 - **AutoFeatureEngine**: Intelligent feature engineering with 8 creation methods
 - **Interactive Dashboards**: Plotly visualizations and Streamlit app generation
@@ -46,6 +81,12 @@ The processing flow is straightforward:
 - **Advanced Imputation**: KNN and Iterative (MICE) imputation methods (v1.1.0)
 - **SMOTE Balancing**: Synthetic minority oversampling for imbalanced data (v1.1.0)
 
+### v1.5 development
+
+The development branch is consolidating these capabilities around a canonical
+`DataPlan` workflow. The new API is experimental until the v1.5 release gates
+are complete; the existing 1.x classes remain supported.
+
 ## Quick Navigation
 
 | Section | Description |
@@ -54,6 +95,8 @@ The processing flow is straightforward:
 | [Installation](#installation) | Install from source or PyPI |
 | [Quick Start](#quick-start-guide) | A short tutorial for each data type |
 | [Current feature details](#feature-details) | AutoEDA, feature engineering, dashboards, and integrations |
+| [DataPlan architecture](docs/concepts/data_plan.md) | Fitted, leakage-safe preprocessing artifacts |
+| [Data contracts](docs/concepts/contracts.md) | Structured compatibility validation |
 | [Advanced Features](docs/ADVANCED_FEATURES.md) | KNN and iterative imputation, and SMOTE |
 | [LLM Integration](docs/LLM_CONFIGURATION.md) | Model assisted suggestions from multiple providers |
 | [Dynamic LLM Configuration](docs/DYNAMIC_LLM_CONFIGURATION.md) | Configure supported models at runtime |
@@ -65,6 +108,7 @@ The processing flow is straightforward:
 | [Configuration](#configuration) | YAML and JSON configuration for reproducibility |
 | [Testing](#testing) | Run tests and inspect coverage |
 | [Development](#development-setup) | Contribution and development guidance |
+| [Limitations](docs/limitations.md) | Product boundaries and artifact trust |
 
 ## Supported Data Types
 
