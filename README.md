@@ -109,6 +109,7 @@ are complete; the existing 1.x classes remain supported.
 | [Testing](#testing) | Run tests and inspect coverage |
 | [Development](#development-setup) | Contribution and development guidance |
 | [Limitations](docs/limitations.md) | Product boundaries and artifact trust |
+| [Migration guide](docs/migration_v1.5.md) | Adopt the fitted v1.5 DataPlan workflow |
 
 ## Supported Data Types
 

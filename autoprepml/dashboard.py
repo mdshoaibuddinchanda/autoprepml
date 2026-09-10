@@ -31,7 +31,7 @@ def create_plotly_dashboard(
 
     # Create figure with subplots
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+    cat_cols = df.select_dtypes(include=["object", "category", "string"]).columns.tolist()
 
     n_plots = min(4, len(numeric_cols))  # Show up to 4 distribution plots
 

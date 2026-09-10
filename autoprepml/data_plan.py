@@ -116,6 +116,15 @@ class DataPlan:
             "random_state": self.random_state,
         }
 
+    def report(self) -> dict[str, Any]:
+        """Return the current plan report for the common preparation protocol.
+
+        Before fitting, this is an inspection report.  After fitting, it is
+        the complete reproducibility manifest, including learned output
+        columns and transformation lineage.
+        """
+        return self.manifest() if self.fitted else self.inspect()
+
     def _pipeline_kwargs(self) -> dict[str, Any]:
         cleaning = self.config.get("cleaning", {})
         categorical_strategy = cleaning.get("categorical_strategy", "mode")

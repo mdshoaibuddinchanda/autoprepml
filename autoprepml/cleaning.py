@@ -253,7 +253,9 @@ def encode_categorical(
     df_encoded = df.copy()
     exclude_cols = exclude_cols or []
 
-    categorical_cols = df_encoded.select_dtypes(include=["object", "category"]).columns.tolist()
+    categorical_cols = df_encoded.select_dtypes(
+        include=["object", "category", "string"]
+    ).columns.tolist()
     cols_to_encode = [col for col in categorical_cols if col not in exclude_cols]
 
     if not cols_to_encode:

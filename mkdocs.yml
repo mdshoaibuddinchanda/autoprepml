@@ -40,6 +40,7 @@ nav:
       - Transformation lineage: concepts/lineage.md
   - Guides:
       - Serialization: guides/serialization.md
+      - Migration to v1.5: migration_v1.5.md
   - Limitations: limitations.md
   - Advanced features: ADVANCED_FEATURES.md
   - CLI quick start: QUICK_START_CLI.md

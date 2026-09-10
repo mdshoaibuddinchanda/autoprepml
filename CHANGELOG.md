@@ -12,6 +12,17 @@ Version 1.5 development is tracked in
 focused on DataPlan architecture, contracts, fingerprints, lineage, and
 reusable artifacts; it is not ready to publish.
 
+### Added
+
+- Added a fitted `DataPlan` lifecycle with schema contracts, deterministic
+  fingerprints, validation reports, lineage manifests, and checksummed `.apml`
+  artifacts.
+- Added a stable exception hierarchy and `PrepProtocol` lifecycle boundary.
+- Added explicit one-hot or ordinal encoding selection with deterministic
+  unknown-category handling.
+- Added pandas 2 and pandas 3 text-dtype compatibility for contracts,
+  fingerprints, EDA, cleaning, dashboards, and LLM metadata summaries.
+
 ## [1.4.1] - Release candidate
 
 ### Changed

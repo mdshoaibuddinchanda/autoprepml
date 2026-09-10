@@ -28,6 +28,7 @@ See the [PyPI package](https://pypi.org/project/autoprepml/), [GitHub repository
 - **[Reproducibility](concepts/reproducibility.md)**: Fingerprints and repeatability metadata
 - **[Transformation lineage](concepts/lineage.md)**: Machine-readable manifests
 - **[Limitations](limitations.md)**: Explicit scope and artifact trust guidance
+- **[Migration to v1.5](migration_v1.5.md)**: Move from whole-frame cleaning to a fitted plan
 
 ### Release Notes
 - **[v1.5.0 development plan](releases/RELEASE_v1.5.0.md)**: DataPlan, contracts, fingerprints, lineage, and serialization

@@ -556,7 +556,7 @@ Return as a JSON array of objects with keys: name, method, impact
             summary["numeric_summary"] = df[numeric_cols].describe().to_dict()
 
         # Categorical columns summary
-        categorical_cols = df.select_dtypes(include=["object", "category"]).columns
+        categorical_cols = df.select_dtypes(include=["object", "category", "string"]).columns
         if len(categorical_cols) > 0:
             summary["categorical_summary"] = {}
             for col in categorical_cols[:5]:  # Limit to first 5

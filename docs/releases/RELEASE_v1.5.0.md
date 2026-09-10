@@ -20,6 +20,8 @@ It does not add another modality or become a model-training framework.
 * Stable exception hierarchy and a shared `PrepProtocol` typing boundary.
 * Documentation for architecture, leakage prevention, contracts,
   reproducibility, lineage, serialization, and product limitations.
+* Compatibility with pandas 2 text columns reported as `object` and pandas 3
+  text columns reported as `str`, including stable schema fingerprints.
 
 ## Remaining release gates
 
@@ -30,6 +32,6 @@ tests, branch-coverage improvement, reproducible benchmarks, research
 experiments, governance files, and a migration guide.
 
 The current development branch must continue to pass the existing Python
-3.9–3.14 CI matrix and must not lower the current coverage gate. The final
+3.9-3.14 CI matrix and must not lower the current coverage gate. The final
 release requires a fresh-environment wheel smoke test and a complete audit of
 all documented examples.

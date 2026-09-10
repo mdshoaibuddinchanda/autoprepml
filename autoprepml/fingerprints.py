@@ -16,13 +16,26 @@ import numpy as np
 import pandas as pd
 
 
-def _json_default(value: Any) -> str:
+def _json_default(value: Any) -> Any:
     """Convert uncommon pandas and NumPy values to stable text."""
     if isinstance(value, (np.integer, np.floating, np.bool_)):
         return value.item()
     if isinstance(value, (pd.Timestamp, pd.Timedelta)):
         return value.isoformat()
     return str(value)
+
+
+def _canonical_dtype(dtype: Any) -> str:
+    """Return a stable dtype label across pandas 2 and pandas 3.
+
+    Pandas 3 defaults plain text columns to ``str`` while pandas 2 commonly
+    reports the same columns as ``object``.  Both represent text at this
+    library boundary, so fingerprints use one portable label.
+    """
+    label = str(dtype)
+    if label in {"object", "str", "string", "string[python]", "string[pyarrow]"}:
+        return "string"
+    return label
 
 
 def _digest(payload: bytes) -> str:
@@ -35,7 +48,7 @@ def schema_fingerprint(frame: pd.DataFrame, target: Optional[str] = None) -> str
         raise TypeError("frame must be a pandas DataFrame")
     payload = {
         "columns": [str(column) for column in frame.columns],
-        "dtypes": [str(dtype) for dtype in frame.dtypes],
+        "dtypes": [_canonical_dtype(dtype) for dtype in frame.dtypes],
         "target": target,
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=_json_default)

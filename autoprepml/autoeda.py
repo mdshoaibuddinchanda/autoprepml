@@ -118,7 +118,7 @@ class AutoEDA:
             "dtype_counts": {str(k): int(v) for k, v in dtypes_count.items()},
             "numeric_columns": self.df.select_dtypes(include=[np.number]).columns.tolist(),
             "categorical_columns": self.df.select_dtypes(
-                include=["object", "category"]
+                include=["object", "category", "string"]
             ).columns.tolist(),
             "datetime_columns": self.df.select_dtypes(include=["datetime64"]).columns.tolist(),
         }
@@ -241,7 +241,7 @@ class AutoEDA:
 
     def _analyze_categorical(self) -> Dict[str, Any]:
         """Analyze categorical columns."""
-        cat_cols = self.df.select_dtypes(include=["object", "category"]).columns
+        cat_cols = self.df.select_dtypes(include=["object", "category", "string"]).columns
         categorical = {}
 
         for col in cat_cols:

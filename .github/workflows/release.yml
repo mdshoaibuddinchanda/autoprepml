@@ -53,11 +53,12 @@ jobs:
 
           forbidden = (".coverage", "coverage.xml", "pytest.xml", ".env", ".git/")
           for path in glob.glob("dist/*"):
-              names = (
-                  zipfile.ZipFile(path).namelist()
-                  if path.endswith(".whl")
-                  else tarfile.open(path, "r:gz").getnames()
-              )
+              if path.endswith(".whl"):
+                  with zipfile.ZipFile(path) as archive:
+                      names = archive.namelist()
+              else:
+                  with tarfile.open(path, "r:gz") as archive:
+                      names = archive.getnames()
               bad = [name for name in names if any(token in name for token in forbidden)]
               if bad:
                   raise SystemExit(f"Forbidden files in {path}: {bad}")

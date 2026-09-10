@@ -60,6 +60,27 @@ def test_transform_ignores_target_and_extra_columns(training_frame):
     pd.testing.assert_frame_equal(plan.transform(with_target), plan.transform(without_target))
 
 
+def test_report_matches_inspection_before_fit_and_manifest_after_fit(training_frame):
+    plan = DataPlan.infer(training_frame, target="label")
+
+    assert plan.report() == plan.inspect()
+    plan.fit(training_frame)
+
+    assert plan.report() == plan.manifest()
+
+
+def test_contract_accepts_pandas_string_dtype_as_text_compatibility():
+    contract = DataContract(
+        columns=(ColumnContract("country", "object", allowed_categories=("GB", "US")),)
+    )
+    frame = pd.DataFrame({"country": pd.Series(["GB", "FR"], dtype="string")})
+
+    report = contract.validate(frame, mode="compatible")
+
+    assert report.status == "WARN"
+    assert {issue.code for issue in report.issues} == {"unknown_category"}
+
+
 def test_contract_reports_compatible_and_strict_findings():
     contract = DataContract(
         columns=(

@@ -291,7 +291,9 @@ class AutoPrepML:
                 if selected_balance_method == "smote":
                     categorical_features = [
                         column
-                        for column in self.df.select_dtypes(include=["object", "category"]).columns
+                        for column in self.df.select_dtypes(
+                            include=["object", "category", "string"]
+                        ).columns
                         if column != target_col
                     ]
                     if categorical_features:
@@ -327,7 +329,7 @@ class AutoPrepML:
             "missing_values": detection.detect_missing(self.df),
             "numeric_columns": self.df.select_dtypes(include=["number"]).columns.tolist(),
             "categorical_columns": self.df.select_dtypes(
-                include=["object", "category"]
+                include=["object", "category", "string"]
             ).columns.tolist(),
         }
 

@@ -8,7 +8,7 @@ from typing import Any, Optional
 import pandas as pd
 
 from .exceptions import ContractError, IntegrationError, ValidationError
-from .fingerprints import schema_fingerprint
+from .fingerprints import _canonical_dtype, schema_fingerprint
 
 
 def _safe_value(value: Any) -> Any:
@@ -18,6 +18,20 @@ def _safe_value(value: Any) -> Any:
     if isinstance(value, (pd.Timestamp, pd.Timedelta)):
         return value.isoformat()
     return str(value)
+
+
+def _dtype_compatible(observed: str, expected: str) -> bool:
+    """Compare dtype labels while allowing pandas string dtype evolution.
+
+    Pandas 3 may represent text columns with its dedicated ``str`` extension
+    dtype, whereas older versions commonly report ``object``.  Those dtypes
+    have the same tabular contract semantics for AutoPrepML and should not
+    create a false compatibility failure.  Exact matches remain the fast
+    path; all other dtype families stay strict.
+    """
+    if observed == expected:
+        return True
+    return _canonical_dtype(observed) == _canonical_dtype(expected)
 
 
 @dataclass(frozen=True)
@@ -142,6 +156,7 @@ class DataContract:
             categories = None
             if role == "feature" and (
                 pd.api.types.is_object_dtype(series)
+                or pd.api.types.is_string_dtype(series.dtype)
                 or isinstance(series.dtype, pd.CategoricalDtype)
                 or pd.api.types.is_bool_dtype(series)
             ):
@@ -266,7 +281,7 @@ class DataContract:
                 continue
             series = frame[contract.name]
             observed_dtype = str(series.dtype)
-            if observed_dtype != contract.expected_dtype:
+            if not _dtype_compatible(observed_dtype, contract.expected_dtype):
                 severity = "FAIL" if mode == "strict" else "WARN"
                 self._issue(
                     issues,

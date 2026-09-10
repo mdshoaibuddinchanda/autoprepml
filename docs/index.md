@@ -84,6 +84,7 @@ autoprepml --input data.csv --output cleaned.csv --report report.html
 - [Leakage prevention](concepts/leakage.md): Train-only fitting and resampling rules
 - [Reproducibility](concepts/reproducibility.md): Fingerprints and repeatability metadata
 - [Transformation lineage](concepts/lineage.md): Machine-readable provenance manifests
+- [Migration to v1.5](migration_v1.5.md): Adopt the fitted DataPlan workflow
 - [Limitations](limitations.md): Explicit product boundaries and artifact trust guidance
 
 ## Links
