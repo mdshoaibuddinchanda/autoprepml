@@ -49,7 +49,6 @@ files and the migration guide are included in the development branch.
 
 The current development branch must continue to pass the Python 3.9-3.14 CI
 matrix and must not lower the current 80 percent branch-aware coverage gate.
-The final release also
-requires a fresh-environment wheel smoke test, complete documentation and
-notebook execution, attached GitHub Release artifacts, and an explicit review
-of branch protection and trusted publishing settings.
+The final release also requires a fresh-environment wheel smoke test, complete
+documentation and notebook execution, attached GitHub Release artifacts, and
+an explicit review of branch protection and trusted publishing settings.

@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Version 1.5 development is tracked in
-`docs/releases/RELEASE_v1.5.0.md` and the repository roadmap. The release is
-focused on DataPlan architecture, contracts, fingerprints, lineage, and
-reusable artifacts; it is not ready to publish.
+`docs/releases/RELEASE_v1.5.0.md` and the repository roadmap. The release
+consolidates DataPlan architecture, contracts, fingerprints, lineage, scalable
+execution, CLI workflows, and reproducible quality controls; it is not ready
+to publish.
 
 ### Added
 
@@ -22,6 +23,12 @@ reusable artifacts; it is not ready to publish.
   unknown-category handling.
 - Added pandas 2 and pandas 3 text-dtype compatibility for contracts,
   fingerprints, EDA, cleaning, dashboards, and LLM metadata summaries.
+- Added structured readiness reports, explicit sparse and dense output limits,
+  and hardened local and fsspec storage behavior.
+- Added experiment protocols with plan lineage, fitted supervised feature
+  selection, temporal leakage guards, and validated structured LLM responses.
+- Added modern CLI lifecycle commands, property tests, strict core typing, and
+  a synthetic benchmark harness that retains no dataset or generated output.
 
 ## [1.4.1] - Release candidate
 
