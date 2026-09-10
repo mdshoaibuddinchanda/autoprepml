@@ -21,7 +21,7 @@ from .timeseries import TimeSeriesPrepML
 from .graph import GraphPrepML
 from .image import ImagePrepML
 from .autoeda import AutoEDA
-from .feature_engine import AutoFeatureEngine, auto_feature_engineering
+from .feature_engine import AutoFeatureEngine, FittedFeatureSelector, auto_feature_engineering
 from .dashboard import InteractiveDashboard, create_plotly_dashboard, generate_streamlit_app
 from . import detection
 from . import cleaning
@@ -33,8 +33,11 @@ from .config_manager import AutoPrepMLConfig
 from .llm_suggest import (
     LLMSuggestor,
     LLMProvider,
+    RecommendationValidationError,
     suggest_column_rename,
     generate_data_documentation,
+    validate_analysis_recommendation,
+    validate_feature_suggestions,
 )
 from .batch import iter_chunks, iter_processed_chunks, process_chunks
 from .storage import (
@@ -81,6 +84,7 @@ __all__ = [
     # Current and historical feature exports
     "AutoEDA",
     "AutoFeatureEngine",
+    "FittedFeatureSelector",
     "auto_feature_engineering",
     "InteractiveDashboard",
     "create_plotly_dashboard",
@@ -88,9 +92,12 @@ __all__ = [
     # LLM features
     "LLMSuggestor",
     "LLMProvider",
+    "RecommendationValidationError",
     "AutoPrepMLConfig",
     "suggest_column_rename",
     "generate_data_documentation",
+    "validate_analysis_recommendation",
+    "validate_feature_suggestions",
     # Execution, storage, and integrations
     "iter_chunks",
     "iter_processed_chunks",

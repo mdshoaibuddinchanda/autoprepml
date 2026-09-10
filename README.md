@@ -1080,10 +1080,13 @@ For support, use the [issue tracker](https://github.com/mdshoaibuddinchanda/auto
 
 #### Minor release 1.5.0
 
+- [ ] Raise branch coverage to the published 100 percent target and keep the gate honest while doing so.
 - [ ] Publish reproducible benchmarks for representative tabular, text, image, and streaming workloads.
-- [ ] Add schema contracts and compatibility checks for storage and streaming adapters.
-- [ ] Expand adapter coverage for object stores and experiment tracking backends.
-- [ ] Strengthen integration, contract, and smoke tests while keeping coverage thresholds honest.
+- [x] Add schema contracts, readiness reports, and compatibility checks for fitted data plans.
+- [x] Add local, in-memory, and fsspec storage paths with atomic writes and format validation.
+- [x] Add experiment protocols, plan lineage, structured recommendation validation, and CLI lifecycle commands.
+- [ ] Expand optional object-store, provider, and experiment-backend integration coverage.
+- [ ] Complete final release audit, attach GitHub Release artifacts, tag v1.5.0, and publish through trusted publishing.
 
 #### Major release 2.0.0
 

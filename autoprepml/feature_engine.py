@@ -15,6 +15,117 @@ from sklearn.feature_selection import (
 import warnings
 
 
+class FittedFeatureSelector:
+    """Leakage-safe supervised feature selection plan.
+
+    Fit this selector on training rows, then reuse ``transform`` for
+    validation, test, and production rows. Only numeric predictors are
+    selected; categorical encoding should happen in an upstream fitted
+    preprocessing pipeline.
+    """
+
+    def __init__(
+        self,
+        method: str = "mutual_info",
+        k: int = 10,
+        task: str = "classification",
+        random_state: int = 42,
+    ) -> None:
+        self.method = method.lower().strip() if isinstance(method, str) else method
+        self.k = k
+        self.task = task.lower().strip() if isinstance(task, str) else task
+        self.random_state = random_state
+        self._selector = None
+        self.selected_columns_: Tuple[str, ...] = ()
+        self.scores_: Dict[str, float] = {}
+
+    @property
+    def fitted(self) -> bool:
+        """Whether training statistics have been acquired."""
+        return self._selector is not None
+
+    def _validate_options(self) -> None:
+        if self.method not in {"mutual_info", "f_test", "variance"}:
+            raise ValueError("method must be mutual_info, f_test, or variance")
+        if self.task not in {"classification", "regression"}:
+            raise ValueError("task must be classification or regression")
+        if not isinstance(self.k, int) or isinstance(self.k, bool) or self.k < 1:
+            raise ValueError("k must be a positive integer")
+        if not isinstance(self.random_state, int) or isinstance(self.random_state, bool):
+            raise TypeError("random_state must be an integer")
+
+    def fit(self, frame: pd.DataFrame, target: str) -> "FittedFeatureSelector":
+        """Fit selection scores using the supplied training frame only."""
+        self._validate_options()
+        if not isinstance(frame, pd.DataFrame):
+            raise TypeError("frame must be a pandas DataFrame")
+        if not isinstance(target, str) or target not in frame.columns:
+            raise ValueError("target must name a column in frame")
+        if frame[target].isna().any():
+            raise ValueError("target contains missing values")
+        numeric = frame.drop(columns=[target]).select_dtypes(include=[np.number])
+        if numeric.empty:
+            raise ValueError("frame must contain numeric feature columns")
+        if self.method == "f_test":
+            score_func = f_classif if self.task == "classification" else f_regression
+            selector = SelectKBest(score_func=score_func, k=min(self.k, numeric.shape[1]))
+            selector.fit(numeric, frame[target])
+            scores = selector.scores_
+        elif self.method == "mutual_info":
+            score_func = (
+                mutual_info_classif if self.task == "classification" else mutual_info_regression
+            )
+            scores = score_func(numeric, frame[target], random_state=self.random_state)
+            selector = SelectKBest(
+                score_func=lambda _x, _y: scores, k=min(self.k, numeric.shape[1])
+            )
+            selector.fit(numeric, frame[target])
+        else:
+            scores = numeric.var().to_numpy()
+            selector = SelectKBest(
+                score_func=lambda _x, _y: scores, k=min(self.k, numeric.shape[1])
+            )
+            selector.fit(numeric, frame[target])
+        selected = tuple(
+            str(name) for name, keep in zip(numeric.columns, selector.get_support()) if keep
+        )
+        self._selector = selector
+        self.selected_columns_ = selected
+        self.scores_ = {
+            str(name): float(score) if np.isfinite(score) else 0.0
+            for name, score in zip(numeric.columns, scores)
+        }
+        return self
+
+    def transform(self, frame: pd.DataFrame) -> pd.DataFrame:
+        """Select fitted columns without recomputing scores."""
+        if not self.fitted:
+            raise RuntimeError("FittedFeatureSelector is not fitted")
+        if not isinstance(frame, pd.DataFrame):
+            raise TypeError("frame must be a pandas DataFrame")
+        missing = [column for column in self.selected_columns_ if column not in frame.columns]
+        if missing:
+            raise ValueError(f"Input is missing selected columns: {missing}")
+        return frame.loc[:, list(self.selected_columns_)].copy()
+
+    def fit_transform(self, frame: pd.DataFrame, target: str) -> pd.DataFrame:
+        """Fit on training data and return selected training predictors."""
+        return self.fit(frame, target).transform(frame)
+
+    def report(self) -> Dict[str, Any]:
+        """Return selection policy and learned scores without raw rows."""
+        if not self.fitted:
+            raise RuntimeError("FittedFeatureSelector is not fitted")
+        return {
+            "method": self.method,
+            "task": self.task,
+            "k": self.k,
+            "random_state": self.random_state,
+            "selected_columns": list(self.selected_columns_),
+            "scores": dict(self.scores_),
+        }
+
+
 class AutoFeatureEngine:
     """Automated Feature Engineering class.
 

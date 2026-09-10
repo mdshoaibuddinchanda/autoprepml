@@ -5,6 +5,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from autoprepml.feature_engine import AutoFeatureEngine, auto_feature_engineering
+from autoprepml import FittedFeatureSelector
 
 
 @pytest.fixture
@@ -352,6 +353,41 @@ class TestFeatureSelection:
         fe = AutoFeatureEngine(sample_df.copy(), target_column="target")
         result = fe.select_features(k=3, method=method)
         assert result.shape[1] <= sample_df.shape[1]
+
+
+class TestFittedFeatureSelector:
+    """Test train-only supervised selection semantics."""
+
+    @pytest.mark.parametrize("method", ["mutual_info", "f_test", "variance"])
+    def test_fit_transform_and_report(self, sample_df, method):
+        selector = FittedFeatureSelector(method=method, k=2, task="classification")
+        train_features = selector.fit_transform(sample_df, "target")
+        before = selector.report()
+
+        future_features = selector.transform(sample_df.drop(columns="target"))
+
+        assert selector.fitted
+        assert train_features.columns.tolist() == future_features.columns.tolist()
+        assert len(train_features.columns) == 2
+        assert before["selected_columns"] == future_features.columns.tolist()
+
+    def test_selector_does_not_refit_on_future_rows(self, sample_df):
+        selector = FittedFeatureSelector(k=2).fit(sample_df, "target")
+        before = selector.report()
+        future = sample_df.drop(columns="target").assign(age=10_000)
+
+        selector.transform(future)
+
+        assert selector.report() == before
+
+    def test_selector_validates_lifecycle_and_input(self, sample_df):
+        selector = FittedFeatureSelector()
+        with pytest.raises(RuntimeError, match="not fitted"):
+            selector.transform(sample_df)
+        with pytest.raises(ValueError, match="missing selected"):
+            selector.fit(sample_df, "target").transform(pd.DataFrame({"unknown": [1]}))
+        with pytest.raises(ValueError, match="target"):
+            FittedFeatureSelector().fit(sample_df.drop(columns="target"), "target")
 
 
 class TestFeatureImportance:

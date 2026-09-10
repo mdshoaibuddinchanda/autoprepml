@@ -11,8 +11,11 @@ pytest.importorskip("openai", reason="openai not installed")
 from autoprepml.llm_suggest import (  # noqa: E402
     LLMSuggestor,
     LLMProvider,
+    RecommendationValidationError,
     suggest_fix,
     explain_cleaning_step,
+    validate_analysis_recommendation,
+    validate_feature_suggestions,
 )
 
 
@@ -347,6 +350,16 @@ class TestLLMCalls:
             lambda _df, column: "new_" + column,
         )
         assert suggestor.suggest_all_column_renames(frame) == {"age": "new_age"}
+
+    def test_structured_recommendation_validation(self):
+        assert validate_analysis_recommendation({"quality_score": 8})["warnings"] == []
+        assert validate_feature_suggestions([{"name": "age_bucket"}]) == [
+            {"name": "age_bucket"}
+        ]
+        with pytest.raises(RecommendationValidationError, match="quality_score"):
+            validate_analysis_recommendation({"quality_score": 11})
+        with pytest.raises(RecommendationValidationError, match="feature suggestion"):
+            validate_feature_suggestions([{"method": "bad"}])
 
 
 # Integration tests (require actual API keys or running Ollama)

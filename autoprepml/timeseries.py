@@ -89,6 +89,17 @@ class TimeSeriesPrepML:
         self.log.append({"action": "sort_by_time"})
         return self.df
 
+    def _require_chronological(self) -> None:
+        """Reject temporal feature construction on unsorted observations.
+
+        Lag and rolling features are positional operations. Requiring an
+        increasing timestamp order makes the direction of information flow
+        explicit and prevents an accidentally shuffled frame from leaking
+        future observations into training features.
+        """
+        if not self.df[self.timestamp_column].is_monotonic_increasing:
+            raise ValueError("sort_by_time must be called before temporal feature generation")
+
     def remove_duplicate_timestamps(
         self, keep: str = "first", aggregate: Optional[str] = None
     ) -> pd.DataFrame:
@@ -253,6 +264,7 @@ class TimeSeriesPrepML:
             lags = [1, 7, 30]
         if not self.value_column:
             raise ValueError("value_column must be specified for lag features")
+        self._require_chronological()
         lags = list(lags)
         if any(not isinstance(lag, int) or isinstance(lag, bool) or lag < 1 for lag in lags):
             raise ValueError("lags must contain positive integers")
@@ -288,6 +300,7 @@ class TimeSeriesPrepML:
             functions = ["mean"]
         if not self.value_column:
             raise ValueError("value_column must be specified for rolling features")
+        self._require_chronological()
         if not isinstance(forecast_safe, bool):
             raise TypeError("forecast_safe must be a boolean")
 

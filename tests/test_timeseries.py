@@ -372,3 +372,42 @@ def test_time_series_normalizer_requires_chronological_input():
     prep = TimeSeriesPrepML(df, timestamp_column="date", value_column="value")
     with pytest.raises(ValueError, match="sort_by_time"):
         prep.fit_normalizer()
+
+
+def test_temporal_features_require_chronological_input():
+    df = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2024-01-02", "2024-01-01", "2024-01-03"]),
+            "value": [2.0, 1.0, 3.0],
+        }
+    )
+    prep = TimeSeriesPrepML(df, timestamp_column="date", value_column="value")
+    with pytest.raises(ValueError, match="temporal feature generation"):
+        prep.add_lag_features(lags=[1])
+    with pytest.raises(ValueError, match="temporal feature generation"):
+        prep.add_rolling_features(windows=[2])
+
+
+def test_forecast_safe_features_are_invariant_to_future_value_changes():
+    dates = pd.date_range("2024-01-01", periods=6, freq="D")
+    original = pd.DataFrame({"date": dates, "value": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]})
+    changed = original.copy()
+    changed.loc[5, "value"] = 10_000.0
+
+    first = TimeSeriesPrepML(original, "date", "value").add_rolling_features(windows=[3])
+    second = TimeSeriesPrepML(changed, "date", "value").add_rolling_features(windows=[3])
+    assert first.loc[:4, "value_rolling_mean_3"].equals(
+        second.loc[:4, "value_rolling_mean_3"]
+    )
+
+
+def test_historical_normalizer_is_invariant_to_future_value_changes():
+    dates = pd.date_range("2024-01-01", periods=5, freq="D")
+    original = pd.DataFrame({"date": dates, "value": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    changed = original.copy()
+    changed.loc[4, "value"] = 100_000.0
+
+    first = TimeSeriesPrepML(original, "date", "value").fit_normalizer(fit_end=4)
+    second = TimeSeriesPrepML(changed, "date", "value").fit_normalizer(fit_end=4)
+    np.testing.assert_allclose(first.normalizer_.scaler_.mean_, second.normalizer_.scaler_.mean_)
+    np.testing.assert_allclose(first.normalizer_.scaler_.scale_, second.normalizer_.scaler_.scale_)

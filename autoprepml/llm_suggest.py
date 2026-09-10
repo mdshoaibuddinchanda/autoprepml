@@ -24,6 +24,61 @@ class LLMProvider(Enum):
     OLLAMA = "ollama"  # Local LLM
 
 
+class RecommendationValidationError(ValueError):
+    """Raised when an LLM response is not a safe structured recommendation."""
+
+
+def _decode_json_response(response_text: str) -> Any:
+    """Decode JSON from a plain or fenced model response."""
+    if not isinstance(response_text, str):
+        raise RecommendationValidationError("LLM response must be text")
+    candidate = response_text.strip()
+    if "```" in candidate:
+        start = candidate.find("```") + 3
+        if candidate[start : start + 4].lower() == "json":
+            start += 4
+        end = candidate.find("```", start)
+        if end < 0:
+            raise RecommendationValidationError("LLM response contains an unclosed code fence")
+        candidate = candidate[start:end].strip()
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError as exc:
+        raise RecommendationValidationError(f"LLM response is not valid JSON: {exc.msg}") from exc
+
+
+def validate_analysis_recommendation(payload: Any) -> Dict[str, Any]:
+    """Validate and normalize a structured dataset analysis response."""
+    if not isinstance(payload, dict):
+        raise RecommendationValidationError("analysis recommendation must be a JSON object")
+    if "quality_score" not in payload:
+        raise RecommendationValidationError("analysis recommendation requires quality_score")
+    score = payload["quality_score"]
+    if isinstance(score, bool) or not isinstance(score, (int, float)) or not 1 <= score <= 10:
+        raise RecommendationValidationError("quality_score must be a number from 1 to 10")
+    result: Dict[str, Any] = {"quality_score": score}
+    for key in ("critical_issues", "pipeline_steps", "feature_suggestions", "warnings"):
+        value = payload.get(key, [])
+        if not isinstance(value, list) or not all(isinstance(item, (str, dict)) for item in value):
+            raise RecommendationValidationError(f"{key} must be a list of strings or objects")
+        result[key] = value
+    return result
+
+
+def validate_feature_suggestions(payload: Any) -> List[Dict[str, Any]]:
+    """Validate feature suggestions and preserve structured model fields."""
+    if not isinstance(payload, list):
+        raise RecommendationValidationError("feature suggestions must be a JSON array")
+    result: List[Dict[str, Any]] = []
+    for index, item in enumerate(payload):
+        if not isinstance(item, dict) or not isinstance(item.get("name"), str):
+            raise RecommendationValidationError(
+                f"feature suggestion {index} must be an object with a string name"
+            )
+        result.append(dict(item))
+    return result
+
+
 class LLMSuggestor:
     """LLM-powered suggestions for data preprocessing.
 
@@ -384,21 +439,10 @@ feature_suggestions, warnings
 
         response_text = self._call_llm(prompt, system_prompt)
 
-        # Try to parse as JSON, fallback to text
         try:
-            # Extract JSON if embedded in markdown code blocks
-            if "```json" in response_text:
-                json_start = response_text.find("```json") + 7
-                json_end = response_text.find("```", json_start)
-                response_text = response_text[json_start:json_end].strip()
-            elif "```" in response_text:
-                json_start = response_text.find("```") + 3
-                json_end = response_text.find("```", json_start)
-                response_text = response_text[json_start:json_end].strip()
-
-            return json.loads(response_text)
-        except Exception:
-            return {"raw_response": response_text}
+            return validate_analysis_recommendation(_decode_json_response(response_text))
+        except RecommendationValidationError as exc:
+            return {"raw_response": response_text, "validation_error": str(exc)}
 
     def explain_cleaning_step(
         self, action: str, details: Dict[str, Any], context: Optional[Dict[str, Any]] = None
@@ -469,15 +513,8 @@ Return as a JSON array of objects with keys: name, method, impact
         response_text = self._call_llm(prompt, system_prompt)
 
         try:
-            # Parse JSON response
-            if "```json" in response_text:
-                json_start = response_text.find("```json") + 7
-                json_end = response_text.find("```", json_start)
-                response_text = response_text[json_start:json_end].strip()
-
-            features = json.loads(response_text)
-            return features if isinstance(features, list) else [response_text]
-        except Exception:
+            return validate_feature_suggestions(_decode_json_response(response_text))
+        except RecommendationValidationError:
             return [response_text]
 
     def _get_column_info(self, df: pd.DataFrame, column: str) -> Dict[str, Any]:
